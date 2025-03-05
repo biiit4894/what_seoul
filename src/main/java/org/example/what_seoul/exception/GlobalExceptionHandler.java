@@ -15,6 +15,15 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleIllegalArgumentException(IllegalArgumentException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Illegal Argument Exception",
+                e.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonErrorResponse<Object>> handleValidationException(MethodArgumentNotValidException e) {
         List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
@@ -47,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonErrorResponse<Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
           "Data Integrity Violation",
-          e.getMessage()
+          e.getMessage() // TODO: context 반환 방식 수정
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
