@@ -39,6 +39,14 @@ public class User {
     @Column
     private LocalDateTime deletedAt;
 
+    public User(String userId, String password, String email, String nickName, LocalDateTime createdAt) {
+        this.userId = userId;
+        this.password = password;
+        this.email = email;
+        this.nickName = nickName;
+        this.createdAt = createdAt;
+    }
+
     public User(String userId, String password, String email, String nickName) {
         this.userId = userId;
         this.password = password;
