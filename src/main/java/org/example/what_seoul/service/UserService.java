@@ -95,4 +95,31 @@ public class UserService {
                 userDetailRes
         );
     }
+
+    @Transactional
+    public CommonResponse<?> updateUserPassword(Long id, UpdateUserPasswordReq req) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
+        String currPassword = user.getPassword();
+        String reqCurrPassword = req.getCurrPassword();
+        String reqNewPassword = req.getNewPassword();
+
+        if (!currPassword.equals(reqCurrPassword)) {
+            throw new PasswordMismatchException();
+        }
+
+        if (currPassword.equals(reqNewPassword)) {
+            throw new IllegalArgumentException("새로운 비밀번호로 변경해 주세요.");
+        }
+
+        user.changePassword(reqNewPassword);
+        return new CommonResponse<>(
+                true,
+                "Update User Password Success",
+                null // TODO: null 반환이 괜찮은지
+        );
+    }
+
+
+
+
 }

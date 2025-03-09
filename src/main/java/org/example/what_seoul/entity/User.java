@@ -55,6 +55,11 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
+    public void changePassword(String password) {
+        this.password = password;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void deactivate() {
         this.deletedAt = LocalDateTime.now();
     }
