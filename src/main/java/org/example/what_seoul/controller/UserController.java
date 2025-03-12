@@ -36,7 +36,7 @@ public class UserController {
 
     // TODO: Security 적용
     @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse<?>> updateUserPassword(@PathVariable Long id, @Valid @RequestBody UpdateUserPasswordReq req) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserPassword(id, req));
+    public ResponseEntity<CommonResponse<?>> updateUserInfo(@PathVariable Long id, @Valid @RequestBody UpdateUserInfoReq req) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserInfo(id, req));
     }
 }

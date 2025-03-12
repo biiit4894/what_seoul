@@ -55,8 +55,16 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void changePassword(String password) {
-        this.password = password;
+    public void changeUserInfo(String password, String email, String nickName) {
+        if (password != null) {
+            this.password = password;
+        }
+        if (email != null) {
+            this.email = email;
+        }
+        if (nickName != null) {
+            this.nickName = nickName;
+        }
         this.updatedAt = LocalDateTime.now();
     }
 

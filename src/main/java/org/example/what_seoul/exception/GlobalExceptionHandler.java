@@ -2,9 +2,7 @@ package org.example.what_seoul.exception;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import org.apache.coyote.Response;
 import org.example.what_seoul.common.dto.CommonErrorResponse;
-import org.example.what_seoul.common.dto.CommonResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

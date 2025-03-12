@@ -97,11 +97,15 @@ public class UserService {
     }
 
     @Transactional
-    public CommonResponse<?> updateUserPassword(Long id, UpdateUserPasswordReq req) {
+    public CommonResponse<?> updateUserInfo(Long id, UpdateUserInfoReq req) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
         String currPassword = user.getPassword();
+        String currEmail = user.getEmail();
+        String currNickName = user.getNickName();
         String reqCurrPassword = req.getCurrPassword();
         String reqNewPassword = req.getNewPassword();
+        String reqNewEmail = req.getNewEmail();
+        String reqNewNickName = req.getNewNickName();
 
         if (!currPassword.equals(reqCurrPassword)) {
             throw new PasswordMismatchException();
@@ -111,10 +115,18 @@ public class UserService {
             throw new IllegalArgumentException("새로운 비밀번호로 변경해 주세요.");
         }
 
-        user.changePassword(reqNewPassword);
+        if (currEmail.equals(reqNewEmail)) {
+            throw new IllegalArgumentException("새로운 이메일로 변경해 주세요.");
+        }
+
+        if (currNickName.equals(reqNewNickName)) {
+            throw new IllegalArgumentException("새로운 닉네임으로 변경해 주세요.");
+        }
+
+        user.changeUserInfo(reqNewPassword, reqNewEmail, reqNewNickName);
         return new CommonResponse<>(
                 true,
-                "Update User Password Success",
+                "Update User Info Success",
                 null // TODO: null 반환이 괜찮은지
         );
     }
