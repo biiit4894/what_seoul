@@ -1,4 +1,4 @@
-package org.example.what_seoul.dto;
+package org.example.what_seoul.controller.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

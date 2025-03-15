@@ -1,4 +1,4 @@
-package org.example.what_seoul.entity;
+package org.example.what_seoul.domain.user;
 
 import jakarta.persistence.*;
 import lombok.Getter;

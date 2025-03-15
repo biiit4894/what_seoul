@@ -1,8 +1,8 @@
 package org.example.what_seoul.util;
 
 import lombok.RequiredArgsConstructor;
-import org.example.what_seoul.entity.User;
-import org.example.what_seoul.repository.UserRepository;
+import org.example.what_seoul.domain.user.User;
+import org.example.what_seoul.repository.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

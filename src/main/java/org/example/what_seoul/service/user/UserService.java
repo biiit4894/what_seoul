@@ -1,12 +1,12 @@
-package org.example.what_seoul.service;
+package org.example.what_seoul.service.user;
 
 import lombok.RequiredArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.dto.*;
-import org.example.what_seoul.entity.User;
+import org.example.what_seoul.controller.user.dto.*;
+import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.DuplicateFieldException;
 import org.example.what_seoul.exception.PasswordMismatchException;
-import org.example.what_seoul.repository.UserRepository;
+import org.example.what_seoul.repository.user.UserRepository;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
