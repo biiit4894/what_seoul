@@ -57,7 +57,8 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (areaRepository.count() == 0) {
-            FileInputStream stream = new FileInputStream(new File(filePath));
+            // 서울시 116개 핫스팟 정보 저장
+            FileInputStream stream = new FileInputStream(filePath);
             Workbook workbook = new XSSFWorkbook(stream);
             Sheet sheet = workbook.getSheetAt(0);
 
