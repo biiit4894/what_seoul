@@ -42,15 +42,11 @@ public class CityDataScheduler {
 
         try {
             for (Area area : areas) {
-                String encodedAreaName = URLEncoder.encode(area.getAreaName(), StandardCharsets.UTF_8);
-                log.info("area name: " + area.getAreaName());
-
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);  // DTD 로드 비활성화
-                factory.setFeature("http://xml.org/sax/features/namespaces", false);  // 네임스페이스 비활성화
-
-                DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(url + encodedAreaName);
+                String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
+                String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
+                log.info("sanitized area name: " + sanitizedAreaName);
+                log.info("encoded area name: " + encodedAreaName);
+                Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(url + encodedAreaName);
                 document.getDocumentElement().normalize();
 
                 Population population = new Population(
