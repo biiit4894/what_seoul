@@ -6,7 +6,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.what_seoul.domain.cityData.Area;
+import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.cityData.AreaRepository;
 import org.example.what_seoul.repository.user.UserRepository;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package org.example.what_seoul.domain.cityData;
+package org.example.what_seoul.domain.citydata;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

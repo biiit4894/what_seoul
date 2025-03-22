@@ -1,4 +1,4 @@
-package org.example.what_seoul.domain.cityData.population;
+package org.example.what_seoul.domain.citydata.population;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,12 +12,6 @@ public class PopulationForecast {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    /*
-    인구 혼잡도 예측 시점
-     */
-    @Column(nullable = false)
-    private String forecastTime;
 
     /*
     장소 예측 혼잡도 지표
@@ -37,8 +31,21 @@ public class PopulationForecast {
     @Column(nullable = false)
     private String forecastPopulationMax;
 
+    /*
+    인구 혼잡도 예측 시점
+     */
+    @Column(nullable = false)
+    private String forecastTime;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "population_id", nullable = false)
     private Population population;
 
+    public PopulationForecast(String forecastCongestionLevel, String forecastPopulationMin, String forecastPopulationMax, String forecastTime, Population population) {
+        this.forecastCongestionLevel = forecastCongestionLevel;
+        this.forecastPopulationMin = forecastPopulationMin;
+        this.forecastPopulationMax = forecastPopulationMax;
+        this.forecastTime = forecastTime;
+        this.population = population;
+    }
 }

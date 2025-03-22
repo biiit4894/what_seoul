@@ -1,4 +1,4 @@
-package org.example.what_seoul.domain.cityData.population;
+package org.example.what_seoul.domain.citydata.population;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -51,6 +51,15 @@ public class Population {
      */
     @OneToMany(mappedBy = "population", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PopulationForecast> forecasts = new ArrayList<>();
+
+    public Population(String congestionLevel, String congestionMessage, String populationMin, String populationMax, String populationUpdateTime, List<PopulationForecast> forecasts) {
+        this.congestionLevel = congestionLevel;
+        this.congestionMessage = congestionMessage;
+        this.populationMin = populationMin;
+        this.populationMax = populationMax;
+        this.populationUpdateTime = populationUpdateTime;
+        this.forecasts = forecasts;
+    }
 
     public Population(String congestionLevel, String congestionMessage, String populationMin, String populationMax, String populationUpdateTime) {
         this.congestionLevel = congestionLevel;
