@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -35,7 +33,7 @@ public class DataInitializer implements CommandLineRunner {
     private String filePath;
 
     @Override
-    public void run(String[] args) throws IOException, ParserConfigurationException, SAXException {
+    public void run(String[] args) throws IOException {
         if (userRepository.count() == 0) {
             // 테스트용 유저 100인 생성
             List<User> testUsers = new ArrayList<>();
