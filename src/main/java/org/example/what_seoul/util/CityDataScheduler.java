@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
-import org.example.what_seoul.repository.cityData.AreaRepository;
-import org.example.what_seoul.repository.cityData.population.PopulationForecastRepository;
-import org.example.what_seoul.repository.cityData.population.PopulationRepository;
+import org.example.what_seoul.domain.citydata.weather.Weather;
+import org.example.what_seoul.repository.citydata.AreaRepository;
+import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
+import org.example.what_seoul.repository.citydata.population.PopulationRepository;
+import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
 import org.example.what_seoul.service.citydata.CityDataService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -33,7 +35,7 @@ public class CityDataScheduler {
     private final AreaRepository areaRepository;
     private final PopulationRepository populationRepository;
     private final PopulationForecastRepository populationForecastRepository;
-    private final CityDataService cityDataService;
+    private final WeatherRepository weatherRepository;
 
     @Value("${seoul.open.api.url}")
     private String url;
@@ -59,7 +61,8 @@ public class CityDataScheduler {
                         getElementTextContent(document, XmlElementNames.AREA_CONGEST_MSG.getXmlElementName()),
                         getElementTextContent(document, XmlElementNames.AREA_PPLTN_MIN.getXmlElementName()),
                         getElementTextContent(document, XmlElementNames.AREA_PPLTN_MAX.getXmlElementName()),
-                        getElementTextContent(document, XmlElementNames.PPLTN_TIME.getXmlElementName())
+                        getElementTextContent(document, XmlElementNames.PPLTN_TIME.getXmlElementName()),
+                        area
                 );
 
                 populationList.add(population);
@@ -100,6 +103,62 @@ public class CityDataScheduler {
                 }
 
                 populationForecastRepository.saveAll(forecastList);
+
+
+                List<Weather> weatherList = new ArrayList<>();
+
+                NodeList weatherNodeList = document.getElementsByTagName(XmlElementNames.WEATHER_STTS.getXmlElementName());
+                Node weatherParentNode = weatherNodeList.item(1);
+                NodeList childNodeList = weatherParentNode.getChildNodes();
+                String temperature = "No Tag";
+                String maxTemperature = "No Tag";
+                String minTemperature = "No Tag";
+                String pm25Index = "No Tag";
+                String pm25 = "No Tag";
+                String pm10Index = "No Tag";
+                String pm10 = "No Tag";
+                String pcpMsg = "No Tag";
+                String weatherUpdateTime = "No Tag";
+
+                for (int i = 0; i < childNodeList.getLength(); i++) {
+                    Node childNode = childNodeList.item(i);
+
+                    if (childNode.getNodeName().equals(XmlElementNames.TEMP.getXmlElementName())) {
+                        temperature = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.MAX_TEMP.getXmlElementName())) {
+                        maxTemperature = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.MIN_TEMP.getXmlElementName())) {
+                        minTemperature = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.PM25_INDEX.getXmlElementName())) {
+                        pm25Index = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.PM25.getXmlElementName())) {
+                        pm25 = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.PM10_INDEX.getXmlElementName())) {
+                        pm10Index = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.PM10.getXmlElementName())) {
+                        pm10 = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.PCP_MSG.getXmlElementName())) {
+                        pcpMsg = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.WEATHER_TIME.getXmlElementName())) {
+                        weatherUpdateTime = childNode.getTextContent();
+                    }
+
+                }
+                weatherList.add(new Weather(
+                        temperature,
+                        maxTemperature,
+                        minTemperature,
+                        pm25Index,
+                        pm25,
+                        pm10Index,
+                        pm10,
+                        pcpMsg,
+                        weatherUpdateTime,
+                        area
+                ));
+
+                weatherRepository.saveAll(weatherList);
+
             }
 
             LocalDateTime afterTime = LocalDateTime.now();
@@ -112,7 +171,6 @@ public class CityDataScheduler {
             log.error("error while fetching cityData");
             log.error("exception message : {}", e.getMessage());
         }
-
 
     }
 

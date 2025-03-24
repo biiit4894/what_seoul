@@ -8,7 +8,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.user.User;
-import org.example.what_seoul.repository.cityData.AreaRepository;
+import org.example.what_seoul.repository.citydata.AreaRepository;
 import org.example.what_seoul.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;

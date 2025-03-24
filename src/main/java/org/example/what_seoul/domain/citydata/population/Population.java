@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.what_seoul.domain.citydata.Area;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +53,16 @@ public class Population {
     @OneToMany(mappedBy = "population", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PopulationForecast> forecasts = new ArrayList<>();
 
-    public Population(String congestionLevel, String congestionMessage, String populationMin, String populationMax, String populationUpdateTime) {
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_id", unique = true)
+    private Area area;
+
+    public Population(String congestionLevel, String congestionMessage, String populationMin, String populationMax, String populationUpdateTime, Area area) {
         this.congestionLevel = congestionLevel;
         this.congestionMessage = congestionMessage;
         this.populationMin = populationMin;
         this.populationMax = populationMax;
         this.populationUpdateTime = populationUpdateTime;
+        this.area = area;
     }
 }

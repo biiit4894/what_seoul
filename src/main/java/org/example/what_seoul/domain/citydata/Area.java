@@ -1,13 +1,12 @@
 package org.example.what_seoul.domain.citydata;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class Area {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
