@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class PopulationForecast {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
