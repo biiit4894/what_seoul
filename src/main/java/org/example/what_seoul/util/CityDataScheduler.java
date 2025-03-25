@@ -15,7 +15,6 @@ import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -46,7 +45,7 @@ public class CityDataScheduler {
     @Value("${seoul.open.api.url}")
     private String url;
 
-    @Scheduled(fixedDelay = 5 * 60 * 1000) // 이전 실행이 끝난 후 5분 뒤에 다음 실행
+    @Scheduled(fixedRate = 5 * 60 * 1000)
     public void call() {
         LocalDateTime beforeTime = LocalDateTime.now();
 
