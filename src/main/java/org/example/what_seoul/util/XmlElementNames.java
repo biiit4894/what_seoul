@@ -33,7 +33,17 @@ public enum XmlElementNames {
     PM10_INDEX("PM10_INDEX", "미세먼지지표"),
     PM10("PM10", "미세먼지농도"),
     PCP_MSG("PCP_MSG", "강수관련 메세지"),
-    WEATHER_TIME("WEATHER_TIME", "날씨데이터 업데이트 시간");
+    WEATHER_TIME("WEATHER_TIME", "날씨데이터 업데이트 시간"),
+
+    // 문화행사 현황
+    EVENT_STTS("EVENT_STTS", "문화행사 현황"),
+    EVENT_NM("EVENT_NM", "문화행사명"),
+    EVENT_PERIOD("EVENT_PERIOD", "문화행사 기간"),
+    EVENT_PLACE("EVENT_PLACE", "문화행사 장소"),
+    EVENT_X("EVENT_X", "문화행사 X 좌표(경도)"),
+    EVENT_Y("EVENT_Y", "문화행사 Y 좌표(위도)"),
+    THUMBNAIL("THUMBNAIL", "문화행사 대표 이미지"),
+    URL("URL", "문화행사 상세정보 URL");
 
     private final String xmlElementName;
     private final String xmlElementNameKr;

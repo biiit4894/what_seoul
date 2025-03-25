@@ -3,10 +3,12 @@ package org.example.what_seoul.util;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.domain.citydata.Area;
+import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 import org.example.what_seoul.domain.citydata.weather.Weather;
 import org.example.what_seoul.repository.citydata.AreaRepository;
+import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
@@ -39,6 +41,7 @@ public class CityDataScheduler {
     private final PopulationRepository populationRepository;
     private final PopulationForecastRepository populationForecastRepository;
     private final WeatherRepository weatherRepository;
+    private final CultureEventRepository cultureEventRepository;
 
     @Value("${seoul.open.api.url}")
     private String url;
@@ -53,6 +56,7 @@ public class CityDataScheduler {
         List<Population> populationList = new ArrayList<>();
         List<PopulationForecast> populationForecastList = new ArrayList<>();
         List<Weather> weatherList = new ArrayList<>();
+        List<CultureEvent> cultureEventList = new ArrayList<>();
 
         for (Area area : areas) {
             // 각 장소에 대한 도시데이터 fetch
@@ -62,28 +66,33 @@ public class CityDataScheduler {
                 continue;
             }
 
-            // 인구 데이터 파싱
+            // 실시간 인구 현황 데이터 파싱
             Population population = parsePopulationData(document, area);
             populationList.add(population);
 
-            // 인구 예측 데이터 파싱
+            // 인구 예측값 데이터 파싱
             List<PopulationForecast> forecastList = parsePopulationForecastData(document, population);
             populationForecastList.addAll(forecastList);
 
-            // 날씨 데이터 파싱
+            // 날씨 현황 데이터 파싱
             Weather weather = parseWeatherData(document, area);
             weatherList.add(weather);
+
+            // 문화행사 현황 데이터 파싱
+            List<CultureEvent> cultureEvent = parseCultureEventData(document, area);
+            cultureEventList.addAll(cultureEvent);
 
         }
 
         populationRepository.deleteAll();
         populationForecastRepository.deleteAll();
         weatherRepository.deleteAll();
+        cultureEventRepository.deleteAll();
 
         populationRepository.saveAll(populationList);
         populationForecastRepository.saveAll(populationForecastList);
         weatherRepository.saveAll(weatherList);
-
+        cultureEventRepository.saveAll(cultureEventList);
 
         LocalDateTime afterTime = LocalDateTime.now();
         log.info("호출 시작 시간 = " + beforeTime);
@@ -168,6 +177,11 @@ public class CityDataScheduler {
         List<PopulationForecast> forecastList = new ArrayList<>();
         NodeList nodeList = document.getElementsByTagName(XmlElementNames.FCST_PPLTN.getXmlElementName());
 
+        String forecastCongestionLevel = "No Tag";
+        String forecastPpltnMin = "No Tag";
+        String forecastPpltnMax = "No Tag";
+        String forecasePplTime = "No Tag";
+
         if (nodeList == null || nodeList.getLength() == 0) {
             log.warn("No population forecast data found for area: {}", population.getArea().getAreaName());
         }
@@ -175,15 +189,10 @@ public class CityDataScheduler {
             Node fcstPpltnNode = nodeList.item(i);
             NodeList childNodes = fcstPpltnNode.getChildNodes();
 
-            String forecastCongetstionLevel = "No Tag";
-            String forecastPpltnMin = "No Tag";
-            String forecastPpltnMax = "No Tag";
-            String forecasePplTime = "No Tag";
-
             for (int j = 0; j < childNodes.getLength(); j++) {
                 Node childNode = childNodes.item(j);
                 if (childNode.getNodeName().equals(XmlElementNames.FCST_CONGEST_LVL.getXmlElementName())) {
-                    forecastCongetstionLevel = childNode.getTextContent();
+                    forecastCongestionLevel = childNode.getTextContent();
                 } else if (childNode.getNodeName().equals(XmlElementNames.FCST_PPLTN_MIN.getXmlElementName())) {
                     forecastPpltnMin = childNode.getTextContent();
                 } else if (childNode.getNodeName().equals(XmlElementNames.FCST_PPLTN_MAX.getXmlElementName())) {
@@ -194,7 +203,7 @@ public class CityDataScheduler {
             }
 
             forecastList.add(new PopulationForecast(
-                    forecastCongetstionLevel,
+                    forecastCongestionLevel,
                     forecastPpltnMin,
                     forecastPpltnMax,
                     forecasePplTime,
@@ -250,6 +259,49 @@ public class CityDataScheduler {
                 weatherData.getOrDefault(XmlElementNames.WEATHER_TIME, "No Tag"),
                 area
         );
+    }
+
+    private List<CultureEvent> parseCultureEventData(Document document, Area area) {
+        List<CultureEvent> cultureEventList = new ArrayList<>();
+        NodeList cultureEventNodeList = document.getElementsByTagName(XmlElementNames.EVENT_STTS.getXmlElementName());
+        log.info("area: {}, area id: {}, length: {}", area.getAreaName(), area.getId(), document.getElementsByTagName(XmlElementNames.EVENT_STTS.getXmlElementName()).getLength());
+        String eventNm = "No Tag";
+        String eventPeriod = "No Tag";
+        String eventPlace = "No Tag";
+        String eventX = "No Tag";
+        String eventY = "No Tag";
+        String thumbnail = "No Tag";
+        String url = "No Tag";
+
+        if (cultureEventNodeList != null && cultureEventNodeList.getLength() != 0) {
+
+            for (int i = 1; i < cultureEventNodeList.getLength(); i++) {
+                Node cultureEventNode = cultureEventNodeList.item(i);
+                NodeList childNodes = cultureEventNode.getChildNodes();
+
+                for (int j = 0; j < childNodes.getLength(); j++) {
+                    Node childNode = childNodes.item(j);
+                    if (childNode.getNodeName().equals(XmlElementNames.EVENT_NM.getXmlElementName())) {
+                        eventNm = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.EVENT_PERIOD.getXmlElementName())) {
+                        eventPeriod = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.EVENT_PLACE.getXmlElementName())) {
+                        eventPlace = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.EVENT_X.getXmlElementName())) {
+                        eventX = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.EVENT_Y.getXmlElementName())) {
+                        eventY = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.THUMBNAIL.getXmlElementName())) {
+                        thumbnail = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.URL.getXmlElementName())) {
+                        url = childNode.getTextContent();
+                    }
+                }
+                cultureEventList.add(new CultureEvent(eventNm, eventPeriod, eventPlace, eventX, eventY, thumbnail, url, area));
+            }
+
+        }
+        return cultureEventList;
     }
 
 }
