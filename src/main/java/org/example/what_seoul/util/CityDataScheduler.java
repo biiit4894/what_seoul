@@ -45,6 +45,9 @@ public class CityDataScheduler {
     @Value("${seoul.open.api.url}")
     private String url;
 
+    /**
+     * 5분 간격으로 배치 작업 수행
+     */
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void call() {
         LocalDateTime beforeTime = LocalDateTime.now();
@@ -83,6 +86,7 @@ public class CityDataScheduler {
 
         }
 
+        // 기존 데이터 삭제 후 새 데이터 저장
         populationRepository.deleteAll();
         populationForecastRepository.deleteAll();
         weatherRepository.deleteAll();
