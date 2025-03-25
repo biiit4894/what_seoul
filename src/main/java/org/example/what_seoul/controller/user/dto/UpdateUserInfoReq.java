@@ -1,4 +1,4 @@
-package org.example.what_seoul.dto;
+package org.example.what_seoul.controller.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

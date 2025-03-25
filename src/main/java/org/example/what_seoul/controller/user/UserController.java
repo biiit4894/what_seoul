@@ -1,10 +1,10 @@
-package org.example.what_seoul.controller;
+package org.example.what_seoul.controller.user;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.dto.*;
-import org.example.what_seoul.service.UserService;
+import org.example.what_seoul.controller.user.dto.*;
+import org.example.what_seoul.service.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

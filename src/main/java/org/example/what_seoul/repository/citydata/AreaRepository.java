@@ -1,0 +1,7 @@
+package org.example.what_seoul.repository.citydata;
+
+import org.example.what_seoul.domain.citydata.Area;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AreaRepository extends JpaRepository<Area, Long> {
+}

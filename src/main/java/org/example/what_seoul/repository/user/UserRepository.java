@@ -1,6 +1,6 @@
-package org.example.what_seoul.repository;
+package org.example.what_seoul.repository.user;
 
-import org.example.what_seoul.entity.User;
+import org.example.what_seoul.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
