@@ -27,7 +27,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -41,7 +43,6 @@ public class CityDataScheduler {
     @Value("${seoul.open.api.url}")
     private String url;
 
-    //@Transactional
     @Scheduled(fixedDelay = 5 * 60 * 1000) // 이전 실행이 끝난 후 5분 뒤에 다음 실행
     public void call() {
         LocalDateTime beforeTime = LocalDateTime.now();
@@ -124,18 +125,41 @@ public class CityDataScheduler {
      * @return
      */
     private Population parsePopulationData(Document document, Area area) {
+        NodeList populationNodeList = document.getElementsByTagName(XmlElementNames.LIVE_PPLTN_STTS.getXmlElementName());
+
+        String congestionLevel = "No Tag";
+        String congestionMessage = "No Tag";
+        String minPopulation = "No Tag";
+        String maxPopulation = "No Tag";
+        String populationUpdateTime = "No Tag";
+
+        if (populationNodeList != null && populationNodeList.getLength() > 0) {
+            Node populationParentNode = populationNodeList.item(1);
+            NodeList childNodes = populationParentNode.getChildNodes();
+
+            for (int i = 0; i < childNodes.getLength(); i++) {
+                Node childNode = childNodes.item(i);
+                if (childNode.getNodeName().equals(XmlElementNames.AREA_CONGEST_LVL.getXmlElementName())) {
+                    congestionLevel = childNode.getTextContent();
+                } else if (childNode.getNodeName().equals(XmlElementNames.AREA_CONGEST_MSG.getXmlElementName())) {
+                    congestionMessage = childNode.getTextContent();
+                } else if (childNode.getNodeName().equals(XmlElementNames.AREA_PPLTN_MIN.getXmlElementName())) {
+                    minPopulation = childNode.getTextContent();
+                } else if (childNode.getNodeName().equals(XmlElementNames.AREA_PPLTN_MAX.getXmlElementName())) {
+                    maxPopulation = childNode.getTextContent();
+                } else if (childNode.getNodeName().equals(XmlElementNames.PPLTN_TIME.getXmlElementName())) {
+                    populationUpdateTime = childNode.getTextContent();
+                }
+            }
+        }
         return new Population(
-                getElementTextContent(document, XmlElementNames.AREA_CONGEST_LVL.getXmlElementName()),
-                getElementTextContent(document, XmlElementNames.AREA_CONGEST_MSG.getXmlElementName()),
-                getElementTextContent(document, XmlElementNames.AREA_PPLTN_MIN.getXmlElementName()),
-                getElementTextContent(document, XmlElementNames.AREA_PPLTN_MAX.getXmlElementName()),
-                getElementTextContent(document, XmlElementNames.PPLTN_TIME.getXmlElementName()),
-                area
+                congestionLevel, congestionMessage, minPopulation, maxPopulation, populationUpdateTime, area
         );
     }
 
     /**
      * XML 문서에서 인구 예측 데이터를 파싱하여 PopulationForecast 객체 리스트 생성
+     *
      * @param document
      * @param population
      * @return
@@ -143,6 +167,10 @@ public class CityDataScheduler {
     private List<PopulationForecast> parsePopulationForecastData(Document document, Population population) {
         List<PopulationForecast> forecastList = new ArrayList<>();
         NodeList nodeList = document.getElementsByTagName(XmlElementNames.FCST_PPLTN.getXmlElementName());
+
+        if (nodeList == null || nodeList.getLength() == 0) {
+            log.warn("No population forecast data found for area: {}", population.getArea().getAreaName());
+        }
         for (int i = 1; i < nodeList.getLength(); i++) {
             Node fcstPpltnNode = nodeList.item(i);
             NodeList childNodes = fcstPpltnNode.getChildNodes();
@@ -178,75 +206,50 @@ public class CityDataScheduler {
 
     /**
      * XML 문서에서 날씨 데이터를 파싱하여 PopulationForecast 객체 리스트 생성
+     *
      * @param document
      * @param area
      * @return
      */
     private Weather parseWeatherData(Document document, Area area) {
-        String temperature = "No Tag";
-        String maxTemperature = "No Tag";
-        String minTemperature = "No Tag";
-        String pm25Index = "No Tag";
-        String pm25 = "No Tag";
-        String pm10Index = "No Tag";
-        String pm10 = "No Tag";
-        String pcpMsg = "No Tag";
-        String weatherUpdateTime = "No Tag";
-
+        // 날씨 데이터를 저장할 Map
+        Map<XmlElementNames, String> weatherData = new HashMap<>();
+        // 날씨 데이터를 담고 있는 XML 노드들 조회
         NodeList weatherNodeList = document.getElementsByTagName(XmlElementNames.WEATHER_STTS.getXmlElementName());
+        // 인덱스 1의 노드를 가져오기 (최상위 노드의 하위 노드에 필요한 노드들이 위치함)
         Node weatherParentNode = weatherNodeList.item(1);
-        if (weatherParentNode != null) {
+        if (weatherParentNode == null) {
+            log.warn("weather parent node is null for area: {}", area.getAreaName());
+        } else {
+            // 자식 노드들에 대해 반복하며 날씨 정보를 Map에 저장
             NodeList childNodeList = weatherParentNode.getChildNodes();
-
-
             for (int i = 0; i < childNodeList.getLength(); i++) {
                 Node childNode = childNodeList.item(i);
 
-                if (childNode.getNodeName().equals(XmlElementNames.TEMP.getXmlElementName())) {
-                    temperature = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.MAX_TEMP.getXmlElementName())) {
-                    maxTemperature = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.MIN_TEMP.getXmlElementName())) {
-                    minTemperature = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.PM25_INDEX.getXmlElementName())) {
-                    pm25Index = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.PM25.getXmlElementName())) {
-                    pm25 = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.PM10_INDEX.getXmlElementName())) {
-                    pm10Index = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.PM10.getXmlElementName())) {
-                    pm10 = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.PCP_MSG.getXmlElementName())) {
-                    pcpMsg = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.WEATHER_TIME.getXmlElementName())) {
-                    weatherUpdateTime = childNode.getTextContent();
+                // 각 자식 노드의 이름이 enum에 정의된 이름과 일치하면,
+                // 그 노드를 Map의 key로, 노드의 텍스트 내용을 value로 저장
+                for (XmlElementNames element : XmlElementNames.values()) {
+                    if (childNode.getNodeName().equals(element.getXmlElementName())) {
+                        weatherData.put(element, childNode.getTextContent());
+                        break;
+                    }
                 }
             }
         }
 
+        // Map에서 주어진 key(XmlElementNames)에 해당하는 값을 가져오고, 만약 해당 key가 없다면 "No Tag"를 기본값으로 반환
         return new Weather(
-                temperature,
-                maxTemperature,
-                minTemperature,
-                pm25Index,
-                pm25,
-                pm10Index,
-                pm10,
-                pcpMsg,
-                weatherUpdateTime,
+                weatherData.getOrDefault(XmlElementNames.TEMP, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.MAX_TEMP, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.MIN_TEMP, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.PM25_INDEX, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.PM25, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.PM10_INDEX, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.PM10, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.PCP_MSG, "No Tag"),
+                weatherData.getOrDefault(XmlElementNames.WEATHER_TIME, "No Tag"),
                 area
         );
     }
-
-
-    private String getElementTextContent(Document document, String xmlTagName) {
-        NodeList nodeList = document.getElementsByTagName(xmlTagName);
-
-        if (nodeList.getLength() > 0) {
-            return nodeList.item(0).getTextContent();
-        }
-        return "No Tag";
-    }
-
 
 }
