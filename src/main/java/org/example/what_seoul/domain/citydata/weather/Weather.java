@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.Area;
 
+/**
+ * 날씨 현황
+ */
 @Entity
 @Getter
 @NoArgsConstructor
@@ -13,56 +16,56 @@ public class Weather {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /*
-    기온
+    /**
+     * 기온
      */
     @Column(nullable = false)
     private String temperature;
 
-    /*
-    최고 기온
+    /**
+     * 최고 기온
      */
     @Column(nullable = false)
     private String maxTemperature;
 
-    /*
-    최저 기온
+    /**
+     * 최저 기온
      */
     @Column(nullable = false)
     private String minTemperature;
 
-    /*
-    초미세먼지 지표
+    /**
+     * 초미세먼지 지표
      */
     @Column(nullable = false)
     private String pm25Index;
 
-    /*
-    초미세먼지농도
+    /**
+     * 초미세먼지농도
      */
     @Column(nullable = false)
     private String pm25;
 
-    /*
-    미세먼지 지표
+    /**
+     * 미세먼지 지표
      */
     @Column(nullable = false)
     private String pm10Index;
 
-    /*
-    미세먼지농도
+    /**
+     * 미세먼지농도
      */
     @Column(nullable = false)
     private String pm10;
 
-    /*
-    강수 관련 메시지
+    /**
+     * 강수 관련 메시지
      */
     @Column(nullable = false)
     private String pcpMsg;
 
-    /*
-    날씨 데이터 업데이트 시간
+    /**
+     * 날씨 데이터 업데이트 시간
      */
     @Column(nullable = false)
     private String weatherUpdateTime;
