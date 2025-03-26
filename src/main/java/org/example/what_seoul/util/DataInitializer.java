@@ -27,7 +27,7 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final AreaRepository areaRepository;
-    private final CityDataScheduler cityDataScheduler;
+    private final CitydataScheduler cityDataScheduler;
 
     @Value("${seoul.open.api.hot-spot.file-path}")
     private String filePath;

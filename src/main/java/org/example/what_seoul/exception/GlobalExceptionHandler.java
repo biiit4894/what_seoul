@@ -2,6 +2,8 @@ package org.example.what_seoul.exception;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<CommonErrorResponse<Object>> handleNoResourceFoundException(NoResourceFoundException e) {
@@ -23,6 +26,7 @@ public class GlobalExceptionHandler {
                 "Resource Not Found",
                 e.getMessage() // TODO: 보안상 적절한 context인지 고려
         );
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
@@ -40,6 +44,7 @@ public class GlobalExceptionHandler {
                 "Invalid Request",
                 errorMessage
         );
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -49,7 +54,18 @@ public class GlobalExceptionHandler {
                 "Illegal Argument Exception",
                 e.getMessage()
         );
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleEntityNotFoundException(EntityNotFoundException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Entity Not Found",
+                e.getMessage()
+        );
+        log.error("{}", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -67,6 +83,7 @@ public class GlobalExceptionHandler {
                 "Validation Failed",
                 errorMessage.toString()
         );
+        log.error("{}", e.getMessage());
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -77,6 +94,7 @@ public class GlobalExceptionHandler {
                 "Duplicate Field Exception",
                 e.getMessage()
         );
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -86,6 +104,7 @@ public class GlobalExceptionHandler {
           "Data Integrity Violation",
           e.getMessage() // TODO: context 반환 방식 수정
         );
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -95,6 +114,7 @@ public class GlobalExceptionHandler {
                 "Password Mismatch",
                 e.getMessage()
         );
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -104,7 +124,7 @@ public class GlobalExceptionHandler {
                 "Internal Server Error",
                 "An unexpected error occurred."
         );
-
+        log.error("{}", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
