@@ -1,9 +1,10 @@
-package org.example.what_seoul.controller.citydata.population;
+package org.example.what_seoul.controller.citydata;
 
 import lombok.AllArgsConstructor;
+import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.citydata.population.dto.ResPopulationDTO;
+import org.example.what_seoul.controller.citydata.weather.dto.ResWeatherDTO;
 import org.example.what_seoul.service.citydata.CitydataService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,12 @@ public class CitydataController {
     private final CitydataService citydataService;
 
     @GetMapping("/population/{areaId}")
-    public ResponseEntity<ResPopulationDTO> getPopulationData(@PathVariable Long areaId) {
+    public ResponseEntity<CommonResponse<ResPopulationDTO>> getPopulationData(@PathVariable Long areaId) {
         return ResponseEntity.ok().body(citydataService.findPopulationDataByAreaId(areaId));
+    }
+
+    @GetMapping("/weather/{areaId}")
+    public ResponseEntity<CommonResponse<ResWeatherDTO>> getWeatherData(@PathVariable Long areaId) {
+        return ResponseEntity.ok().body(citydataService.findWeatherDataByAreaId(areaId));
     }
 }
