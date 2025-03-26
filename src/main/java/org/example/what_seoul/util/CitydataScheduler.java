@@ -35,7 +35,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CityDataScheduler {
+public class CitydataScheduler {
     private final AreaRepository areaRepository;
     private final PopulationRepository populationRepository;
     private final PopulationForecastRepository populationForecastRepository;
@@ -147,20 +147,24 @@ public class CityDataScheduler {
 
         if (populationNodeList != null && populationNodeList.getLength() > 0) {
             Node populationParentNode = populationNodeList.item(1);
-            NodeList childNodes = populationParentNode.getChildNodes();
+            if (populationParentNode == null) {
+                log.warn("population parent node is null for area: {}", area.getAreaName());
+            } else {
+                NodeList childNodes = populationParentNode.getChildNodes();
 
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                Node childNode = childNodes.item(i);
-                if (childNode.getNodeName().equals(XmlElementNames.AREA_CONGEST_LVL.getXmlElementName())) {
-                    congestionLevel = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.AREA_CONGEST_MSG.getXmlElementName())) {
-                    congestionMessage = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.AREA_PPLTN_MIN.getXmlElementName())) {
-                    minPopulation = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.AREA_PPLTN_MAX.getXmlElementName())) {
-                    maxPopulation = childNode.getTextContent();
-                } else if (childNode.getNodeName().equals(XmlElementNames.PPLTN_TIME.getXmlElementName())) {
-                    populationUpdateTime = childNode.getTextContent();
+                for (int i = 0; i < childNodes.getLength(); i++) {
+                    Node childNode = childNodes.item(i);
+                    if (childNode.getNodeName().equals(XmlElementNames.AREA_CONGEST_LVL.getXmlElementName())) {
+                        congestionLevel = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.AREA_CONGEST_MSG.getXmlElementName())) {
+                        congestionMessage = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.AREA_PPLTN_MIN.getXmlElementName())) {
+                        minPopulation = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.AREA_PPLTN_MAX.getXmlElementName())) {
+                        maxPopulation = childNode.getTextContent();
+                    } else if (childNode.getNodeName().equals(XmlElementNames.PPLTN_TIME.getXmlElementName())) {
+                        populationUpdateTime = childNode.getTextContent();
+                    }
                 }
             }
         }
