@@ -4,8 +4,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
+import org.example.what_seoul.controller.citydata.event.dto.ResCultureEventDTO;
 import org.example.what_seoul.controller.citydata.population.dto.ResPopulationDTO;
 import org.example.what_seoul.controller.citydata.weather.dto.ResWeatherDTO;
+import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.weather.Weather;
 import org.example.what_seoul.repository.citydata.AreaRepository;
@@ -14,6 +16,8 @@ import org.example.what_seoul.repository.citydata.population.PopulationForecastR
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -44,4 +48,14 @@ public class CitydataService {
                 ResWeatherDTO.from(weather)
         );
     }
+
+    public CommonResponse<List<ResCultureEventDTO>> findCultureEventDataByAreaId(Long areaId) {
+        List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("Culture Event data not found"));
+        return new CommonResponse<>(
+                true,
+                "문화행사 데이터 조회 성공",
+                ResCultureEventDTO.from(cultureEventList)
+        );
+    }
+
 }
