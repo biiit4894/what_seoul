@@ -4,6 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
+import org.example.what_seoul.controller.citydata.ReqLocationDTO;
+import org.example.what_seoul.controller.citydata.ResLocationDTO;
 import org.example.what_seoul.controller.citydata.event.dto.ResCultureEventDTO;
 import org.example.what_seoul.controller.citydata.population.dto.ResPopulationDTO;
 import org.example.what_seoul.controller.citydata.weather.dto.ResWeatherDTO;
@@ -15,8 +17,12 @@ import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
+import org.example.what_seoul.util.GeoJsonLoader;
+import org.example.what_seoul.util.LocationChecker;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -29,6 +35,8 @@ public class CitydataService {
     private final PopulationForecastRepository populationForecastRepository;
     private final WeatherRepository weatherRepository;
     private final CultureEventRepository cultureEventRepository;
+    private final GeoJsonLoader geoJsonLoader;
+    private final LocationChecker locationChecker;
 
     public CommonResponse<ResPopulationDTO> findPopulationDataByAreaId(Long areaId) {
         Population population = populationRepository.findByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("Population data not found"));
@@ -56,6 +64,17 @@ public class CitydataService {
                 "문화행사 데이터 조회 성공",
                 ResCultureEventDTO.from(cultureEventList)
         );
+    }
+
+    public CommonResponse<ResLocationDTO> getLocationBasedCityData(ReqLocationDTO reqLocationDTO) throws Exception {
+        String geoJson = geoJsonLoader.loadGeoJson();
+        Boolean isInside = locationChecker.isInsideZone(reqLocationDTO.getLongitude(), reqLocationDTO.getLatitude(), geoJson);
+        return new CommonResponse<>(
+                true,
+                "116개 장소에 포함되는지 조회 성공",
+                new ResLocationDTO(isInside)
+        );
+
     }
 
 }
