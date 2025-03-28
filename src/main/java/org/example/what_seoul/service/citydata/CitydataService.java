@@ -66,13 +66,12 @@ public class CitydataService {
         );
     }
 
-    public CommonResponse<ResLocationDTO> getLocationBasedCityData(ReqLocationDTO reqLocationDTO) throws Exception {
-        String geoJson = geoJsonLoader.loadGeoJson();
-        Boolean isInside = locationChecker.isInsideZone(reqLocationDTO.getLongitude(), reqLocationDTO.getLatitude(), geoJson);
+    public CommonResponse<ResLocationDTO> getLocationBasedCityData(ReqLocationDTO reqLocationDTO) {
+        String nearestPlace = locationChecker.findLocation(reqLocationDTO.getLatitude(), reqLocationDTO.getLongitude());
         return new CommonResponse<>(
                 true,
-                "116개 장소에 포함되는지 조회 성공",
-                new ResLocationDTO(isInside)
+                "인근 장소 조회 성공",
+                new ResLocationDTO(nearestPlace)
         );
 
     }

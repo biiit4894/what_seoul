@@ -7,10 +7,7 @@ import org.example.what_seoul.controller.citydata.population.dto.ResPopulationDT
 import org.example.what_seoul.controller.citydata.weather.dto.ResWeatherDTO;
 import org.example.what_seoul.service.citydata.CitydataService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,5 +30,10 @@ public class CitydataController {
     @GetMapping("/event/{areaId}")
     public ResponseEntity<CommonResponse<List<ResCultureEventDTO>>> getCultureEventData(@PathVariable Long areaId) {
         return ResponseEntity.ok().body(citydataService.findCultureEventDataByAreaId(areaId));
+    }
+
+    @PostMapping("/lbs")
+    public ResponseEntity<CommonResponse<ResLocationDTO>> getLocationBasedCityData(@RequestBody ReqLocationDTO reqLocationDTO) throws Exception {
+        return ResponseEntity.ok().body(citydataService.getLocationBasedCityData(reqLocationDTO));
     }
 }

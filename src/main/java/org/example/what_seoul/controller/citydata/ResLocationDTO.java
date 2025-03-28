@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResLocationDTO {
-    private Boolean isInside;
+//    private Boolean isInside;
 //    private String status;
 //    private String place;
-//    private String nearestPlace;
+    private String nearestPlace;
 //    private String distanceMeters;
 }
