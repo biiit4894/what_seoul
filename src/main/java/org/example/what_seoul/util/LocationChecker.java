@@ -22,6 +22,8 @@ public class LocationChecker {
     }
 
     public String findLocation(double lat, double lon) {
+        log.info("Loaded {} polygons", polygons.size());
+
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
 
         for (int i = 0; i < polygons.size(); i++) {

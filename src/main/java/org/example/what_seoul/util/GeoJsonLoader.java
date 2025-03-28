@@ -1,5 +1,9 @@
 package org.example.what_seoul.util;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -18,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+@Data
 @Component
 @Slf4j
 public class GeoJsonLoader {
@@ -34,8 +39,16 @@ public class GeoJsonLoader {
             InputStream inputStream = new ClassPathResource("data/seoul_zones.geojson").getInputStream();
             String geoJson = new Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A").next();
 
+            log.info("GeoJSON data loaded: {}", geoJson);  // 추가한 디버깅 로그
+
             GeoJsonReader reader = new GeoJsonReader();
             Geometry geometry = reader.read(geoJson);
+
+            log.info("Geometry type: {}", geometry.getGeometryType());  // 추가한 디버깅 로그
+
+            if (!geometry.isEmpty()) {
+                log.info("geometry is not empty");
+            }
 
             if (geometry.getGeometryType().equals("GeometryCollection")) {
                 log.info("geometryCollection");
@@ -49,11 +62,4 @@ public class GeoJsonLoader {
         }
     }
 
-    public List<Polygon> getPolygons() {
-        return polygons;
-    }
-
-    public List<String> getPlaceNames() {
-        return placeNames;
-    }
 }
