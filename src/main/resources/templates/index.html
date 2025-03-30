@@ -30,8 +30,8 @@
         document.getElementById("location").innerText = `현위치 위도: ${latitude}, 현위치 경도: ${longitude}`;
 
         const requestData = {
-            latitude: 37.5661,
-            longitude: 126.9752
+            latitude: latitude,
+            longitude: longitude
         };
 
         fetch('/api/citydata/lbs', {
@@ -44,16 +44,20 @@
             .then(response => response.json())
             .then(data => {
                 console.log("Response: ", data);
-                console.log("typeof Response: ", typeof data);
-                console.log("data.data: ", data.data);
-                console.log("data.data.nearestPlace: ", data.data.nearestPlace);
-                console.log("data.data['nearestPlace']: ", data.data['nearestPlace']);
-                console.log("data['data']: ", data['data']);
-                console.log("data['data']['nearestPlace']: ", data['data']['nearestPlace']);
-                console.log("typeof data.data.nearestPlace: ", typeof data.data.nearestPlace);
-                // console.log("data[0]['nearestPlace']: ", data[0]['nearestPlace']);
-                document.getElementById('citydata').innerText = data.data.nearestPlace + " 인근입니다.";
+                const places = data.data.nearestPlaces;
+                const cityDataElement = document.getElementById('citydata');
 
+                if (places.length === 0) {
+                    cityDataElement.innerHTML = "인근 장소를 찾을 수 없습니다.";
+                } else if (places.length === 1) {
+                    cityDataElement.innerHTML = `${places[0]} 인근입니다.`;
+                } else {
+                    let list = "인근 장소<br>"
+                    for (let i = 0; i < places.length; i++) {
+                        list += `${i + 1}. ${places[i]}<br>`;
+                    }
+                    cityDataElement.innerHTML = list;
+                }
             })
             .catch(error => console.error("Error: ", error));
     }

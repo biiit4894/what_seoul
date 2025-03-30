@@ -67,11 +67,11 @@ public class CitydataService {
     }
 
     public CommonResponse<ResLocationDTO> getLocationBasedCityData(ReqLocationDTO reqLocationDTO) {
-        String nearestPlace = locationChecker.findLocation(reqLocationDTO.getLatitude(), reqLocationDTO.getLongitude());
+        List<String> nearestPlaces = locationChecker.findLocations(reqLocationDTO.getLatitude(), reqLocationDTO.getLongitude());
         return new CommonResponse<>(
                 true,
                 "인근 장소 조회 성공",
-                new ResLocationDTO(nearestPlace)
+                new ResLocationDTO(nearestPlaces)
         );
 
     }

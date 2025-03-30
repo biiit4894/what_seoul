@@ -4,13 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResLocationDTO {
-//    private Boolean isInside;
-//    private String status;
-//    private String place;
-    private String nearestPlace;
-//    private String distanceMeters;
+    private List<String> nearestPlaces;
 }
