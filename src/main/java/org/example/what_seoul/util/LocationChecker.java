@@ -27,18 +27,11 @@ public class LocationChecker {
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
 
         for (int i = 0; i < polygons.size(); i++) {
+            Polygon polygon = polygons.get(i);
             if(polygons.get(i).contains(userLocation)) {
                 return placeNames.get(i);
             }
         }
         return "해당 없음";
     }
-//    public boolean isInsideZone(double lon, double lat, String geoJson) throws Exception {
-//        GeometryFactory factory = new GeometryFactory();
-//        Point userPoint = factory.createPoint(new Coordinate(lon, lat));
-//
-//        GeoJsonReader reader = new GeoJsonReader(factory);
-//        Geometry geometry = reader.read(geoJson);
-//        return geometry.contains(userPoint);
-//    }
 }

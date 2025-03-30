@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>현위치 조회</title>
+</head>
+<body>
+<h2>실시간 도시데이터 조회하기</h2>
+<button onclick="getLocation()">현위치 기준 조회</button>
+<p id="location"></p>
+<p id="citydata"></p>
+
+<script>
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                enableHighAccuracy: true, // 높은 정확도 요청
+                timeout: 5000, // 5초 이내 응답 없으면 실패
+                maximumAge: 0 // 항상 최신 위치 가져오기
+            });
+        } else {
+            document.getElementById("location").innerText = "이 브라우저에서는 위치 정보가 지원되지 않습니다.";
+        }
+    }
+
+    function showPosition(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        document.getElementById("location").innerText = `현위치 위도: ${latitude}, 현위치 경도: ${longitude}`;
+
+        const requestData = {
+            latitude: 37.5661,
+            longitude: 126.9752
+        };
+
+        fetch('/api/citydata/lbs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response: ", data);
+                console.log("typeof Response: ", typeof data);
+                console.log("data.data: ", data.data);
+                console.log("data.data.nearestPlace: ", data.data.nearestPlace);
+                console.log("data.data['nearestPlace']: ", data.data['nearestPlace']);
+                console.log("data['data']: ", data['data']);
+                console.log("data['data']['nearestPlace']: ", data['data']['nearestPlace']);
+                console.log("typeof data.data.nearestPlace: ", typeof data.data.nearestPlace);
+                // console.log("data[0]['nearestPlace']: ", data[0]['nearestPlace']);
+                document.getElementById('citydata').innerText = data.data.nearestPlace + " 인근입니다.";
+
+            })
+            .catch(error => console.error("Error: ", error));
+    }
+
+
+    function showError(error) {
+        let errorMessage = "";
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                errorMessage = "사용자가 위치 정보 제공을 거부했습니다.";
+                break;
+            case error.POSITION_UNAVAILABLE:
+                errorMessage = "위치 정보를 사용할 수 없습니다.";
+                break;
+            case error.TIMEOUT:
+                errorMessage = "위치 정보를 가져오는 데 시간이 초과되었습니다.";
+                break;
+            case error.UNKNOWN_ERROR:
+                errorMessage = "알 수 없는 오류가 발생했습니다.";
+                break;
+        }
+        document.getElementById("location").innerText = errorMessage;
+    }
+</script>
+
+
+
+
+</body>
+</html>

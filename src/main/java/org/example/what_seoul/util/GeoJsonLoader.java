@@ -1,10 +1,10 @@
 package org.example.what_seoul.util;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
@@ -12,12 +12,8 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -36,27 +32,38 @@ public class GeoJsonLoader {
 
     private void loadGeoJson() {
         try {
+            // GeoJson 파일 읽기
             InputStream inputStream = new ClassPathResource("data/seoul_zones.geojson").getInputStream();
             String geoJson = new Scanner(inputStream, StandardCharsets.UTF_8).useDelimiter("\\A").next();
 
-            log.info("GeoJSON data loaded: {}", geoJson);  // 추가한 디버깅 로그
+//            log.info("GeoJSON data loaded: {}", geoJson);
 
+            // JSON 파싱
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) parser.parse(geoJson);
             GeoJsonReader reader = new GeoJsonReader();
-            Geometry geometry = reader.read(geoJson);
 
-            log.info("Geometry type: {}", geometry.getGeometryType());  // 추가한 디버깅 로그
+            // "features" 배열 얻기
+            JSONArray features = (JSONArray) jsonObject.get("features");
+            log.info("features size: {}", features.size());
 
-            if (!geometry.isEmpty()) {
-                log.info("geometry is not empty");
-            }
+            // "features" 배열 순회하여 장소 이름 접근
+            for (int i = 0; i < features.size(); i++) {
+                JSONObject feature = (JSONObject) features.get(i);
+                JSONObject properties = (JSONObject) feature.get("properties");
+                String areaName = properties.get("AREA_NM").toString();
 
-            if (geometry.getGeometryType().equals("GeometryCollection")) {
-                log.info("geometryCollection");
-                for (int i = 0; i < geometry.getNumGeometries(); i++) {
-                    polygons.add((Polygon) geometry.getGeometryN(i));
-                    placeNames.add("Place " + (i + 1));
+                JSONObject geometryJson = (JSONObject) feature.get("geometry");
+                Geometry geometry = reader.read(geometryJson.toString());
+//                log.info("Geometry type: {}", geometry.getGeometryType()); // Polygon
+
+                if (geometry instanceof Polygon) {
+                    polygons.add((Polygon) geometry);
+                    placeNames.add(areaName);
                 }
+
             }
+
         } catch (Exception e) {
             log.error("{}", e.getMessage());
         }
