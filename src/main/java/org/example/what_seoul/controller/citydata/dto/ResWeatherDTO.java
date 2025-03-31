@@ -1,4 +1,4 @@
-package org.example.what_seoul.controller.citydata.weather.dto;
+package org.example.what_seoul.controller.citydata.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

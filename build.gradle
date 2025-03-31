@@ -60,6 +60,10 @@ dependencies {
 	// Apache POI
 	implementation 'org.apache.poi:poi-ooxml:5.2.3'
 
+	// JTS
+	implementation 'org.locationtech.jts:jts-core:1.20.0'
+	implementation 'org.locationtech.jts.io:jts-io-common:1.20.0'
+
 }
 
 tasks.named('test') {
