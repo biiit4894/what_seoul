@@ -130,6 +130,8 @@
     }
 
     function showPolygon(polygonCoords) {
+        const bounds = new google.maps.LatLngBounds();  // 여기서 bounds를 새로 선언
+
         // 기존에 그려진 폴리곤이 있다면 지우기
         polygons.forEach(polygon => polygon.setMap(null));
         polygons = [];
@@ -145,6 +147,18 @@
         });
         polygon.setMap(map);
         polygons.push(polygon);
+
+        // 폴리곤의 모든 좌표를 경계에 추가
+        polygon.getPath().forEach(coord => {
+            bounds.extend(coord); // 폴리곤의 각 점을 경계에 추가
+        });
+
+        // 현위치도 포함하여 지도 경계 설정
+        map.fitBounds(bounds);
+
+        // 폴리곤과 현위치가 모두 보이도록 줌 조정
+        const zoom = map.getZoom();
+        map.setZoom(zoom - 1); // 폴리곤을 포함할 수 있도록 약간 축소
     }
 
 
