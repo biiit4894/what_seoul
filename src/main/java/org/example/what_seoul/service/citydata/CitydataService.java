@@ -29,12 +29,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CitydataService {
-    private final AreaRepository areaRepository;
     private final PopulationRepository populationRepository;
-    private final PopulationForecastRepository populationForecastRepository;
     private final WeatherRepository weatherRepository;
     private final CultureEventRepository cultureEventRepository;
-    private final GeoJsonLoader geoJsonLoader;
     private final LocationChecker locationChecker;
 
     public CommonResponse<ResPopulationDTO> findPopulationDataByAreaId(Long areaId) {

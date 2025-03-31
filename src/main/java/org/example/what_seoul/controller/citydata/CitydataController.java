@@ -31,7 +31,7 @@ public class CitydataController {
     }
 
     @PostMapping("/lbs")
-    public ResponseEntity<CommonResponse<ResLocationBasedCityDataDTO>> getLocationBasedCityData(@RequestBody ReqLocationBasedCityDataDTO reqLocationBasedCityDataDTO) throws Exception {
+    public ResponseEntity<CommonResponse<ResLocationBasedCityDataDTO>> getLocationBasedCityData(@RequestBody ReqLocationBasedCityDataDTO reqLocationBasedCityDataDTO) {
         return ResponseEntity.ok().body(citydataService.getLocationBasedCityData(reqLocationBasedCityDataDTO));
     }
 }
