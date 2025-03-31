@@ -2,6 +2,8 @@ package org.example.what_seoul.util;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.what_seoul.controller.citydata.dto.CoordinateDTO;
+import org.example.what_seoul.controller.citydata.dto.PlaceDTO;
 import org.locationtech.jts.geom.*;
 import org.springframework.stereotype.Component;
 
@@ -25,23 +27,25 @@ public class LocationChecker {
     private static class PlaceDistance {
         String placeName;
         double distance;
+        int index;
 
-        public PlaceDistance(String placeName, double distance) {
+        public PlaceDistance(String placeName, double distance, int index) {
             this.placeName = placeName;
             this.distance = distance;
+            this.index = index;
         }
     }
 
-    public List<String> findLocations(double lat, double lon) {
+    public List<PlaceDTO> findLocations(double lat, double lon) {
         log.info("Loaded {} polygons", polygons.size());
 
-        List<String> nearestPlaces = new ArrayList<>();
+        List<PlaceDTO> nearestPlaces = new ArrayList<>();
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
 
         // 유저 위치를 포함하는 폴리곤이 있다면 해당 장소 이름만 반환
         for (int i = 0; i < polygons.size(); i++) {
             if(polygons.get(i).contains(userLocation)) {
-                nearestPlaces.add(placeNames.get(i));
+                nearestPlaces.add(createPlaceDTO(i));
             }
         }
 
@@ -53,13 +57,26 @@ public class LocationChecker {
         PriorityQueue<PlaceDistance> pq = new PriorityQueue<>(Comparator.comparingDouble(p -> p.distance));
         for (int i = 0; i < polygons.size(); i++) {
             double distance = polygons.get(i).distance(userLocation);
-            pq.offer(new PlaceDistance(placeNames.get(i), distance));
+            pq.offer(new PlaceDistance(placeNames.get(i), distance, i));
         }
 
         for (int i = 0; i < 3 && !pq.isEmpty(); i++) {
-            nearestPlaces.add(pq.poll().placeName);
+            PlaceDistance nearest = pq.poll();
+            nearestPlaces.add(createPlaceDTO(nearest.index));
         }
 
         return nearestPlaces;
+    }
+
+    private PlaceDTO createPlaceDTO(int index) {
+        String areaName = placeNames.get(index);
+        Polygon polygon = polygons.get(index);
+        List<CoordinateDTO> coordinates = new ArrayList<>();
+
+        Coordinate[] coords = polygon.getCoordinates();
+        for (Coordinate coord : coords) {
+            coordinates.add(new CoordinateDTO(coord.y, coord.x));
+        }
+        return new PlaceDTO(areaName, coordinates);
     }
 }

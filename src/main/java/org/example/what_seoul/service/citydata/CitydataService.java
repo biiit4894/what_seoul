@@ -4,11 +4,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.controller.citydata.ReqLocationDTO;
-import org.example.what_seoul.controller.citydata.ResLocationDTO;
-import org.example.what_seoul.controller.citydata.event.dto.ResCultureEventDTO;
-import org.example.what_seoul.controller.citydata.population.dto.ResPopulationDTO;
-import org.example.what_seoul.controller.citydata.weather.dto.ResWeatherDTO;
+import org.example.what_seoul.controller.citydata.dto.PlaceDTO;
+import org.example.what_seoul.controller.citydata.dto.ReqLocationBasedCityDataDTO;
+import org.example.what_seoul.controller.citydata.dto.ResLocationBasedCityDataDTO;
+import org.example.what_seoul.controller.citydata.dto.ResCultureEventDTO;
+import org.example.what_seoul.controller.citydata.dto.ResPopulationDTO;
+import org.example.what_seoul.controller.citydata.dto.ResWeatherDTO;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.weather.Weather;
@@ -19,10 +20,8 @@ import org.example.what_seoul.repository.citydata.population.PopulationRepositor
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
 import org.example.what_seoul.util.GeoJsonLoader;
 import org.example.what_seoul.util.LocationChecker;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 
 
@@ -66,12 +65,12 @@ public class CitydataService {
         );
     }
 
-    public CommonResponse<ResLocationDTO> getLocationBasedCityData(ReqLocationDTO reqLocationDTO) {
-        List<String> nearestPlaces = locationChecker.findLocations(reqLocationDTO.getLatitude(), reqLocationDTO.getLongitude());
+    public CommonResponse<ResLocationBasedCityDataDTO> getLocationBasedCityData(ReqLocationBasedCityDataDTO reqLocationBasedCityDataDTO) {
+        List<PlaceDTO> nearestPlaces = locationChecker.findLocations(reqLocationBasedCityDataDTO.getLatitude(), reqLocationBasedCityDataDTO.getLongitude());
         return new CommonResponse<>(
                 true,
-                "인근 장소 조회 성공",
-                new ResLocationDTO(nearestPlaces)
+                "현위치 기반 도시데이터 조회 성공",
+                new ResLocationBasedCityDataDTO(nearestPlaces)
         );
 
     }

@@ -4,17 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>현위치 조회</title>
+    <link rel="stylesheet" typeof="text/css" th:href="@{/css/index.css}"/>
 </head>
 <body>
 <h2>실시간 도시데이터 조회하기</h2>
-<button onclick="getLocation()">현위치 기준 조회</button>
+<button onclick="getLocationBasedCityData()">현위치 기준 조회</button>
 <p id="location"></p>
 <p id="citydata"></p>
+<div id="map"></div>
 
+<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&v=weekly"></script>
 <script>
-    function getLocation() {
+    let map, marker;
+    let latitude, longitude;
+
+    async function initMap() {
+        const { Map } = await google.maps.importLibrary("maps");
+        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+        const defaultPosition = { lat: 37.5665, lng: 126.9780 };
+
+        map = new Map(document.getElementById("map"), {
+            zoom: 4,
+            center: defaultPosition,
+            mapId: "DEMO_MAP_ID",
+        })
+
+        marker = new AdvancedMarkerElement({
+            map: map,
+            position: defaultPosition,
+            title: "Default Position (Seoul)",
+        });
+
+        // 페이지 로드 후 현위치 가져오기
+        getGeoLocation();
+    }
+    
+    function getGeoLocation() {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError, {
+            navigator.geolocation.getCurrentPosition(updatePosition, showError, {
                 enableHighAccuracy: true, // 높은 정확도 요청
                 timeout: 5000, // 5초 이내 응답 없으면 실패
                 maximumAge: 0 // 항상 최신 위치 가져오기
@@ -24,11 +52,32 @@
         }
     }
 
-    function showPosition(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
+    function updatePosition(position) {
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
         document.getElementById("location").innerText = `현위치 위도: ${latitude}, 현위치 경도: ${longitude}`;
 
+
+
+        const userPosition = {
+            lat: latitude,
+            lng: longitude
+        };
+
+        // 지도에 현위치 업데이트
+        map.setCenter(userPosition);
+        map.setZoom(15);
+
+        // 기존 마커 삭제 후 새로운 마커 추가
+        marker.setMap(null);
+        marker = new google.maps.Marker({
+            position: userPosition,
+            map: map,
+            title: "현재 위치",
+        })
+    }
+
+    function getLocationBasedCityData() {
         const requestData = {
             latitude: latitude,
             longitude: longitude
@@ -50,16 +99,17 @@
                 if (places.length === 0) {
                     cityDataElement.innerHTML = "인근 장소를 찾을 수 없습니다.";
                 } else if (places.length === 1) {
-                    cityDataElement.innerHTML = `${places[0]} 인근입니다.`;
+                    cityDataElement.innerHTML = `${places[0].areaName} 인근입니다.`;
                 } else {
                     let list = "인근 장소<br>"
                     for (let i = 0; i < places.length; i++) {
-                        list += `${i + 1}. ${places[i]}<br>`;
+                        list += `${i + 1}. ${places[i].areaName}<br>`;
                     }
                     cityDataElement.innerHTML = list;
                 }
             })
             .catch(error => console.error("Error: ", error));
+
     }
 
 
@@ -81,10 +131,9 @@
         }
         document.getElementById("location").innerText = errorMessage;
     }
+
+    window.initMap = initMap;
+
 </script>
-
-
-
-
 </body>
 </html>

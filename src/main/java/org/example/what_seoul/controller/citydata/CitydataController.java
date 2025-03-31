@@ -2,9 +2,7 @@ package org.example.what_seoul.controller.citydata;
 
 import lombok.AllArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.controller.citydata.event.dto.ResCultureEventDTO;
-import org.example.what_seoul.controller.citydata.population.dto.ResPopulationDTO;
-import org.example.what_seoul.controller.citydata.weather.dto.ResWeatherDTO;
+import org.example.what_seoul.controller.citydata.dto.*;
 import org.example.what_seoul.service.citydata.CitydataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +31,7 @@ public class CitydataController {
     }
 
     @PostMapping("/lbs")
-    public ResponseEntity<CommonResponse<ResLocationDTO>> getLocationBasedCityData(@RequestBody ReqLocationDTO reqLocationDTO) throws Exception {
-        return ResponseEntity.ok().body(citydataService.getLocationBasedCityData(reqLocationDTO));
+    public ResponseEntity<CommonResponse<ResLocationBasedCityDataDTO>> getLocationBasedCityData(@RequestBody ReqLocationBasedCityDataDTO reqLocationBasedCityDataDTO) throws Exception {
+        return ResponseEntity.ok().body(citydataService.getLocationBasedCityData(reqLocationBasedCityDataDTO));
     }
 }
