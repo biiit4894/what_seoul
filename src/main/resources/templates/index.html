@@ -13,10 +13,11 @@
 <p id="citydata"></p>
 <div id="map"></div>
 
-<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&callback=initMap&v=weekly"></script>
+<script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA4mxxm8ZBB4x6LuSZRvMo56Tfoyt8S_PM&callback=initMap&v=weekly"></script>
 <script>
     let map, marker;
     let latitude, longitude;
+    let polygons = [];
 
     async function initMap() {
         const { Map } = await google.maps.importLibrary("maps");
@@ -39,7 +40,7 @@
         // 페이지 로드 후 현위치 가져오기
         getGeoLocation();
     }
-    
+
     function getGeoLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(updatePosition, showError, {
@@ -96,20 +97,54 @@
                 const places = data.data.nearestPlaces;
                 const cityDataElement = document.getElementById('citydata');
 
+                cityDataElement.innerHTML = '';
+
                 if (places.length === 0) {
                     cityDataElement.innerHTML = "인근 장소를 찾을 수 없습니다.";
-                } else if (places.length === 1) {
-                    cityDataElement.innerHTML = `${places[0].areaName} 인근입니다.`;
                 } else {
-                    let list = "인근 장소<br>"
-                    for (let i = 0; i < places.length; i++) {
-                        list += `${i + 1}. ${places[i].areaName}<br>`;
-                    }
-                    cityDataElement.innerHTML = list;
+                    places.forEach((place, index) => {
+                        const placeElement = document.createElement('div');
+                        const placeLink = document.createElement('a');
+                        placeLink.href = '#';
+                        placeLink.innerText = `${index + 1}. ${place.areaName}`;
+                        placeLink.onclick = function () {
+                            showPolygon(place.polygonCoords); // 클릭 시 폴리곤 표시
+                        };
+                        placeElement.appendChild(placeLink);
+                        cityDataElement.appendChild(placeElement);
+                    })
                 }
+
+                // else if (places.length === 1) {
+                //     cityDataElement.innerHTML = ${places[0].areaName} 인근입니다.;
+                // } else {
+                //     let list = "인근 장소<br>"
+                //     for (let i = 0; i < places.length; i++) {
+                //         list += ${i + 1}. ${places[i].areaName}<br>;
+                //     }
+                //     cityDataElement.innerHTML = list;
+                // }
             })
             .catch(error => console.error("Error: ", error));
 
+    }
+
+    function showPolygon(polygonCoords) {
+        // 기존에 그려진 폴리곤이 있다면 지우기
+        polygons.forEach(polygon => polygon.setMap(null));
+        polygons = [];
+
+        // 새 폴리곤 생성
+        const polygon = new google.maps.Polygon({
+            paths: polygonCoords.map(coord => ({lat: coord.lat, lng: coord.lon})),
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#FF0000",
+            fillOpacity: 0.35
+        });
+        polygon.setMap(map);
+        polygons.push(polygon);
     }
 
 
