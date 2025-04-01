@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserRes {
+public class ReqCreateUserDTO {
     private String userId;
+    private String password;
     private String email;
     private String nickName;
 }

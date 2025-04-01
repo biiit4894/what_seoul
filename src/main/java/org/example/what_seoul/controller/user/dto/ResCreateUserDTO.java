@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserReq {
+public class ResCreateUserDTO {
     private String userId;
-    private String password;
     private String email;
     private String nickName;
 }
