@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -68,33 +71,43 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(CustomValidationException.class)
+    public ResponseEntity<CommonErrorResponse<Map<String, List<String>>>> handleCustomValidationException(CustomValidationException e) {
+        CommonErrorResponse<Map<String, List<String>>> errorResponse = new CommonErrorResponse<>(
+                "Validation Failed",
+                e.getErrors()  // 유효성 검증 및 중복 오류 메시지 반환
+        );
+
+        log.error("Validation error: {}", e.getErrors());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CommonErrorResponse<Object>> handleValidationException(MethodArgumentNotValidException e) {
-        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
-        StringBuilder errorMessage = new StringBuilder();
-        for (FieldError fieldError : fieldErrors) {
-            errorMessage.append(fieldError.getField())
-                    .append(": ")
-                    .append(fieldError.getDefaultMessage())
-                    .append(" ");
+        Map<String, List<String>> errors = new HashMap<>();
+        for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
+            errors.computeIfAbsent(fieldError.getField(), key -> new ArrayList<>()).add(fieldError.getDefaultMessage());
+
         }
 
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
                 "Validation Failed",
-                errorMessage.toString()
+                errors
         );
-        log.error("{}", e.getMessage());
+        log.error("Validation error: {}", errors);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DuplicateFieldException.class)
-    public ResponseEntity<CommonErrorResponse<Object>> handleDuplicateFieldException(DuplicateFieldException e) {
-        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-                "Duplicate Field Exception",
-                e.getMessage()
+    public ResponseEntity<CommonErrorResponse<Map<String, String>>> handleDuplicateFieldException(DuplicateFieldException e) {
+        CommonErrorResponse<Map<String, String>> errorResponse = new CommonErrorResponse<>(
+                "Duplicate Fields Found",
+                e.getErrors()
         );
-        log.error("{}", e.getMessage());
+
+        log.error("Duplicate field error: {}", e.getErrors());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 

@@ -13,6 +13,7 @@ import org.example.what_seoul.repository.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
@@ -27,7 +28,8 @@ import java.util.List;
 public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final AreaRepository areaRepository;
-    private final CitydataScheduler cityDataScheduler;
+    private final BCryptPasswordEncoder encoder;
+//    private final CitydataScheduler cityDataScheduler;
 
     @Value("${seoul.open.api.hot-spot.file-path}")
     private String filePath;
@@ -42,7 +44,7 @@ public class DataInitializer implements CommandLineRunner {
                 testUsers.add(
                         new User(
                                 "test" + (i + 1),
-                                "test" + (i + 1),
+                                encoder.encode("test" + (i + 1)),
                                 "test" + (i + 1) + "@test" + (i + 1) + ".com",
                                 "닉네임" + (i + 1),
                                 LocalDateTime.now().minusDays(i + 1)
@@ -91,7 +93,7 @@ public class DataInitializer implements CommandLineRunner {
             stream.close();
         }
 
-        cityDataScheduler.call();
+//        cityDataScheduler.call();
 
 
     }

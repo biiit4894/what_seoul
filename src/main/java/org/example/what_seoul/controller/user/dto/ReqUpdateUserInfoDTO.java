@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateUserInfoReq {
+public class ReqUpdateUserInfoDTO {
     @NotBlank
     private String currPassword;
 
