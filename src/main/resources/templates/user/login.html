@@ -68,11 +68,12 @@
                             <input class="form-control" type="password" id="password" name="password" placeholder="비밀번호" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-block">로그인</button>
+                        <!-- 로그인 실패 시 에러 메시지 출력 -->
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            <p th:text="${session.errorMessage}"></p>
+                        </div>
 
-<!--                        <span th:if="${error}">-->
-<!--                            <p class="text-danger mt-3" th:text="${exception}"></p>-->
-<!--                        </span>-->
+                        <button type="submit" class="btn btn-primary btn-block">로그인</button>
                     </form>
                 </div>
             </div>

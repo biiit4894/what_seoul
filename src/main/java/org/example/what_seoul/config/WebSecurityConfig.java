@@ -23,7 +23,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, CustomAuthenticationFailureHandler failureHandler) throws Exception {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setMatchingRequestParameterName(null);
         httpSecurity.authorizeHttpRequests(auth ->
@@ -35,6 +35,7 @@ public class WebSecurityConfig {
                 .formLogin(auth -> auth
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
+                        .failureHandler(failureHandler)
                         .defaultSuccessUrl("/", true)
                         .successHandler((request, response, authentication) -> {
                             log.info("로그인 성공: 사용자 {}", authentication.getName());

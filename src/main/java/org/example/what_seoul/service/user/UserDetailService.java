@@ -18,6 +18,6 @@ public class UserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         log.info("로그인 요청 - userId: {}", userId);
         return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException(userId));
+                .orElseThrow(() -> new UsernameNotFoundException(userId));
     }
 }
