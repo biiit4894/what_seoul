@@ -7,10 +7,7 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" typeof="text/css" th:href="@{/css/index.css}"/>
-    <script th:src="@{/js/common/common.js}"></script>
-
+    <script src="/js/user/signup.js"></script>
 </head>
 <body>
 <!-- Navigation Bar -->
@@ -28,12 +25,14 @@
             <li class="nav-item">
                 <a class="nav-link" href="#">커뮤니티</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">마이페이지</a>
+            </li>
 
             <!-- 로그인 상태에 따른 메뉴 바 변경 -->
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
                 <!-- 로그인된 상태일 때 -->
                 <a class="nav-link" onclick="logout()">로그아웃</a>
-                <a class="nav-link" href="#">마이페이지</a>
                 <span class="nav-link" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
@@ -45,6 +44,46 @@
         </ul>
     </div>
 </nav>
+
+<!-- Signup Section -->
+<section class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white text-center">
+                    회원가입
+                </div>
+                <div class="card-body">
+                    <form id="signupForm">
+                        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+
+                        <div class="form-group">
+                            <label for="userId">아이디</label>
+                            <input class="form-control" type="text" id="userId" name="userId" placeholder="아이디" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">비밀번호</label>
+                            <input class="form-control" type="password" id="password" name="password" placeholder="비밀번호" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">이메일</label>
+                            <input class="form-control" type="email" id="email" name="email" placeholder="이메일" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nickName">닉네임</label>
+                            <input class="form-control" type="text" id="nickName" name="nickName" placeholder="닉네임" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">회원가입</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Bootstrap JS, Popper.js, jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

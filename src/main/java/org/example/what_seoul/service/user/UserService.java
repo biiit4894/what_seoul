@@ -1,13 +1,18 @@
 package org.example.what_seoul.service.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.user.dto.*;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.DuplicateFieldException;
 import org.example.what_seoul.exception.PasswordMismatchException;
 import org.example.what_seoul.repository.user.UserRepository;
+import org.example.what_seoul.service.user.dto.LoginUserInfoDTO;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +21,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder encoder;
+
 
     @Transactional // TODO: @Transactional 세부 옵션 설정
     public CommonResponse<CreateUserRes> createUser(CreateUserReq req) {
@@ -35,7 +43,7 @@ public class UserService {
 
         User newUser = new User(
                 req.getUserId(),
-                req.getPassword(),
+                encoder.encode(req.getPassword()),
                 req.getEmail(),
                 req.getNickName()
         );
@@ -129,6 +137,32 @@ public class UserService {
                 "Update User Info Success",
                 null // TODO: null 반환이 괜찮은지
         );
+    }
+
+    public LoginUserInfoDTO getLoginUserInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        if (user != null) {
+            log.info("getLoginUserInfo: user not null");
+        } else {
+            log.info("getLoginUserInfo: user null");
+
+        }
+        return LoginUserInfoDTO.from(user);
+    }
+
+    public Object getAuthenticationPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Authentication 객체: {}", authentication);
+
+        Object principal = authentication.getPrincipal();
+        log.info("principal : {}", principal);
+        if (!principal.equals("anonymousUser")) {
+            User user = (User) authentication.getPrincipal();
+            log.info("loginUserId: {}", user.getUserId());
+        }
+        return principal;
+
     }
 
 
