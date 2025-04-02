@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Scanner;
 
 @Data
-@Component
+//@Component
 @Slf4j
 public class GeoJsonLoader {
     private final List<Polygon> polygons = new ArrayList<>();
