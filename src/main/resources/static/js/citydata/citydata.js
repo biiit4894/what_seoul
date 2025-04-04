@@ -1,6 +1,7 @@
 let map, marker;
 let latitude, longitude;
 let polygons = [];
+let areaId, areaName;
 
 window.addEventListener("load", function () {
     const navbar = document.querySelector(".navbar");
@@ -14,7 +15,7 @@ window.addEventListener("load", function () {
     }
 });
 
-
+// 키워드로 서울시 장소 검색
 function getAreaListByKeyword() {
     let keyword = document.getElementById("keyword").value;
     if (!keyword.trim()) {
@@ -49,7 +50,12 @@ function getAreaListByKeyword() {
                     areaLink.href = '#';
                     areaLink.innerText = `${index + 1}. ${area.areaName}`;
                     areaLink.onclick = function () {
-                        showPolygon(area.polygonCoords, area.areaName);
+                        console.log("area id: ", area.id);
+                        console.log("typeof area id: ", typeof area.id);
+                        // 클릭한 장소의 id, 이름을 전역변수에 저장
+                        areaId = area.id;
+                        areaName = area.areaName;
+                        showPolygon(area.polygonCoords, area.areaName, areaId);
                         searchResultsElement.style.display = "none"; // 선택 후 검색 결과 숨기기
 
                     };
@@ -137,6 +143,7 @@ function updatePosition(position) {
     })
 }
 
+// 현위치에서 가장 가까운 장소 리스트 조회
 function getAreaListByCurrentLocation() {
     const requestData = {
         latitude: latitude,
@@ -169,7 +176,12 @@ function getAreaListByCurrentLocation() {
                     placeLink.href = '#';
                     placeLink.innerText = `${index + 1}. ${place.areaName}`;
                     placeLink.onclick = function () {
-                        showPolygon(place.polygonCoords, place.areaName); // 클릭 시 폴리곤 표시
+                        console.log("place.id:", place.id);
+                        console.log("typeof place.id:", typeof place.id);
+                        // 클릭한 장소의 id, 이름을 전역변수에 저장
+                        areaId = place.id;
+                        areaName = place.areaName;
+                        showPolygon(place.polygonCoords, place.areaName, areaId); // 클릭 시 폴리곤 표시
                     };
 
                     placeElement.appendChild(placeLink);
@@ -212,7 +224,7 @@ function createAreaNameControl(map) {
     return controlDiv;
 }
 
-function showPolygon(polygonCoords, areaName) {
+function showPolygon(polygonCoords, areaName, areaId) {
     // 기존 폴리곤 제거
     clearPolygons();
 
@@ -226,7 +238,7 @@ function showPolygon(polygonCoords, areaName) {
     updateAreaName(areaName);
 
     // 날씨, 혼잡도, 문화행사 아이콘 추가
-    addInfoIcons();
+    addInfoIcons(areaId);
 }
 
 // 1️⃣ 기존 폴리곤 제거
@@ -255,9 +267,9 @@ function drawPolygon(coords) {
 
 function adjustMapBounds(polygon) {
     const bounds = new google.maps.LatLngBounds();
-    polygon.getPath().forEach(coord => bounds.extend(coord));
-    map.fitBounds(bounds);
-    map.setZoom(map.getZoom() - 1);  // 약간 축소
+    // polygon.getPath().forEach(coord => bounds.extend(coord));
+    // map.fitBounds(bounds);
+    // map.setZoom(map.getZoom() - 1);  // 약간 축소
 }
 
 
@@ -269,7 +281,7 @@ function updateAreaName(areaName) {
 }
 
 // 5️⃣ 아이콘 추가
-function addInfoIcons() {
+function addInfoIcons(areaId) {
     // 이미 존재하는 경우 제거
     const existingIcons = document.querySelector(".info-icons");
     if (existingIcons) existingIcons.remove();
@@ -278,14 +290,15 @@ function addInfoIcons() {
     iconsContainer.className = "info-icons";
 
     const icons = [
-        { name: "날씨", icon: "🌤️" },
-        { name: "혼잡도", icon: "🚦" },
-        { name: "문화행사", icon: "🎭" }
+        { name: "날씨", engName: "weather", icon: "🌤️"},
+        { name: "혼잡도", engName: "population", icon: "🚦"},
+        { name: "문화행사", engName: "culture-event", icon: "🎭"}
     ];
 
-    icons.forEach(({ name, icon }) => {
+    icons.forEach(({ name, engName, icon }) => {
         const iconElement = document.createElement("div");
         iconElement.className = "info-icon";
+        iconElement.id = `${engName}-icon`
         iconElement.innerHTML = `${icon} <span>${name}</span>`;
         iconsContainer.appendChild(iconElement);
     });
@@ -300,6 +313,68 @@ function addInfoIcons() {
     iconsContainer.style.top = `${marginTop}px`;
     iconsContainer.style.right = `${areaNameControlWidth + marginRight + 20}px`;
 
+    const weatherIcon = document.querySelector('#weather-icon');
+    const populationIcon = document.querySelector('#population-icon');
+    const cultureEventIcon = document.querySelector('#culture-event-icon')
+    weatherIcon.addEventListener('click', (e) => fetchWeatherData(areaId));
+    populationIcon.addEventListener('click', (e) => fetchPopulationData(areaId));
+    cultureEventIcon.addEventListener('click', (e) => fetchCultureEventData(areaId));
+}
+
+function fetchWeatherData(id) {
+    console.log('click');
+    const areaId = Number(id);
+    console.log(areaId);
+    console.log(typeof areaId);
+    fetch(`/api/citydata/weather/${areaId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response: ", data);
+            weatherModal(data);
+        })
+        .catch(error => console.error("Error: ", error));
+}
+
+function fetchPopulationData(id) {
+    console.log('click');
+    const areaId = Number(id);
+    console.log(areaId);
+    console.log(typeof areaId);
+    fetch(`/api/citydata/population/${areaId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response: ", data);
+        })
+        .catch(error => console.error("Error: ", error));
+
+}
+
+function fetchCultureEventData(id) {
+    console.log('click');
+    const areaId = Number(id);
+    console.log(areaId);
+    console.log(typeof areaId);
+    fetch(`/api/citydata/event/${areaId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response: ", data);
+        })
+        .catch(error => console.error("Error: ", error));
 
 }
 

@@ -17,10 +17,8 @@ public class IndexViewController {
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
-//        model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
 
         if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser")) {
-            log.info("not anonymous");
             model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
         }
         return "index";

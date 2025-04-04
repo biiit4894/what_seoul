@@ -7,6 +7,7 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
     <script src="/js/user/signup.js"></script>
 </head>
 <body>
@@ -18,27 +19,28 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav">
             <li class="nav-item">
                 <a class="nav-link" href="#">지금 서울은?</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">커뮤니티</a>
             </li>
-            <li class="nav-item">
+
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
+                <a class="nav-link" onclick="logout()">로그아웃</a>
+            </li>
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
                 <a class="nav-link" href="#">마이페이지</a>
             </li>
-
-            <!-- 로그인 상태에 따른 메뉴 바 변경 -->
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
-                <!-- 로그인된 상태일 때 -->
-                <a class="nav-link" onclick="logout()">로그아웃</a>
                 <span class="nav-link" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
             <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
-                <!-- 로그인되지 않은 상태일 때 -->
                 <a class="nav-link" href="/login">로그인</a>
+            </li>
+            <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
                 <a class="nav-link" href="/signup">회원가입</a>
             </li>
         </ul>
