@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     )
                     ))
             .then(({ status, body }) => {
-                if (status === 200) {
+                if (status === 201) {
                     alert('회원가입이 완료되었습니다.');
                     window.location.href = "/view/user/login"; // 로그인 페이지 이동
                 } else if (status === 400) {
