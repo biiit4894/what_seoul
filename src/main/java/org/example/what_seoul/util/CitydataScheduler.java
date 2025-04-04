@@ -7,7 +7,7 @@ import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 import org.example.what_seoul.domain.citydata.weather.Weather;
-import org.example.what_seoul.repository.citydata.AreaRepository;
+import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//@Component
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class CitydataScheduler {
