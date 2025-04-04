@@ -1,0 +1,326 @@
+let map, marker;
+let latitude, longitude;
+let polygons = [];
+
+window.addEventListener("load", function () {
+    const navbar = document.querySelector(".navbar");
+    const buttonWrapper = document.querySelector(".wrapper-1");
+    const map = document.querySelector("#map");
+
+    if (navbar && buttonWrapper) {
+        const navbarHeight = navbar.offsetHeight; // 네비게이션 바의 실제 높이 가져오기
+        buttonWrapper.style.top = `${navbarHeight}px`; // .button-text-wrapper를 navbar 아래에 배치
+        map.style.top = `${navbarHeight}px`;
+    }
+});
+
+
+function getAreaListByKeyword() {
+    let keyword = document.getElementById("keyword").value;
+    if (!keyword.trim()) {
+        alert("검색어를 입력해주세요.");
+        return;
+    }
+
+    fetch(`/api/area?query=${encodeURIComponent(keyword)}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Search Response:", data);
+            const searchResultsElement = document.getElementById('search-results');
+            searchResultsElement.innerHTML = '';
+            searchResultsElement.style.display = "block";
+
+            console.log(data.data.areaList);
+            console.log(data.data.areaList.length);
+            if (!data.data || data.data.areaList.length === 0) {
+                searchResultsElement.innerHTML = "검색 결과가 없습니다.";
+            } else {
+                // searchResultsElement.style.display = "block"; // 검색 결과 보이기
+
+                data.data.areaList.forEach((area, index) => {
+                    const areaElement = document.createElement('div');
+                    areaElement.classList.add('search-result-item'); // 스타일 적용을 위한 클래스 추가
+                    const areaLink = document.createElement('a');
+                    areaLink.href = '#';
+                    areaLink.innerText = `${index + 1}. ${area.areaName}`;
+                    areaLink.onclick = function () {
+                        showPolygon(area.polygonCoords, area.areaName);
+                        searchResultsElement.style.display = "none"; // 선택 후 검색 결과 숨기기
+
+                    };
+                    areaElement.appendChild(areaLink);
+                    searchResultsElement.appendChild(areaElement);
+                });
+            }
+        })
+        .catch(error => console.error("Error:", error));
+}
+
+// 검색어 및 검색 결과창 이외의 다른 곳 클릭 시 검색 결과 닫기
+document.addEventListener("click", function(event) {
+    const searchBox = document.getElementById("keyword");
+    const searchResultsElement = document.getElementById("search-results");
+
+    if (!searchResultsElement) return;
+
+    if (event.target !== searchBox && !searchResultsElement.contains(event.target)) {
+        searchResultsElement.style.display = "none";
+    }
+});
+
+// 지도 초기화 시 컨트롤 추가
+let areaNameControl;
+async function initMap() {
+    const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+    const defaultPosition = { lat: 37.5665, lng: 126.9780 };
+
+    map = new Map(document.getElementById("map"), {
+        zoom: 4,
+        center: defaultPosition,
+        mapId: "DEMO_MAP_ID",
+    })
+
+    marker = new AdvancedMarkerElement({
+        map: map,
+        position: defaultPosition,
+        title: "Default Position (Seoul)",
+    });
+
+    // 페이지 로드 후 현위치 가져오기
+    getGeoLocation();
+
+    // 오른쪽 위에 장소명 표시할 컨트롤 생성
+    areaNameControl = createAreaNameControl(map);
+}
+
+function getGeoLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(updatePosition, showError, {
+            enableHighAccuracy: true, // 높은 정확도 요청
+            timeout: 5000, // 5초 이내 응답 없으면 실패
+            maximumAge: 0 // 항상 최신 위치 가져오기
+        });
+    } else {
+        document.getElementById("location").innerText = "이 브라우저에서는 위치 정보가 지원되지 않습니다.";
+    }
+}
+
+function updatePosition(position) {
+    latitude = position.coords.latitude;
+    longitude = position.coords.longitude;
+    document.getElementById("location").innerText = `현위치 위도: ${latitude}, 현위치 경도: ${longitude}`;
+
+
+
+    const userPosition = {
+        lat: latitude,
+        lng: longitude
+    };
+
+    // 지도에 현위치 업데이트
+    map.setCenter(userPosition);
+    map.setZoom(15);
+
+    // 기존 마커 삭제 후 새로운 마커 추가
+    marker.setMap(null);
+    marker = new google.maps.Marker({
+        position: userPosition,
+        map: map,
+        title: "현재 위치",
+    })
+}
+
+function getAreaListByCurrentLocation() {
+    const requestData = {
+        latitude: latitude,
+        longitude: longitude
+    };
+
+    fetch('/api/area/location', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response: ", data);
+            const places = data.data.nearestPlaces;
+            const cityDataElement = document.getElementById('citydata');
+
+            cityDataElement.innerHTML = '';
+
+            if (places.length === 0) {
+                cityDataElement.innerHTML = "인근 장소를 찾을 수 없습니다.";
+            } else {
+                cityDataElement.innerHTML = "<strong>내 위치에서 가장 가까운 서울시 주요 장소들</strong><br><br>";
+
+                places.forEach((place, index) => {
+                    const placeElement = document.createElement('div');
+                    const placeLink = document.createElement('a');
+                    placeLink.href = '#';
+                    placeLink.innerText = `${index + 1}. ${place.areaName}`;
+                    placeLink.onclick = function () {
+                        showPolygon(place.polygonCoords, place.areaName); // 클릭 시 폴리곤 표시
+                    };
+
+                    placeElement.appendChild(placeLink);
+                    cityDataElement.appendChild(placeElement);
+                });
+            }
+
+            // else if (places.length === 1) {
+            //     cityDataElement.innerHTML = ${places[0].areaName} 인근입니다.;
+            // } else {
+            //     let list = "인근 장소<br>"
+            //     for (let i = 0; i < places.length; i++) {
+            //         list += ${i + 1}. ${places[i].areaName}<br>;
+            //     }
+            //     cityDataElement.innerHTML = list;
+            // }
+        })
+        .catch(error => console.error("Error: ", error));
+
+}
+
+// 지도에 추가할 커스텀 컨트롤 요소 생성
+function createAreaNameControl(map) {
+    const controlDiv = document.createElement("div");
+    controlDiv.className = 'area-name-control';
+    controlDiv.style.backgroundColor = "#fff";
+    controlDiv.style.border = "2px solid #ccc";
+    controlDiv.style.borderRadius = "5px";
+    controlDiv.style.padding = "10px 15px";
+    controlDiv.style.margin = "10px";
+    controlDiv.style.fontSize = "16px";
+    controlDiv.style.fontWeight = "bold";
+    controlDiv.style.boxShadow = "0px 2px 6px rgba(0,0,0,0.3)";
+    controlDiv.style.textAlign = "center";
+    controlDiv.innerHTML = "장소 이름"; // 기본값
+
+    // 지도 오른쪽 상단에 추가
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controlDiv);
+
+    return controlDiv;
+}
+
+function showPolygon(polygonCoords, areaName) {
+    // 기존 폴리곤 제거
+    clearPolygons();
+
+    // 새 폴리곤 그리기
+    const polygon = drawPolygon(polygonCoords);
+
+    // 지도 경계 조정
+    adjustMapBounds(polygon);
+
+    // 장소명 업데이트
+    updateAreaName(areaName);
+
+    // 날씨, 혼잡도, 문화행사 아이콘 추가
+    addInfoIcons();
+}
+
+// 1️⃣ 기존 폴리곤 제거
+function clearPolygons() {
+    polygons.forEach(polygon => polygon.setMap(null));
+    polygons = [];  // 배열 초기화
+}
+
+
+// 2️⃣ 폴리곤 그리기
+function drawPolygon(coords) {
+    const polygon = new google.maps.Polygon({
+        paths: coords.map(coord => ({ lat: coord.lat, lng: coord.lon })),
+        strokeColor: "#FF0000",
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: "#FF0000",
+        fillOpacity: 0.35
+    });
+    polygon.setMap(map);
+    polygons.push(polygon);
+    return polygon;
+}
+
+// 3️⃣ 지도 경계 조정
+
+function adjustMapBounds(polygon) {
+    const bounds = new google.maps.LatLngBounds();
+    polygon.getPath().forEach(coord => bounds.extend(coord));
+    map.fitBounds(bounds);
+    map.setZoom(map.getZoom() - 1);  // 약간 축소
+}
+
+
+// 4️⃣ 장소명 업데이트
+function updateAreaName(areaName) {
+    if (areaNameControl) {
+        areaNameControl.innerHTML = areaName;
+    }
+}
+
+// 5️⃣ 아이콘 추가
+function addInfoIcons() {
+    // 이미 존재하는 경우 제거
+    const existingIcons = document.querySelector(".info-icons");
+    if (existingIcons) existingIcons.remove();
+
+    const iconsContainer = document.createElement("div");
+    iconsContainer.className = "info-icons";
+
+    const icons = [
+        { name: "날씨", icon: "🌤️" },
+        { name: "혼잡도", icon: "🚦" },
+        { name: "문화행사", icon: "🎭" }
+    ];
+
+    icons.forEach(({ name, icon }) => {
+        const iconElement = document.createElement("div");
+        iconElement.className = "info-icon";
+        iconElement.innerHTML = `${icon} <span>${name}</span>`;
+        iconsContainer.appendChild(iconElement);
+    });
+
+    const areaNameControl = document.querySelector('.area-name-control');
+    areaNameControl.after(iconsContainer);
+
+    const style = window.getComputedStyle(areaNameControl);
+    const areaNameControlWidth = areaNameControl.offsetWidth;
+    const marginRight = parseFloat(style.marginRight);
+    const marginTop = parseFloat(style.marginTop);
+    iconsContainer.style.top = `${marginTop}px`;
+    iconsContainer.style.right = `${areaNameControlWidth + marginRight + 20}px`;
+
+
+}
+
+
+function showError(error) {
+    let errorMessage = "";
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            errorMessage = "사용자가 위치 정보 제공을 거부했습니다.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            errorMessage = "위치 정보를 사용할 수 없습니다.";
+            break;
+        case error.TIMEOUT:
+            errorMessage = "위치 정보를 가져오는 데 시간이 초과되었습니다.";
+            break;
+        case error.UNKNOWN_ERROR:
+            errorMessage = "알 수 없는 오류가 발생했습니다.";
+            break;
+    }
+    document.getElementById("location").innerText = errorMessage;
+}
+
+window.initMap = initMap;
