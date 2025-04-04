@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReqLocationBasedCityDataDTO {
+public class ReqGetAreaListByCurrentLocationDTO {
     private double latitude;
     private double longitude;
 }

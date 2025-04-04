@@ -13,19 +13,19 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaceDTO {
+public class AreaDTO {
     private Long id;
     private String areaName;
     private List<CoordinateDTO> polygonCoords;
 
-    public static PlaceDTO from(Area area, Polygon polygon) {
+    public static AreaDTO from(Area area, Polygon polygon) {
         return from(area.getId(), area.getAreaName(), polygon);
     }
-    public static PlaceDTO from(Long id, String areaName, Polygon polygon) {
+    public static AreaDTO from(Long id, String areaName, Polygon polygon) {
         List<CoordinateDTO> coordinates = new ArrayList<>();
         for (Coordinate coord : polygon.getCoordinates()) {
             coordinates.add(new CoordinateDTO(coord.y, coord.x));
         }
-        return new PlaceDTO(id, areaName, coordinates);
+        return new AreaDTO(id, areaName, coordinates);
     }
 }

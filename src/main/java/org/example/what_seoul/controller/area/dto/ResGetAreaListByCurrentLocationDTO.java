@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResLocationBasedCityDataDTO {
-    private List<PlaceDTO> nearestPlaces;
+public class ResGetAreaListByCurrentLocationDTO {
+    private List<AreaDTO> nearestPlaces;
 }
