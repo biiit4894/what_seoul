@@ -95,7 +95,8 @@ html, body {
     box-shadow: rgba(0, 0, 0, 0.6) 0px 4px 10px;
 }
 
-.weather-modal {
+.weather-modal,
+.culture-event-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -108,15 +109,27 @@ html, body {
     z-index: 1000;
 }
 
-.weather-modal-content {
+.weather-modal-content,
+.culture-event-modal-content {
     background: rgba(255, 255, 255, 0.9); /* 살짝 투명한 배경 */
     padding: 20px;
     border-radius: 12px; /* 약간의 border-radius */
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     max-width: 400px;
+    max-height: 80vh; /* 최대 높이를 화면의 80%로 제한 */
     text-align: center;
     position: relative;
     backdrop-filter: blur(10px); /* 블러 효과 추가 */
+    overflow-y: auto; /* 내부 세로 스크롤 가능 */
+
+}
+
+.event-thumbnail {
+    max-width: 100px;  /* 최대 너비를 100px로 제한 */
+    width: auto;       /* 원본 비율 유지 */
+    height: auto;      /* 높이도 자동 조정 */
+    border-radius: 5px;
+    object-fit: contain; /* 이미지가 찌그러지지 않도록 설정 */
 }
 
 .close-button {
