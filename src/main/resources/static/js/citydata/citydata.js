@@ -359,6 +359,7 @@ function fetchPopulationData(id) {
         .then(response => response.json())
         .then(data => {
             console.log("Response: ", data);
+            populationModal(data);
         })
         .catch(error => console.error("Error: ", error));
 
