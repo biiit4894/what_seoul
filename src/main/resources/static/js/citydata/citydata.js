@@ -3,7 +3,8 @@ let latitude, longitude;
 let polygons = [];
 let areaId, areaName;
 
-window.addEventListener("load", function () {
+/* navbar, buttonWrapper, map 3요소의 위치 정렬 */
+function adjustLayout() {
     const navbar = document.querySelector(".navbar");
     const buttonWrapper = document.querySelector(".wrapper-1");
     const map = document.querySelector("#map");
@@ -12,8 +13,18 @@ window.addEventListener("load", function () {
         const navbarHeight = navbar.offsetHeight; // 네비게이션 바의 실제 높이 가져오기
         buttonWrapper.style.top = `${navbarHeight}px`; // .button-text-wrapper를 navbar 아래에 배치
         map.style.top = `${navbarHeight}px`;
+        map.style.height = `calc(100vh - ${navbarHeight}px)`; // 전체 높이에서 navbar 제외
     }
-});
+
+    const locationBtn = document.getElementById("current-location-btn");
+    if (locationBtn) {
+        locationBtn.addEventListener("click", () => {
+            getGeoLocation(); // 이미 구현된 현위치 이동 함수 재사용쳑
+        });
+    }
+}
+window.addEventListener("load", adjustLayout);
+window.addEventListener("resize", adjustLayout); // 브라우저 크기가 변경될 때도 적ㅇㅇ
 
 // 키워드로 서울시 장소 검색
 function getAreaListByKeyword() {
@@ -123,24 +134,28 @@ function updatePosition(position) {
     longitude = position.coords.longitude;
     document.getElementById("location").innerText = `현위치 위도: ${latitude}, 현위치 경도: ${longitude}`;
 
-
-
-    const userPosition = {
-        lat: latitude,
-        lng: longitude
-    };
-
-    // 지도에 현위치 업데이트
-    map.setCenter(userPosition);
-    map.setZoom(15);
+    const userPosition = new google.maps.LatLng(latitude, longitude);
 
     // 기존 마커 삭제 후 새로운 마커 추가
-    marker.setMap(null);
+    if (marker) marker.setMap(null);
     marker = new google.maps.Marker({
         position: userPosition,
         map: map,
         title: "현재 위치",
-    })
+    });
+
+    // 폴리곤과 현위치 모두 포함하는 bounds 계산
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(userPosition);
+
+    // 현재 표시된 폴리곤이 있다면 그 경계도 포함
+    if (polygons.length > 0) {
+        polygons.forEach(polygon => {
+            polygon.getPath().forEach(coord => bounds.extend(coord));
+        });
+    }
+
+    map.fitBounds(bounds);
 }
 
 // 현위치에서 가장 가까운 장소 리스트 조회
@@ -188,16 +203,6 @@ function getAreaListByCurrentLocation() {
                     cityDataElement.appendChild(placeElement);
                 });
             }
-
-            // else if (places.length === 1) {
-            //     cityDataElement.innerHTML = ${places[0].areaName} 인근입니다.;
-            // } else {
-            //     let list = "인근 장소<br>"
-            //     for (let i = 0; i < places.length; i++) {
-            //         list += ${i + 1}. ${places[i].areaName}<br>;
-            //     }
-            //     cityDataElement.innerHTML = list;
-            // }
         })
         .catch(error => console.error("Error: ", error));
 
@@ -267,9 +272,9 @@ function drawPolygon(coords) {
 
 function adjustMapBounds(polygon) {
     const bounds = new google.maps.LatLngBounds();
-    // polygon.getPath().forEach(coord => bounds.extend(coord));
-    // map.fitBounds(bounds);
-    // map.setZoom(map.getZoom() - 1);  // 약간 축소
+    polygon.getPath().forEach(coord => bounds.extend(coord));
+    map.fitBounds(bounds);
+    map.setZoom(map.getZoom() - 1);  // 약간 축소
 }
 
 
