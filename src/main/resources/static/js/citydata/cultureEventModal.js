@@ -13,6 +13,13 @@ function cultureEventModal(data) {
     const modalContent = document.createElement("div");
     modalContent.className = "culture-event-modal-content";
 
+    // 모달 헤더 (제목 + 닫기 버튼)
+    const modalHeader = document.createElement("div");
+    modalHeader.className = "modal-header";
+
+    const title = document.createElement("h5");
+    title.innerText = `🎭 ${areaName}의 문화행사 목록`;
+
     const closeButton = document.createElement("span");
     closeButton.className = "close-button";
     closeButton.innerHTML = "&times;";
@@ -20,10 +27,10 @@ function cultureEventModal(data) {
         modal.remove();
     };
 
-    // 제목 (선택된 지역)
-    const title = document.createElement("h5");
-    title.innerText = `🎭 ${areaName}의 문화행사 목록`;
+    modalHeader.appendChild(title);
+    modalHeader.appendChild(closeButton);
 
+    // 문화행사 정보 컨텐츠 영역
     const eventContainer = document.createElement("div");
     eventContainer.className = "event-container";
 
@@ -40,14 +47,11 @@ function cultureEventModal(data) {
             eventImg.src = event.thumbnail;
             eventImg.alt = event.eventName;
             eventImg.className = "event-thumbnail";
-            eventImg.style.maxWidth = "100px";  // 최대 너비 100px
-            eventImg.style.height = "auto";  // 높이는 비율 유지
-            eventImg.style.objectFit = "contain"; // 이미지 찌그러짐 방지
 
             const eventInfo = document.createElement("div");
             eventInfo.className = "event-info";
 
-            const eventTitle = document.createElement("h7");
+            const eventTitle = document.createElement("h6");
             eventTitle.innerText = event.eventName;
 
             const eventPeriod = document.createElement("p");
@@ -73,8 +77,7 @@ function cultureEventModal(data) {
     }
 
     // 모달 구성
-    modalContent.appendChild(closeButton);
-    modalContent.appendChild(title);
+    modalContent.appendChild(modalHeader);
     modalContent.appendChild(eventContainer);
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
