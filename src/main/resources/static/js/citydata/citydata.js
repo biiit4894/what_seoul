@@ -2,8 +2,11 @@ let map, marker;
 let latitude, longitude;
 let polygons = [];
 let areaId, areaName;
+let customLabels = []; // 폴리곤의 중심에 표시된 모든 라벨을 추적
+const LABEL_ZOOM_THRESHOLD = 14; // 이 줌 이상에서만 라벨 보이게
 
-/* navbar, buttonWrapper, map 3요소의 위치 정렬 */
+
+// navbar, buttonWrapper, map 3요소의 위치 정렬
 function adjustLayout() {
     const navbar = document.querySelector(".navbar");
     const buttonWrapper = document.querySelector(".wrapper-1");
@@ -92,7 +95,7 @@ document.addEventListener("click", function(event) {
 
 // 지도 초기화 시 컨트롤 추가
 let areaNameControl;
-async function initMap() {
+async function initMap(callback) {
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
@@ -115,6 +118,35 @@ async function initMap() {
 
     // 오른쪽 위에 장소명 표시할 컨트롤 생성
     areaNameControl = createAreaNameControl(map);
+
+    // //  지도 클릭 시 주소 가져와서 areaNameControl에 표시
+    // map.addListener("click", async (event) => {
+    //     const lat = event.latLng.lat();
+    //     const lng = event.latLng.lng();
+    //
+    //     const address = await getAddressFromCoords(lat, lng);
+    //     // updateAreaName(address);
+    //
+    //     // 기존 클릭 마커 제거
+    //     if (clickMarker) clickMarker.setMap(null);
+    //     if (infoWindow) infoWindow.close();
+    //
+    //     // 새 마커 추가
+    //     clickMarker = new google.maps.Marker({
+    //         position: { lat, lng },
+    //         map: map,
+    //         title: "클릭한 위치",
+    //     });
+    //
+    //     // 주소를 말풍선으로 표시
+    //     infoWindow = new google.maps.InfoWindow({
+    //         content: `<div style="font-size:14px; padding:5px;">${address}</div>`,
+    //         position: { lat, lng },
+    //     });
+    //
+    //     infoWindow.open(map);
+    // });
+
 }
 
 function getGeoLocation() {
@@ -144,6 +176,12 @@ function updatePosition(position) {
         title: "현재 위치",
     });
 
+    // 현위치 주소 가져오기 -> 장소명 컨트롤에 설정
+    getAddressFromCoords(latitude, longitude)
+        .then(address => {
+            updateAreaName(address); // 기본 주소로 설정
+        });
+
     // 폴리곤과 현위치 모두 포함하는 bounds 계산
     const bounds = new google.maps.LatLngBounds();
     bounds.extend(userPosition);
@@ -156,6 +194,27 @@ function updatePosition(position) {
     }
 
     map.fitBounds(bounds);
+}
+
+// 좌표 -> 도로명 주소 변환 함수
+function getAddressFromCoords(lat, lng) {
+    return new Promise((resolve, reject) => {
+        const geocoder = new google.maps.Geocoder();
+        const latlng = { lat: parseFloat(lat), lng: parseFloat(lng) };
+
+        geocoder.geocode({ location: latlng }, (results, status) => {
+            if (status === "OK") {
+                if (results[0]) {
+                    resolve(results[0].formatted_address);
+                } else {
+                    resolve("주소를 찾을 수 없음");
+                }
+            } else {
+                console.error("Geocoder failed due to: " + status);
+                resolve("주소 검색 실패");
+            }
+        });
+    });
 }
 
 // 현위치에서 가장 가까운 장소 리스트 조회
@@ -229,12 +288,85 @@ function createAreaNameControl(map) {
     return controlDiv;
 }
 
+// 폴리곤의 중심 찾기
+function getPolygonCenter(polygon) {
+    const paths = polygon.getPath().getArray();
+    let lat = 0, lng = 0;
+
+    paths.forEach(point => {
+        lat += point.lat();
+        lng += point.lng();
+    });
+
+    return new google.maps.LatLng(lat / paths.length, lng / paths.length);
+}
+
+
+// 폴리곤 중앙에 표현할 커스텀 라벨을 생성하고 지도에 붙이기
+function createCustomLabel(map, position, text) {
+    const labelDiv = document.createElement("div");
+    labelDiv.className = "custom-label";
+    labelDiv.textContent = text;
+
+    // 스타일은 자유롭게 조절 가능
+    labelDiv.style.position = "absolute";
+    labelDiv.style.padding = "2px 6px";
+    labelDiv.style.fontSize = "12px";
+    labelDiv.style.color = "#FF0000";
+    labelDiv.style.backgroundColor = "white";
+    labelDiv.style.border = "1px solid #FF0000";
+    labelDiv.style.borderRadius = "4px";
+    labelDiv.style.whiteSpace = "nowrap";
+    labelDiv.style.pointerEvents = "none";
+    labelDiv.style.transform = "translate(-50%, -100%)";
+    labelDiv.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
+    labelDiv.style.zIndex = "999";
+
+    const overlay = new google.maps.OverlayView();
+    overlay.onAdd = function () {
+        this.getPanes().overlayLayer.appendChild(labelDiv);
+    };
+    overlay.draw = function () {
+        const projection = this.getProjection();
+        if(!projection) return;
+        const point = projection().fromLatLngToDivPixel(position);
+        if (point) {
+            labelDiv.style.left = `${point.x}px`;
+            labelDiv.style.top = `${point.y}px`;
+        }
+
+        // 줌 레벨에 따라 보이거나 숨김
+        const zoom = map.getZoom();
+        labelDiv.style.display = zoom >= LABEL_ZOOM_THRESHOLD ? "block" : "none";
+    };
+    overlay.onRemove = function () {
+        if (labelDiv.parentNode) {
+            labelDiv.parentNode.removeChild(labelDiv);
+        }
+    };
+
+    overlay.setMap(map);
+    customLabels.push(overlay);
+
+    // 줌 변경 시 다시 그리기 트리거
+    map.addListener("zoom_changed", () => overlay.draw());
+}
+
+// 폴리곤에서 기존 라벨 제거
+function clearCustomLabels() {
+    customLabels.forEach(label => label.setMap(null));
+    customLabels = [];
+}
+
 function showPolygon(polygonCoords, areaName, areaId) {
+    // 기존 라벨 제거
+    clearCustomLabels();
+
     // 기존 폴리곤 제거
     clearPolygons();
 
     // 새 폴리곤 그리기
-    const polygon = drawPolygon(polygonCoords);
+    const polygon = drawPolygon(polygonCoords, areaName);
 
     // 지도 경계 조정
     adjustMapBounds(polygon);
@@ -254,16 +386,48 @@ function clearPolygons() {
 
 
 // 2️⃣ 폴리곤 그리기
-function drawPolygon(coords) {
+function drawPolygon(coords, areaName) {
     const polygon = new google.maps.Polygon({
         paths: coords.map(coord => ({ lat: coord.lat, lng: coord.lon })),
         strokeColor: "#FF0000",
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
+        strokeOpacity: 0.6,
+        strokeWeight: 1,
         fillColor: "#FF0000",
-        fillOpacity: 0.35
+        fillOpacity: 0.3
     });
+
+    // 폴리곤 기본 스타일
+    const defaultStyle = {
+        strokeOpacity: 0.6,
+        strokeWeight: 1,
+        fillOpacity: 0.3
+    };
+
+    // 폴리곤 마우스오버 시의 스타일
+    const hoverStyle = {
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        fillOpacity: 0.6
+    };
+
+    // 폴리곤의 중심 좌표
+    const center = getPolygonCenter(polygon);
+
+    // 폴리곤의 중심에 장소명 라벨 표기하기
+    createCustomLabel(map, center, areaName);
+
     polygon.setMap(map);
+
+    // 폴리곤 마우스 오버할 때 더 진하게 표현
+    polygon.addListener('mouseover', () => {
+        polygon.setOptions(hoverStyle);
+    });
+
+    // 폴리곤 마우스 아웃할 때 더 연하게 표현
+    polygon.addListener('mouseout', () => {
+        polygon.setOptions(defaultStyle);
+    });
+
     polygons.push(polygon);
     return polygon;
 }
