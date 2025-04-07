@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class CitydataScheduler {

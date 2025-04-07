@@ -6,14 +6,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.user.User;
-import org.example.what_seoul.repository.citydata.AreaRepository;
+import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.user.UserRepository;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTWriter;
@@ -25,16 +20,13 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
-@Component
+//@Component
 @Profile("dev")
 @RequiredArgsConstructor
 @Slf4j
@@ -42,13 +34,13 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final AreaRepository areaRepository;
     private final BCryptPasswordEncoder encoder;
-//    private final CitydataScheduler cityDataScheduler;
 
     @Value("${seoul.open.api.hot-spot.file-path}")
     private String filePath;
 
     @Override
     public void run(String[] args) throws IOException {
+        userRepository.save(new User("admin", encoder.encode("admin1234!"), "admin@admin.com", "관리자", LocalDateTime.now().minusDays(1)));
 //        if (userRepository.count() == 0) {
 //            // 테스트용 유저 100인 생성
 //            List<User> testUsers = new ArrayList<>();
@@ -127,7 +119,7 @@ public class DataInitializer implements CommandLineRunner {
                     String areaName = properties.get("AREA_NM").toString(); // 장소명
                     String areaCode = properties.get("AREA_CD").toString(); // 장소 코드
                     String category = properties.get("CATEGORY").toString(); // 카테고리
-\
+
                     // GeoJSON 데이터를 WKT로 변환하여 저장
                     Geometry geometry = reader.read(geometryJson.toString());
                     String polygonWkt = wktWriter.write(geometry);
