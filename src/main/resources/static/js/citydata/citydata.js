@@ -3,8 +3,10 @@ let latitude, longitude;
 let polygons = [];
 let areaId, areaName;
 let customLabels = []; // 폴리곤의 중심에 표시된 모든 라벨을 추적
-const LABEL_ZOOM_THRESHOLD = 14; // 이 줌 이상에서만 라벨 보이게
+const LABEL_ZOOM_THRESHOLD = 10; // 이 줌 이상에서만 라벨 보이게 (서울시를 벗어나면 라벨 사라짐)
 
+// 지도 초기화 시 컨트롤 추가
+let areaNameControl;
 
 // navbar, buttonWrapper, map 3요소의 위치 정렬
 function adjustLayout() {
@@ -93,8 +95,7 @@ document.addEventListener("click", function(event) {
     }
 });
 
-// 지도 초기화 시 컨트롤 추가
-let areaNameControl;
+
 async function initMap(callback) {
     const { Map } = await google.maps.importLibrary("maps");
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
@@ -115,38 +116,6 @@ async function initMap(callback) {
 
     // 페이지 로드 후 현위치 가져오기
     getGeoLocation();
-
-    // 오른쪽 위에 장소명 표시할 컨트롤 생성
-    areaNameControl = createAreaNameControl(map);
-
-    // //  지도 클릭 시 주소 가져와서 areaNameControl에 표시
-    // map.addListener("click", async (event) => {
-    //     const lat = event.latLng.lat();
-    //     const lng = event.latLng.lng();
-    //
-    //     const address = await getAddressFromCoords(lat, lng);
-    //     // updateAreaName(address);
-    //
-    //     // 기존 클릭 마커 제거
-    //     if (clickMarker) clickMarker.setMap(null);
-    //     if (infoWindow) infoWindow.close();
-    //
-    //     // 새 마커 추가
-    //     clickMarker = new google.maps.Marker({
-    //         position: { lat, lng },
-    //         map: map,
-    //         title: "클릭한 위치",
-    //     });
-    //
-    //     // 주소를 말풍선으로 표시
-    //     infoWindow = new google.maps.InfoWindow({
-    //         content: `<div style="font-size:14px; padding:5px;">${address}</div>`,
-    //         position: { lat, lng },
-    //     });
-    //
-    //     infoWindow.open(map);
-    // });
-
 }
 
 function getGeoLocation() {
@@ -164,8 +133,12 @@ function getGeoLocation() {
 function updatePosition(position) {
     latitude = position.coords.latitude;
     longitude = position.coords.longitude;
-    document.getElementById("location").innerText = `현위치 위도: ${latitude}, 현위치 경도: ${longitude}`;
+    const location = document.getElementById("location");
 
+    getAddressFromCoords(latitude, longitude)
+        .then(address => {
+            location.innerHTML = `현위치: ${address}`;
+        });
     const userPosition = new google.maps.LatLng(latitude, longitude);
 
     // 기존 마커 삭제 후 새로운 마커 추가
@@ -176,11 +149,11 @@ function updatePosition(position) {
         title: "현재 위치",
     });
 
-    // 현위치 주소 가져오기 -> 장소명 컨트롤에 설정
-    getAddressFromCoords(latitude, longitude)
-        .then(address => {
-            updateAreaName(address); // 기본 주소로 설정
-        });
+    // // 현위치 주소 가져오기 -> 장소명 컨트롤에 설정
+    // getAddressFromCoords(latitude, longitude)
+    //     .then(address => {
+    //         updateAreaName(address); // 기본 주소로 설정
+    //     });
 
     // 폴리곤과 현위치 모두 포함하는 bounds 계산
     const bounds = new google.maps.LatLngBounds();
@@ -268,24 +241,31 @@ function getAreaListByCurrentLocation() {
 }
 
 // 지도에 추가할 커스텀 컨트롤 요소 생성
-function createAreaNameControl(map) {
-    const controlDiv = document.createElement("div");
-    controlDiv.className = 'area-name-control';
-    controlDiv.style.backgroundColor = "#fff";
-    controlDiv.style.border = "2px solid #ccc";
-    controlDiv.style.borderRadius = "5px";
-    controlDiv.style.padding = "10px 15px";
-    controlDiv.style.margin = "10px";
-    controlDiv.style.fontSize = "16px";
-    controlDiv.style.fontWeight = "bold";
-    controlDiv.style.boxShadow = "0px 2px 6px rgba(0,0,0,0.3)";
-    controlDiv.style.textAlign = "center";
-    controlDiv.innerHTML = "장소 이름"; // 기본값
+function createAreaNameControl(map, areaName) {
+    if (areaNameControl) {
+        console.log("areaNameControl exists");
+        const controlDiv = document.querySelector('.area-name-control');
+        controlDiv.innerHTML = areaName;
+    } else {
+        console.log("areaNameControl doesn't exist");
+        const controlDiv = document.createElement("div");
+        controlDiv.className = 'area-name-control';
+        controlDiv.style.backgroundColor = "#fff";
+        controlDiv.style.border = "2px solid #ccc";
+        controlDiv.style.borderRadius = "5px";
+        controlDiv.style.padding = "10px 15px";
+        controlDiv.style.margin = "10px";
+        controlDiv.style.fontSize = "16px";
+        controlDiv.style.fontWeight = "bold";
+        controlDiv.style.boxShadow = "0px 2px 6px rgba(0,0,0,0.3)";
+        controlDiv.style.textAlign = "center";
+        controlDiv.innerHTML = areaName
 
-    // 지도 오른쪽 상단에 추가
-    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controlDiv);
+        areaNameControl = controlDiv;
 
-    return controlDiv;
+        // 지도 오른쪽 상단에 추가
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controlDiv);
+    }
 }
 
 // 폴리곤의 중심 찾기
@@ -329,7 +309,8 @@ function createCustomLabel(map, position, text) {
     overlay.draw = function () {
         const projection = this.getProjection();
         if(!projection) return;
-        const point = projection().fromLatLngToDivPixel(position);
+
+        const point = projection.fromLatLngToDivPixel(position);
         if (point) {
             labelDiv.style.left = `${point.x}px`;
             labelDiv.style.top = `${point.y}px`;
@@ -371,8 +352,8 @@ function showPolygon(polygonCoords, areaName, areaId) {
     // 지도 경계 조정
     adjustMapBounds(polygon);
 
-    // 장소명 업데이트
-    updateAreaName(areaName);
+    // 오른쪽 위에 장소명 표시할 컨트롤 생성
+    createAreaNameControl(map, areaName);
 
     // 날씨, 혼잡도, 문화행사 아이콘 추가
     addInfoIcons(areaId);
@@ -387,6 +368,7 @@ function clearPolygons() {
 
 // 2️⃣ 폴리곤 그리기
 function drawPolygon(coords, areaName) {
+
     const polygon = new google.maps.Polygon({
         paths: coords.map(coord => ({ lat: coord.lat, lng: coord.lon })),
         strokeColor: "#FF0000",
@@ -442,12 +424,12 @@ function adjustMapBounds(polygon) {
 }
 
 
-// 4️⃣ 장소명 업데이트
-function updateAreaName(areaName) {
-    if (areaNameControl) {
-        areaNameControl.innerHTML = areaName;
-    }
-}
+// // 4️⃣ 장소명 업데이트
+// function updateAreaName(areaName) {
+//     if (areaNameControl) {
+//         areaNameControl.innerHTML = areaName;
+//     }
+// }
 
 // 5️⃣ 아이콘 추가
 function addInfoIcons(areaId) {
