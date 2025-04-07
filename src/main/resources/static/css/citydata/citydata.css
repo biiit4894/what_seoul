@@ -1,0 +1,276 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+}
+
+.navbar {
+    /*position: fixed; !* 항상 상단 고정 *!*/
+    width: 100%;
+    z-index: 1000; /* 다른 요소들보다 위로 배치 */
+}
+
+.wrapper-1 {
+    position: absolute;
+    /*top: 0;*/
+    left: 0;
+    z-index: 1000;
+
+
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.8); /* 반투명 배경 */
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.wrapper-2 {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.8); /* 반투명 배경 */
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.wrapper-3 {
+    background: rgba(255, 255, 255, 0.8); /* 반투명 배경 */
+    padding: 10px;
+    border-radius: 8px;
+}
+
+#search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none; /* 기본적으로 숨김 */
+}
+
+.search-result-item {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.search-result-item:hover {
+    background-color: #f0f0f0;
+}
+
+#map {
+    position: absolute; /* 화면을 채우도록 설정 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 0; /* 지도는 가장 아래에 있도록 설정 */
+}
+
+.info-icons {
+    position: absolute;
+    display: flex;
+
+
+
+}
+
+.info-icon {
+    background-color: rgb(255, 255, 255);
+    border: 2px solid rgb(204, 204, 204);
+    border-radius: 5px;
+    margin-left: 5px;
+    padding: 5px 10px;
+    font-size: 13px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 6px;
+    transition: box-shadow 0.1s ease-in-out;
+    cursor: pointer;
+}
+
+.info-icon:hover {
+    box-shadow: rgba(0, 0, 0, 0.6) 0px 4px 10px;
+}
+
+.weather-modal,
+.culture-event-modal,
+.population-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명한 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.weather-modal-content,
+.culture-event-modal-content,
+.population-modal-content {
+    background: rgba(255, 255, 255, 0.9); /* 살짝 투명한 배경 */
+    padding: 20px;
+    border-radius: 12px; /* 약간의 border-radius */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    max-width: 50vw;
+    max-height: 80vh; /* 최대 높이를 화면의 80%로 제한 */
+    text-align: center;
+    position: relative;
+    backdrop-filter: blur(10px); /* 블러 효과 추가 */
+    overflow-y: auto; /* 내부 세로 스크롤 가능 */
+}
+
+.weather-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+    text-align: left;
+}
+
+.weather-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.weather-icon {
+    font-size: 24px;
+}
+
+.weather-details {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.event-thumbnail {
+    max-width: 100px;  /* 최대 너비를 100px로 제한 */
+    width: auto;       /* 원본 비율 유지 */
+    height: auto;      /* 높이도 자동 조정 */
+    border-radius: 5px;
+    object-fit: contain; /* 이미지가 찌그러지지 않도록 설정 */
+}
+
+.event-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.event-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.event-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.event-info h7 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.event-info p {
+    margin: 2px 0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.event-info a {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.event-info a:hover {
+    color: #0056b3;
+}
+
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-right: 5px;
+}
+
+.modal-header h5 {
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: bold;
+    text-align: left;
+}
+
+.close-button {
+    font-size: 24px;
+    cursor: pointer;
+    color: #555;
+    transition: color 0.3s ease;
+    position: static; /* 기존 absolute 제거 */
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+/* 소괄호 내부 텍스트는 더 작게 표현*/
+.text-small {
+    font-size: 0.7em;
+    color: #666;
+}
+
+/* 인구데이터에서 작게 표현할 텍스트*/
+.text-small-ppltn {
+    font-size: 0.85em;
+}
+
+/* 현위치 버튼 */
+#current-location-btn {
+    position: absolute;
+    bottom: 160px; /* 구글 맵 줌 컨트롤(보통 bottom: 40px)과 bootstrap4 navbar(height 56px) css를 고려해 위치시키기 */
+    right: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: pointer;
+    z-index: 5; /* 지도의 다른 요소들보다 위에 나오도록 */
+}
+
+/*.modal-population-info-section {*/
+/*    padding: 10px 0;*/
+/*    font-size: 14px;*/
+/*    line-height: 1.6;*/
+/*}*/
+
+/*.modal-population-info-section p {*/
+/*    margin: 5px 0;*/
+/*}*/
+

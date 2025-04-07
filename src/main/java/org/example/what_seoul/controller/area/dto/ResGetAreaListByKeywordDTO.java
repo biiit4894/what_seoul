@@ -1,4 +1,4 @@
-package org.example.what_seoul.controller.citydata.dto;
+package org.example.what_seoul.controller.area.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResLocationBasedCityDataDTO {
-    private List<PlaceDTO> nearestPlaces;
+public class ResGetAreaListByKeywordDTO {
+    private List<AreaDTO> areaList;
 }

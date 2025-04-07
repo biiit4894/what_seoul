@@ -4,21 +4,14 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.controller.citydata.dto.PlaceDTO;
-import org.example.what_seoul.controller.citydata.dto.ReqLocationBasedCityDataDTO;
-import org.example.what_seoul.controller.citydata.dto.ResLocationBasedCityDataDTO;
-import org.example.what_seoul.controller.citydata.dto.ResCultureEventDTO;
-import org.example.what_seoul.controller.citydata.dto.ResPopulationDTO;
-import org.example.what_seoul.controller.citydata.dto.ResWeatherDTO;
+import org.example.what_seoul.controller.citydata.dto.*;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.weather.Weather;
-import org.example.what_seoul.repository.citydata.AreaRepository;
+import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
-import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
-import org.example.what_seoul.util.GeoJsonLoader;
 import org.example.what_seoul.util.LocationChecker;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +25,7 @@ public class CitydataService {
     private final PopulationRepository populationRepository;
     private final WeatherRepository weatherRepository;
     private final CultureEventRepository cultureEventRepository;
+    private final AreaRepository areaRepository;
     private final LocationChecker locationChecker;
 
     public CommonResponse<ResPopulationDTO> findPopulationDataByAreaId(Long areaId) {
@@ -61,15 +55,4 @@ public class CitydataService {
                 ResCultureEventDTO.from(cultureEventList)
         );
     }
-
-    public CommonResponse<ResLocationBasedCityDataDTO> getLocationBasedCityData(ReqLocationBasedCityDataDTO reqLocationBasedCityDataDTO) {
-        List<PlaceDTO> nearestPlaces = locationChecker.findLocations(reqLocationBasedCityDataDTO.getLatitude(), reqLocationBasedCityDataDTO.getLongitude());
-        return new CommonResponse<>(
-                true,
-                "현위치 기반 도시데이터 조회 성공",
-                new ResLocationBasedCityDataDTO(nearestPlaces)
-        );
-
-    }
-
 }

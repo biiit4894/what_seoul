@@ -1,7 +1,6 @@
-package org.example.what_seoul.controller.index;
+package org.example.what_seoul.controller.citydata;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.service.user.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,16 +10,16 @@ import java.util.Objects;
 
 @Controller
 @RequiredArgsConstructor
-@Slf4j
-public class IndexViewController {
+public class CitydataViewController {
     private final UserService userService;
-    @GetMapping("/")
-    public String index(Model model) {
+
+    @GetMapping("/citydata")
+    public String getCitydataMainView(Model model) {
         model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
 
         if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser")) {
             model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
         }
-        return "index";
+        return "citydata/citydata";
     }
 }

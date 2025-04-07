@@ -37,17 +37,17 @@ public class Area {
     private String areaName;
 
     /**
-     * 장소명(영문)
-     * - ex. Gangnam MICE Special Tourist Zone
+     * Polygon 데이터 (WKT 형식)
      */
-    @Column(nullable = false)
-    private String engName;
+    @Lob
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String polygonWkt;
 
-    public Area(String category, String areaCode, String areaName, String engName) {
+    public Area(String category, String areaCode, String areaName, String polygonWkt) {
         this.category = category;
         this.areaCode = areaCode;
         this.areaName = areaName;
-        this.engName = engName;
+        this.polygonWkt = polygonWkt;
     }
 
 }

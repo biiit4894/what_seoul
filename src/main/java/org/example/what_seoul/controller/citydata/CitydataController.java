@@ -29,9 +29,4 @@ public class CitydataController {
     public ResponseEntity<CommonResponse<List<ResCultureEventDTO>>> getCultureEventData(@PathVariable Long areaId) {
         return ResponseEntity.ok().body(citydataService.findCultureEventDataByAreaId(areaId));
     }
-
-    @PostMapping("/lbs")
-    public ResponseEntity<CommonResponse<ResLocationBasedCityDataDTO>> getLocationBasedCityData(@RequestBody ReqLocationBasedCityDataDTO reqLocationBasedCityDataDTO) {
-        return ResponseEntity.ok().body(citydataService.getLocationBasedCityData(reqLocationBasedCityDataDTO));
-    }
 }
