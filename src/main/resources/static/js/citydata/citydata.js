@@ -288,6 +288,7 @@ function getPolygonCenter(polygon) {
 function createCustomLabel(map, position, text) {
     const labelDiv = document.createElement("div");
     labelDiv.className = "custom-label";
+    labelDiv.id = `custom-label-${text}`;
     labelDiv.textContent = text;
 
     // 스타일은 자유롭게 조절 가능
@@ -299,14 +300,17 @@ function createCustomLabel(map, position, text) {
     labelDiv.style.border = "1px solid #FF0000";
     labelDiv.style.borderRadius = "4px";
     labelDiv.style.whiteSpace = "nowrap";
-    labelDiv.style.pointerEvents = "none";
+    labelDiv.style.pointerEvents = "auto"; // 포인터 이벤트 활성화
     labelDiv.style.transform = "translate(-50%, -100%)";
     labelDiv.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
     labelDiv.style.zIndex = "999";
+    labelDiv.style.opacity = "0.7"; // 기본 불투명
+
+
 
     const overlay = new google.maps.OverlayView();
     overlay.onAdd = function () {
-        this.getPanes().overlayLayer.appendChild(labelDiv);
+        this.getPanes().overlayMouseTarget.appendChild(labelDiv);
     };
     overlay.draw = function () {
         const projection = this.getProjection();
@@ -349,7 +353,7 @@ function showPolygon(polygonCoords, areaName, areaId) {
     clearPolygons();
 
     // 새 폴리곤 그리기
-    const polygon = drawPolygon(polygonCoords, areaName);
+    const polygon = drawPolygon(polygonCoords, areaName, areaId);
 
     // 지도 경계 조정
     adjustMapBounds(polygon);
@@ -369,7 +373,7 @@ function clearPolygons() {
 
 
 // 2️⃣ 폴리곤 그리기
-function drawPolygon(coords, areaName) {
+function drawPolygon(coords, areaName, areaId) {
 
     const polygon = new google.maps.Polygon({
         paths: coords.map(coord => ({ lat: coord.lat, lng: coord.lon })),
@@ -404,13 +408,34 @@ function drawPolygon(coords, areaName) {
 
     // 폴리곤 마우스 오버할 때 더 진하게 표현
     polygon.addListener('mouseover', () => {
-        polygon.setOptions(hoverStyle);
+        console.log('mouseover');
+        polygon.setOptions(hoverStyle); // 폴리곤 더 진하게
+        const labelDiv = document.getElementById(`custom-label-${areaName}`);
+        if(labelDiv) {
+            labelDiv.style.opacity = "1";
+            labelDiv.style.zIndex = "1000";
+        } // 라벨 더 진하게
     });
 
     // 폴리곤 마우스 아웃할 때 더 연하게 표현
     polygon.addListener('mouseout', () => {
-        polygon.setOptions(defaultStyle);
+        console.log('mouseout');
+        polygon.setOptions(defaultStyle); // 폴리곤 더 연하게
+        const labelDiv = document.getElementById(`custom-label-${areaName}`);
+        if(labelDiv) {
+            labelDiv.style.opacity = "0.7";
+            labelDiv.style.zIndex = "999";
+        } // 라벨 더 연하게
     });
+
+    // 폴리곤 클릭 시 도시데이터 아이콘 및 장소명 표기
+    polygon.addListener('click', () => {
+        createAreaNameControl(map, areaName);
+        addInfoIcons(areaId);
+    })
+
+    // 폴리곤 마우스오버시 라벨 진하게
+    // 폴리곤 마우스아웃시 라벨 연하게
 
     polygons.push(polygon);
     return polygon;

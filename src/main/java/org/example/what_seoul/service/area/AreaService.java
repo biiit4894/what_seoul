@@ -40,12 +40,12 @@ public class AreaService {
         List<Area> areaList = areaRepository.findByAreaNameContaining(query.trim()).orElseThrow(() -> new EntityNotFoundException("Area not found"));
 
         WKTReader wktReader = new WKTReader(new GeometryFactory());
-        List<AreaDTO> AreaDTOList = new ArrayList<>();
+        List<AreaDTO> areaDTOList = new ArrayList<>();
 
         for (Area area : areaList) {
             try {
                 Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                AreaDTOList.add(AreaDTO.from(area, polygon));
+                areaDTOList.add(AreaDTO.from(area, polygon));
             } catch (ParseException e) {
 
                 log.error("Error parsing WKT: {}", e.getMessage());
@@ -56,7 +56,32 @@ public class AreaService {
         return new CommonResponse<>(
                 true,
                 "장소 조회 성공",
-                new ResGetAreaListByKeywordDTO(AreaDTOList)
+                new ResGetAreaListByKeywordDTO(areaDTOList)
         );
     }
+
+    public CommonResponse<List<AreaDTO>> getAllAreaList() {
+        List<Area> areaList = areaRepository.findAll();
+
+        WKTReader wktReader = new WKTReader(new GeometryFactory());
+        List<AreaDTO> areaDTOList = new ArrayList<>();
+
+        for (Area area : areaList) {
+            try {
+                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
+                areaDTOList.add(AreaDTO.from(area, polygon));
+            } catch (ParseException e) {
+
+                log.error("Error parsing WKT: {}", e.getMessage());
+                throw new RuntimeException("Invalid polygon data", e);
+            }
+        }
+
+        return new CommonResponse<>(
+                true,
+                "장소 전체 조회 성공",
+                areaDTOList
+        );
+    }
+
 }
