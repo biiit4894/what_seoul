@@ -29,7 +29,17 @@ function adjustLayout() {
     }
 }
 
-window.addEventListener("DOMContentLoaded", getAllAreas);
+window.onload = () => {
+    fetch('/api/area/all')
+        .then(response => response.json())
+        .then(data => {
+            const areas = data.data;
+            clearCustomLabels();
+            clearPolygons();
+            showAllPolygons(areas, false); // 첫 로딩 시에는 폴리곤을 회색으로 표현
+        });
+}
+// window.addEventListener("DOMContentLoaded", getAllAreas);
 window.addEventListener("load", adjustLayout);
 window.addEventListener("resize", adjustLayout); // 브라우저 크기가 변경될 때도 적ㅇㅇ
 
@@ -483,13 +493,15 @@ function addInfoIcons(areaId) {
 
     const areaNameControl = document.querySelector('.area-name-control');
     areaNameControl.after(iconsContainer);
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(iconsContainer);
 
-    const style = window.getComputedStyle(areaNameControl);
-    const areaNameControlWidth = areaNameControl.offsetWidth;
-    const marginRight = parseFloat(style.marginRight);
-    const marginTop = parseFloat(style.marginTop);
-    iconsContainer.style.top = `${marginTop}px`;
-    iconsContainer.style.right = `${areaNameControlWidth + marginRight + 20}px`;
+
+    // const style = window.getComputedStyle(areaNameControl);
+    // const areaNameControlWidth = areaNameControl.offsetWidth;
+    // const marginRight = parseFloat(style.marginRight);
+    // const marginTop = parseFloat(style.marginTop);
+    // iconsContainer.style.top = `${marginTop}px`;
+    // iconsContainer.style.right = `${areaNameControlWidth + marginRight + 20}px`;
 
     const weatherIcon = document.querySelector('#weather-icon');
     const populationIcon = document.querySelector('#population-icon');

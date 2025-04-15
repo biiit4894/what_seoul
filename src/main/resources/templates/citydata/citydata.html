@@ -73,10 +73,21 @@
     </label>
 
     <button class="btn btn-success mt-3" onclick="getAreaListByCurrentLocation()">현위치 기준 조회</button>
+    <button class="btn btn-warning mt-2" onclick="getAllAreas()">전체 혼잡도 조회</button>
+
     <p class="lead" id="location"></p>
     <p class="text-muted" id="citydata"></p>
 </div>
-<div id="map" class="border"></div>
+<div id="map" class="border">
+<!--    &lt;!&ndash; ✅ 혼잡도 범례 박스 &ndash;&gt;-->
+<!--    <div id="congestion-legend" class="legend-box" style="display: none;">-->
+<!--        <strong>혼잡도 지표</strong>-->
+<!--        <div><span class="legend-color" style="background-color: #FF0000;"></span> 붐빔</div>-->
+<!--        <div><span class="legend-color" style="background-color: #ff8000;"></span> 약간 붐빔</div>-->
+<!--        <div><span class="legend-color" style="background-color: rgba(17,110,1,0.66);"></span> 보통</div>-->
+<!--        <div><span class="legend-color" style="background-color: #0059b0;"></span> 여유</div>-->
+<!--    </div>-->
+</div>
 <div id="current-location-btn">
     📍 현위치
 </div>

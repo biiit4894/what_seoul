@@ -1,3 +1,6 @@
+let congestionLegendOverlay = null;
+
+
 // 전체 장소 정보 조회
 function getAllAreas() {
     fetch('/api/area/all', {
@@ -13,22 +16,67 @@ function getAllAreas() {
             clearCustomLabels();
             clearPolygons();
             // TODO: 전체 장소 폴리곤 또는 마커 표기 + 혼잡도 마커로 표기
-            showAllPolygons(areas);
+            showAllPolygons(areas, true);
+            createLegendOverlay(map); // 지도에 혼잡도 범례 표시
 
         })
         .catch(error => console.error("Error:", error));
 }
 
-function showAllPolygons(areas) {
+// 혼잡도 범례 생성
+function createLegendOverlay(map) {
+    // 기존 컨트롤 제거 (중복 방지)
+    const existingLegend = document.querySelector('.legend-control');
+    if (existingLegend) {
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].forEach((el, idx) => {
+            if (el.className === 'legend-control') {
+                map.controls[google.maps.ControlPosition.TOP_RIGHT].removeAt(idx);
+            }
+        });
+    }
+
+    const legendDiv = document.createElement("div");
+    legendDiv.className = "legend-control";
+    legendDiv.innerHTML = `  
+        <strong>혼잡도 지표</strong><br>
+        <span style="color: #FF0000;">■ 붐빔</span><br>
+        <span style="color: #ff8000;">■ 약간 붐빔</span><br>
+        <span style="color: rgba(17,110,1,0.66);">■ 보통</span><br>
+        <span style="color: #0059b0;">■ 여유</span>
+    `;
+
+    Object.assign(legendDiv.style, {
+        backgroundColor: "white",
+        border: "1px solid #ccc",
+        borderRadius: "5px",
+        padding: "10px",
+        fontSize: "13px",
+        margin: "10px",
+        boxShadow: "0px 2px 6px rgba(0,0,0,0.3)",
+    });
+
+    // 👉 지도 오른쪽 상단에 추가 (전체 화면 보기 버튼 바로 아래)
+    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendDiv);
+}
+
+function showAllPolygons(areas, useCongestionLevel) {
     // 기존 라벨 제거
     // clearCustomLabels();
 
     // 기존 폴리곤 제거
     // clearPolygons();
 
-    areas.forEach((area, index) => {
+    areas.forEach((area) => {
+        const color = useCongestionLevel ? getColorByCongestionLevel(area.congestionLevel) : '#FF0000';
+
         // 새 폴리곤 그리기
-        const polygon = drawPolygonWithCongestionLevel(area.polygonCoords, area.areaName, area.areaId, area.congestionLevel);
+        const polygon = drawPolygonWithCongestionLevel(
+            area.polygonCoords,
+            area.areaName,
+            area.areaId,
+            area.congestionLevel,
+            color
+        );
         console.log(area.areaName + "의 혼잡도: " + area.congestionLevel);
 
         // 지도 경계 조정
@@ -36,12 +84,7 @@ function showAllPolygons(areas) {
     })
 }
 
-function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLevel) {
-    console.log("cooords: " + coords);
-    console.log("areaName: " + areaname); // areaName 전역변수에 값을 재할당해야 하기 때문에 변수명 areaname으로 변경
-    console.log("areaId: " + areaId);
-    console.log("congestionLevel: " + congestionLevel);
-
+function getColorByCongestionLevel(level) {
     // 혼잡도별 색상 매핑
     const colorMap = {
         '붐빔': '#FF0000',
@@ -49,9 +92,25 @@ function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLeve
         '보통': 'rgba(17,110,1,0.66)',
         '여유': '#0059b0'
     };
+    return colorMap[level] || '#FF0000';
+}
 
-    const color = colorMap[congestionLevel] || '#CCCCCC'; // 기본 회색
-    console.log(areaname + "의 색상: " + color)
+function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLevel, color) {
+    console.log("cooords: " + coords);
+    console.log("areaName: " + areaname); // areaName 전역변수에 값을 재할당해야 하기 때문에 변수명 areaname으로 변경
+    console.log("areaId: " + areaId);
+    console.log("congestionLevel: " + congestionLevel);
+    //
+    // // 혼잡도별 색상 매핑
+    // const colorMap = {
+    //     '붐빔': '#FF0000',
+    //     '약간 붐빔': '#ff8000',
+    //     '보통': 'rgba(17,110,1,0.66)',
+    //     '여유': '#0059b0'
+    // };
+
+    // const color = colorMap[congestionLevel] || '#CCCCCC'; // 기본 회색
+    // console.log(areaname + "의 색상: " + color)
 
     const polygon = new google.maps.Polygon({
         paths: coords.map(coord => ({ lat: coord.lat, lng: coord.lon })),
