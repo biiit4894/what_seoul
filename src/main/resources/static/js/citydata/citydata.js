@@ -3,7 +3,7 @@ let latitude, longitude;
 let polygons = [];
 let areaId, areaName;
 let customLabels = []; // 폴리곤의 중심에 표시된 모든 라벨을 추적
-const LABEL_ZOOM_THRESHOLD = 10; // 이 줌 이상에서만 라벨 보이게 (서울시를 벗어나면 라벨 사라짐)
+const LABEL_ZOOM_THRESHOLD = 12; // 이 줌 이상에서만 라벨 보이게 (구 단위를 벗어나면 라벨 사라짐)
 // 지도 초기화 시 컨트롤 추가
 let areaNameControl;
 let areas = []; // 전체 장소 정보 관리
@@ -36,7 +36,7 @@ window.onload = () => {
             const areas = data.data;
             clearCustomLabels();
             clearPolygons();
-            showAllPolygons(areas, false); // 첫 로딩 시에는 폴리곤을 회색으로 표현
+            showAllPolygons(areas); // 첫 로딩 시에는 폴리곤을 회색으로 표현
         });
 }
 // window.addEventListener("DOMContentLoaded", getAllAreas);

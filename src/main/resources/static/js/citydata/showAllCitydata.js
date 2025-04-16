@@ -1,9 +1,31 @@
 let congestionLegendOverlay = null;
+let selectedPolygon = null;
+
+function removeAreaNameControl() {
+    const existingControl = document.querySelector('.area-name-control');
+    if (existingControl && existingControl.parentNode) {
+        existingControl.parentNode.removeChild(existingControl);
+    }
+}
+
+function removeInfoIcons() {
+    document.querySelectorAll('.info-icon').forEach(el => {
+        if (el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    });
+}
 
 
-// 전체 장소 정보 조회
-function getAllAreas() {
-    fetch('/api/area/all', {
+// 전체 장소 정보 및 혼잡도 조회
+function getAllAreasWithCongestionLevel() {
+    selectedPolygon = null;
+    removeAreaNameControl(); // 장소명 컨트롤 제거
+    removeInfoIcons(); // info-icon 제거
+
+    document.getElementById('citydata').innerHTML = '';
+
+    fetch('/api/area/all/ppltn', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -16,11 +38,36 @@ function getAllAreas() {
             clearCustomLabels();
             clearPolygons();
             // TODO: 전체 장소 폴리곤 또는 마커 표기 + 혼잡도 마커로 표기
-            showAllPolygons(areas, true);
+            showAllPolygons(areas, { useCongestionLevel: true });
             createLegendOverlay(map); // 지도에 혼잡도 범례 표시
 
         })
         .catch(error => console.error("Error:", error));
+}
+
+function getAllAreasWithWeather() {
+    selectedPolygon = null;
+    removeAreaNameControl(); // 장소명 컨트롤 제거
+    removeInfoIcons(); // info-icon 제거
+
+    document.getElementById('citydata').innerHTML = '';
+
+    fetch(`/api/area/all/weather`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => response.json())
+        .then(data => {
+            const areas = data.data;
+            console.log(areas);
+            clearCustomLabels();
+            clearPolygons();
+            showAllPolygons(areas, { useTemperature : true });
+
+        })
+        .catch(error => console.error("Error:", error));
+
 }
 
 // 혼잡도 범례 생성
@@ -59,23 +106,31 @@ function createLegendOverlay(map) {
     map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendDiv);
 }
 
-function showAllPolygons(areas, useCongestionLevel) {
-    // 기존 라벨 제거
-    // clearCustomLabels();
+function showAllPolygons(areas, options = {}) {
+    const {
+        useCongestionLevel = false,
+        useTemperature = false
+    } = options;
 
-    // 기존 폴리곤 제거
-    // clearPolygons();
+    console.log("---")
+    console.log("useCongestionLevel: ", useCongestionLevel);
+    console.log("useTemperature: ", useTemperature);
+    console.log("---")
 
     areas.forEach((area) => {
-        const color = useCongestionLevel ? getColorByCongestionLevel(area.congestionLevel) : '#FF0000';
+        const color = useCongestionLevel
+            ? getColorByCongestionLevel(area.congestionLevel)
+            : '#FF0000';
 
         // 새 폴리곤 그리기
-        const polygon = drawPolygonWithCongestionLevel(
+        const polygon = drawPolygonWithOptions(
             area.polygonCoords,
             area.areaName,
             area.areaId,
             area.congestionLevel,
-            color
+            area.temperature,
+            color,
+            useTemperature
         );
         console.log(area.areaName + "의 혼잡도: " + area.congestionLevel);
 
@@ -85,6 +140,8 @@ function showAllPolygons(areas, useCongestionLevel) {
 }
 
 function getColorByCongestionLevel(level) {
+    console.log("혼잡도 값(level):", level);
+
     // 혼잡도별 색상 매핑
     const colorMap = {
         '붐빔': '#FF0000',
@@ -95,23 +152,15 @@ function getColorByCongestionLevel(level) {
     return colorMap[level] || '#FF0000';
 }
 
-function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLevel, color) {
-    console.log("cooords: " + coords);
-    console.log("areaName: " + areaname); // areaName 전역변수에 값을 재할당해야 하기 때문에 변수명 areaname으로 변경
-    console.log("areaId: " + areaId);
-    console.log("congestionLevel: " + congestionLevel);
-    //
-    // // 혼잡도별 색상 매핑
-    // const colorMap = {
-    //     '붐빔': '#FF0000',
-    //     '약간 붐빔': '#ff8000',
-    //     '보통': 'rgba(17,110,1,0.66)',
-    //     '여유': '#0059b0'
-    // };
-
-    // const color = colorMap[congestionLevel] || '#CCCCCC'; // 기본 회색
-    // console.log(areaname + "의 색상: " + color)
-
+function drawPolygonWithOptions(
+    coords,
+    areaname,
+    areaId,
+    congestionLevel,
+    temperature,
+    color,
+    useTemperature
+) {
     const polygon = new google.maps.Polygon({
         paths: coords.map(coord => ({ lat: coord.lat, lng: coord.lon })),
         strokeColor: color,
@@ -138,15 +187,19 @@ function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLeve
     };
 
     const center = getPolygonCenter(polygon);
+    const labelText = (useTemperature && temperature !== undefined) ? `${temperature}℃` : areaname;
 
-    // 수정된: 라벨도 색상 적용해서 표시
-    createCustomLabelWithCongestionLevel(map, center, areaname, color);
+    if (useTemperature && temperature !== undefined) {
+        createCustomLabelWithOptions(map, center, labelText, 'black', areaId); // 온도 라벨
+    } else {
+        createCustomLabelWithOptions(map, center, labelText, color, areaId); // 장소명 라벨
+    }
 
     polygon.setMap(map);
 
     polygon.addListener('mouseover', () => {
         polygon.setOptions(hoverStyle);
-        const labelDiv = document.getElementById(`custom-label-${areaname}`);
+        const labelDiv = document.getElementById(`custom-label-${areaId}`);
         if (labelDiv) {
             labelDiv.style.opacity = "1";
             labelDiv.style.zIndex = "1000";
@@ -154,15 +207,39 @@ function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLeve
     });
 
     polygon.addListener('mouseout', () => {
-        polygon.setOptions(defaultStyle);
-        const labelDiv = document.getElementById(`custom-label-${areaname}`);
-        if (labelDiv) {
-            labelDiv.style.opacity = "0.7";
-            labelDiv.style.zIndex = "999";
+        // 클릭된 상태가 아니면 다시 연하게 변경
+        if (selectedPolygon !== polygon) {
+            polygon.setOptions(defaultStyle);
+            const labelDiv = document.getElementById(`custom-label-${areaId}`);
+            if (labelDiv) {
+                labelDiv.style.opacity = "0.7";
+                labelDiv.style.zIndex = "999";
+            }
         }
     });
 
     polygon.addListener('click', () => {
+        // 기존 선택된 폴리곤이 있다면 다시 연하게 변경
+        if (selectedPolygon && selectedPolygon !== polygon) {
+            selectedPolygon.setOptions(defaultStyle);
+            const prevLabel = document.getElementById(`custom-label-${selectedPolygon.areaName}`);
+            if (prevLabel) {
+                prevLabel.style.opacity = "0.7";
+                prevLabel.style.zIndex = "999";
+            }
+        }
+
+        // 현재 클릭된 폴리곤을 선택한 상태(selectedPolygon)으로 저장
+        selectedPolygon = polygon;
+        polygon.areaName = areaname; // 폴리곤에 이름 저장해두기
+
+        polygon.setOptions(hoverStyle);
+        const labelDiv = document.getElementById(`custom-label-${areaId}`);
+        if (labelDiv) {
+            labelDiv.style.opacity = "1";
+            labelDiv.style.zIndex = "1000";
+        }
+
         areaName = areaname;
         createAreaNameControl(map, areaname);
         addInfoIcons(areaId);
@@ -173,10 +250,10 @@ function drawPolygonWithCongestionLevel(coords, areaname, areaId, congestionLeve
 }
 
 // 폴리곤 중앙에 표현할 커스텀 라벨을 생성하고 지도에 붙이기
-function createCustomLabelWithCongestionLevel(map, position, text, color) {
+function createCustomLabelWithOptions(map, position, text, color, areaId) {
     const labelDiv = document.createElement("div");
     labelDiv.className = "custom-label";
-    labelDiv.id = `custom-label-${text}`;
+    labelDiv.id = `custom-label-${areaId}`;
     labelDiv.textContent = text;
 
     labelDiv.style.position = "absolute";
