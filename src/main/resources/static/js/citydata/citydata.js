@@ -33,7 +33,10 @@ window.onload = () => {
     fetch('/api/area/all')
         .then(response => response.json())
         .then(data => {
-            const areas = data.data;
+            const areas = data.data.map(area => ({
+                ...area,
+                areaId: area.id
+            }));
             clearCustomLabels();
             clearPolygons();
             showAllPolygons(areas); // 첫 로딩 시에는 폴리곤을 회색으로 표현

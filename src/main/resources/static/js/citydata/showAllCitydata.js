@@ -132,7 +132,7 @@ function showAllPolygons(areas, options = {}) {
             color,
             useTemperature
         );
-        console.log(area.areaName + "의 혼잡도: " + area.congestionLevel);
+        console.log(area.areaName + "의 areaId: " + area.areaId);
 
         // 지도 경계 조정
         adjustMapBounds(polygon);
@@ -187,34 +187,30 @@ function drawPolygonWithOptions(
     };
 
     const center = getPolygonCenter(polygon);
-    const labelText = (useTemperature && temperature !== undefined) ? `${temperature}℃` : areaname;
-
     if (useTemperature && temperature !== undefined) {
-        createCustomLabelWithOptions(map, center, labelText, 'black', areaId); // 온도 라벨
+        // 온도 라벨 (검은 글씨, 테두리+배경)
+        createCustomLabelWithOptions(map, center, `${temperature}℃`, 'black', areaId, true);
+
+        // 장소명 라벨 (검은 글씨, 투명 배경)
+        createCustomLabelWithOptions(map, center, areaname, 'black', `${areaId}-name`, false);
     } else {
-        createCustomLabelWithOptions(map, center, labelText, color, areaId); // 장소명 라벨
+        // 장소명 라벨만
+        createCustomLabelWithOptions(map, center, areaname, color, areaId, false);
     }
 
     polygon.setMap(map);
 
     polygon.addListener('mouseover', () => {
         polygon.setOptions(hoverStyle);
-        const labelDiv = document.getElementById(`custom-label-${areaId}`);
-        if (labelDiv) {
-            labelDiv.style.opacity = "1";
-            labelDiv.style.zIndex = "1000";
-        }
+        showLabel(areaId); // ✅
+
     });
 
     polygon.addListener('mouseout', () => {
         // 클릭된 상태가 아니면 다시 연하게 변경
         if (selectedPolygon !== polygon) {
             polygon.setOptions(defaultStyle);
-            const labelDiv = document.getElementById(`custom-label-${areaId}`);
-            if (labelDiv) {
-                labelDiv.style.opacity = "0.7";
-                labelDiv.style.zIndex = "999";
-            }
+            hideLabel(areaId); // ✅
         }
     });
 
@@ -249,26 +245,67 @@ function drawPolygonWithOptions(
     return polygon;
 }
 
+function showLabel(areaId) {
+    const labels = [
+        document.getElementById(`custom-label-${areaId}`),
+        document.getElementById(`custom-label-${areaId}-name`)
+    ];
+    labels.forEach(label => {
+        if (label) {
+            console.log("Showing label: ", label);
+
+            label.style.opacity = "1";
+            label.style.zIndex = "1000";
+        }
+    });
+}
+
+function hideLabel(areaId) {
+    const labels = [
+        document.getElementById(`custom-label-${areaId}`),
+        document.getElementById(`custom-label-${areaId}-name`)
+    ];
+    labels.forEach(label => {
+        if (label) {
+            console.log("Hiding label: ", label);
+
+            label.style.opacity = "0.7";
+            label.style.zIndex = "999";
+        }
+    });
+}
+
+
 // 폴리곤 중앙에 표현할 커스텀 라벨을 생성하고 지도에 붙이기
-function createCustomLabelWithOptions(map, position, text, color, areaId) {
+function createCustomLabelWithOptions(map, position, text, color, labelId, isTemperatureLabel) {
     const labelDiv = document.createElement("div");
     labelDiv.className = "custom-label";
-    labelDiv.id = `custom-label-${areaId}`;
+    labelDiv.id = `custom-label-${labelId}`;
     labelDiv.textContent = text;
+
+    const yOffset = isTemperatureLabel ? -15 : 5; // ✅ 겹치지 않도록 오프셋 조정
 
     labelDiv.style.position = "absolute";
     labelDiv.style.padding = "2px 6px";
     labelDiv.style.fontSize = "12px";
     labelDiv.style.color = color;
-    labelDiv.style.backgroundColor = "white";
-    labelDiv.style.border = `1px solid ${color}`;
     labelDiv.style.borderRadius = "4px";
     labelDiv.style.whiteSpace = "nowrap";
     labelDiv.style.pointerEvents = "auto";
     labelDiv.style.transform = "translate(-50%, -100%)";
     labelDiv.style.boxShadow = "0 1px 4px rgba(0,0,0,0.3)";
-    labelDiv.style.zIndex = "999";
+    labelDiv.style.zIndex = "2000"; // 라벨의 zIndex를 높게 설정
     labelDiv.style.opacity = "0.7";
+
+    if (isTemperatureLabel) {
+        // 온도 라벨: 배경/테두리 O
+        labelDiv.style.backgroundColor = "white";
+        labelDiv.style.border = `1px solid ${color}`;
+    } else {
+        // 장소명 라벨: 테두리 X
+        labelDiv.style.backgroundColor = "white";
+        labelDiv.style.border = "none";
+    }
 
     const overlay = new google.maps.OverlayView();
     overlay.onAdd = function () {
@@ -281,7 +318,7 @@ function createCustomLabelWithOptions(map, position, text, color, areaId) {
         const point = projection.fromLatLngToDivPixel(position);
         if (point) {
             labelDiv.style.left = `${point.x}px`;
-            labelDiv.style.top = `${point.y}px`;
+            labelDiv.style.top = `${point.y + yOffset}px`;
         }
 
         const zoom = map.getZoom();
