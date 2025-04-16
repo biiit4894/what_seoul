@@ -24,6 +24,7 @@ public class AreaService {
     private final AreaRepository areaRepository;
     private final LocationChecker locationChecker;
 
+    // TODO: message 및 메소드명 변경 필요
     public CommonResponse<ResGetAreaListByCurrentLocationDTO> getLocationBasedCityData(ReqGetAreaListByCurrentLocationDTO reqGetAreaListByCurrentLocationDTO) {
         List<AreaDTO> nearestPlaces = locationChecker.findLocations(reqGetAreaListByCurrentLocationDTO.getLatitude(), reqGetAreaListByCurrentLocationDTO.getLongitude());
         return new CommonResponse<>(
@@ -76,15 +77,12 @@ public class AreaService {
 
         return new CommonResponse<>(
                 true,
-                "장소 전체 조회 성공",
+                "전체 장소 조회 성공",
                 areaDTOList
         );
     }
 
-    // TODO: ResAreaWithCongestionLevelDTO를 repository에서 조회해와서, polygonWkt를 polygonCoords로 변환 필요
-    // TODO: ResAreaWithCongestionLevelDTO의 DTO 네이밍 변경 + 새로운 응답 DTO 필요
     public CommonResponse<List<ResGetAreaWithCongestionLevelDTO>> getAllAreasWithCongestionLevel() {
-//        List<Area> areaList = areaRepository.findAll();
         List<AreaWithCongestionLevelDTO> areaList = areaRepository.findAllAreasWithCongestionLevel();
 
         WKTReader wktReader = new WKTReader(new GeometryFactory());
@@ -103,9 +101,35 @@ public class AreaService {
 
         return new CommonResponse<>(
                 true,
-                "장소 전체 조회 성공",
+                "전체 장소 혼잡도 조회 성공",
                 areaDTOList
         );
     }
+
+    public CommonResponse<List<ResGetAreaWithWeatherDTO>> getAllAreasWithWeather() {
+        List<AreaWithWeatherDTO> areaList = areaRepository.findAllAreasWithWeather();
+
+        WKTReader wktReader = new WKTReader(new GeometryFactory());
+        List<ResGetAreaWithWeatherDTO> areaDTOList = new ArrayList<>();
+
+        for (AreaWithWeatherDTO area : areaList) {
+            try {
+                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
+                areaDTOList.add(ResGetAreaWithWeatherDTO.from(area, polygon));
+            } catch (ParseException e) {
+                log.error("Error parsing WKT: {}", e.getMessage());
+                throw new RuntimeException("Invalid polygon data", e);
+            }
+        }
+
+        return new CommonResponse<>(
+                true,
+                "전체 장소 날씨 조회 성공",
+                areaDTOList
+        );
+
+    }
+
+
 
 }

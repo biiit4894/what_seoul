@@ -35,4 +35,8 @@ public class AreaController {
         return ResponseEntity.ok().body(areaService.getAllAreasWithCongestionLevel());
     }
 
+    @GetMapping("/all/weather")
+    public ResponseEntity<CommonResponse<List<ResGetAreaWithWeatherDTO>>> getAllAreaListWithWeather() {
+        return ResponseEntity.ok().body(areaService.getAllAreasWithWeather());
+    }
 }
