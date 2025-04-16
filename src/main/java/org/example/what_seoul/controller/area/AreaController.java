@@ -1,12 +1,8 @@
 package org.example.what_seoul.controller.area;
 
 import lombok.AllArgsConstructor;
-import org.apache.coyote.Response;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.controller.area.dto.AreaDTO;
-import org.example.what_seoul.controller.area.dto.ReqGetAreaListByCurrentLocationDTO;
-import org.example.what_seoul.controller.area.dto.ResGetAreaListByKeywordDTO;
-import org.example.what_seoul.controller.area.dto.ResGetAreaListByCurrentLocationDTO;
+import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.service.area.AreaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +28,11 @@ public class AreaController {
     @GetMapping("/all")
     public ResponseEntity<CommonResponse<List<AreaDTO>>> getAllAreaList() {
         return ResponseEntity.ok().body(areaService.getAllAreaList());
+    }
+
+    @GetMapping("/all/ppltn")
+    public ResponseEntity<CommonResponse<List<ResGetAreaWithCongestionLevelDTO>>> getAllAreaListWithCongestionLevel() {
+        return ResponseEntity.ok().body(areaService.getAllAreasWithCongestionLevel());
     }
 
 }
