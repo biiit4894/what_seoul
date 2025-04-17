@@ -98,11 +98,11 @@ public class CitydataScheduler {
         cultureEventRepository.saveAll(cultureEventList);
 
         LocalDateTime afterTime = LocalDateTime.now();
-        log.info("호출 시작 시간 = " + beforeTime);
-        log.info("호출 종료 시간 = " + afterTime);
+        log.info("호출 시작 시간 = {}", beforeTime);
+        log.info("호출 종료 시간 = {}", afterTime);
 
         long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
-        log.info("소요 시간 = " + totalTime + " 초");
+        log.info("소요 시간 = {}초", totalTime);
 
     }
 
@@ -116,8 +116,8 @@ public class CitydataScheduler {
         try {
             String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
             String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
-            log.info("sanitized area name: " + sanitizedAreaName);
-            log.info("encoded area name: " + encodedAreaName);
+            log.info("sanitized area name: {}", sanitizedAreaName);
+            log.info("encoded area name: {}" , encodedAreaName);
 
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = documentBuilder.parse(url + encodedAreaName);
