@@ -6,6 +6,7 @@ function removeAreaNameControl() {
     if (existingControl && existingControl.parentNode) {
         existingControl.parentNode.removeChild(existingControl);
     }
+    areaNameControl = null;
 }
 
 function removeInfoIcons() {
@@ -49,6 +50,7 @@ function getAllAreasWithWeather() {
     selectedPolygon = null;
     removeAreaNameControl(); // 장소명 컨트롤 제거
     removeInfoIcons(); // info-icon 제거
+    removeLegendOverlay(); // 혼잡도 범례 제거
 
     document.getElementById('citydata').innerHTML = '';
 
@@ -68,6 +70,14 @@ function getAllAreasWithWeather() {
         })
         .catch(error => console.error("Error:", error));
 
+}
+
+// 혼잡도 범례 제거
+function removeLegendOverlay() {
+    const existingLegend = document.querySelector('.legend-control');
+    if (existingLegend && existingLegend.parentNode) {
+        existingLegend.parentNode.removeChild(existingLegend);
+    }
 }
 
 // 혼잡도 범례 생성
@@ -132,7 +142,6 @@ function showAllPolygons(areas, options = {}) {
             color,
             useTemperature
         );
-        console.log(area.areaName + "의 areaId: " + area.areaId);
 
         // 지도 경계 조정
         adjustMapBounds(polygon);
@@ -237,6 +246,7 @@ function drawPolygonWithOptions(
         }
 
         areaName = areaname;
+        console.log("# areaname from drawPolygonWithOptions : ", areaname);
         createAreaNameControl(map, areaname);
         addInfoIcons(areaId);
     });
@@ -252,8 +262,6 @@ function showLabel(areaId) {
     ];
     labels.forEach(label => {
         if (label) {
-            console.log("Showing label: ", label);
-
             label.style.opacity = "1";
             label.style.zIndex = "1000";
         }
@@ -267,8 +275,6 @@ function hideLabel(areaId) {
     ];
     labels.forEach(label => {
         if (label) {
-            console.log("Hiding label: ", label);
-
             label.style.opacity = "0.7";
             label.style.zIndex = "999";
         }

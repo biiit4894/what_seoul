@@ -30,7 +30,12 @@ function adjustLayout() {
 }
 
 window.onload = () => {
-    fetch('/api/area/all')
+    fetch('/api/area/all',{
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             const areas = data.data.map(area => ({
@@ -257,30 +262,25 @@ function getAreaListByCurrentLocation() {
 
 // 지도에 추가할 커스텀 컨트롤 요소 생성
 function createAreaNameControl(map, areaName) {
-    if (areaNameControl) {
-        console.log("areaNameControl exists");
-        const controlDiv = document.querySelector('.area-name-control');
-        controlDiv.innerHTML = areaName;
-    } else {
-        console.log("areaNameControl doesn't exist");
-        const controlDiv = document.createElement("div");
-        controlDiv.className = 'area-name-control';
-        controlDiv.style.backgroundColor = "#fff";
-        controlDiv.style.border = "2px solid #ccc";
-        controlDiv.style.borderRadius = "5px";
-        controlDiv.style.padding = "10px 15px";
-        controlDiv.style.margin = "10px";
-        controlDiv.style.fontSize = "16px";
-        controlDiv.style.fontWeight = "bold";
-        controlDiv.style.boxShadow = "0px 2px 6px rgba(0,0,0,0.3)";
-        controlDiv.style.textAlign = "center";
-        controlDiv.innerHTML = areaName
 
-        areaNameControl = controlDiv;
-
-        // 지도 오른쪽 상단에 추가
-        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(controlDiv);
+    // 변수의 존재와 DOM에 실제로 요소가 포함되어있는지 여부를 함께 체크
+    if (!areaNameControl || !document.body.contains(areaNameControl)) {
+        areaNameControl = document.createElement("div");
+        areaNameControl.className = 'area-name-control';
+        Object.assign(areaNameControl.style, {
+            backgroundColor: "#fff",
+            border: "2px solid #ccc",
+            borderRadius: "5px",
+            padding: "10px 15px",
+            margin: "10px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            boxShadow: "0px 2px 6px rgba(0,0,0,0.3)",
+            textAlign: "center"
+        });
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(areaNameControl);
     }
+    areaNameControl.innerHTML = areaName;
 }
 
 // 폴리곤의 중심 찾기
@@ -463,14 +463,6 @@ function adjustMapBounds(polygon) {
     map.setZoom(map.getZoom() - 1);  // 약간 축소
 }
 
-
-// // 4️⃣ 장소명 업데이트
-// function updateAreaName(areaName) {
-//     if (areaNameControl) {
-//         areaNameControl.innerHTML = areaName;
-//     }
-// }
-
 // 5️⃣ 아이콘 추가
 function addInfoIcons(areaId) {
     // 이미 존재하는 경우 제거
@@ -494,17 +486,14 @@ function addInfoIcons(areaId) {
         iconsContainer.appendChild(iconElement);
     });
 
-    const areaNameControl = document.querySelector('.area-name-control');
-    areaNameControl.after(iconsContainer);
+    // areaNameControl.after(iconsContainer);
+    // areaNameControl이 이미 DOM에 존재하면 그것을 그대로 사용
+    if (areaNameControl) {
+        // areaNameControl이 있을 때만 info-icons 컨테이너 추가
+        areaNameControl.after(iconsContainer);
+    }
+
     map.controls[google.maps.ControlPosition.TOP_RIGHT].push(iconsContainer);
-
-
-    // const style = window.getComputedStyle(areaNameControl);
-    // const areaNameControlWidth = areaNameControl.offsetWidth;
-    // const marginRight = parseFloat(style.marginRight);
-    // const marginTop = parseFloat(style.marginTop);
-    // iconsContainer.style.top = `${marginTop}px`;
-    // iconsContainer.style.right = `${areaNameControlWidth + marginRight + 20}px`;
 
     const weatherIcon = document.querySelector('#weather-icon');
     const populationIcon = document.querySelector('#population-icon');
@@ -512,6 +501,8 @@ function addInfoIcons(areaId) {
     weatherIcon.addEventListener('click', (e) => fetchWeatherData(areaId));
     populationIcon.addEventListener('click', (e) => fetchPopulationData(areaId));
     cultureEventIcon.addEventListener('click', (e) => fetchCultureEventData(areaId));
+
+
 }
 
 function fetchWeatherData(id) {
