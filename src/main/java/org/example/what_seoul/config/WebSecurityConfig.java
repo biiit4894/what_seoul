@@ -27,7 +27,7 @@ public class WebSecurityConfig {
         requestCache.setMatchingRequestParameterName(null);
         httpSecurity.authorizeHttpRequests(auth ->
                         auth.requestMatchers(
-                                        "/", "/login", "/signup", "/api/user/signup", "/api/user/{id}")
+                                        "/api/area/all", "/api/area/all/weather", "/api/area/all/ppltn", "/", "/login", "/signup", "/api/user/signup", "/api/user/{id}")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated())
