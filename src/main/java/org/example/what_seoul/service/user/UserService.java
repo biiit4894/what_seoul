@@ -221,7 +221,7 @@ public class UserService {
         }
 
         user.changeUserInfo(
-                reqNewPassword != null ? encoder.encode(reqNewPassword) : null,
+                reqNewPassword != null ? encoder.encode(reqNewPassword) : null, // rawPassword cannot be null 방지
                 reqNewEmail,
                 reqNewNickName
         );

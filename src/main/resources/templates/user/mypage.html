@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatSeoul</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" typeof="text/css" th:href="@{/css/index.css}"/>
+    <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
+    <script th:src="@{/js/common/common.js}"></script>
+    <script th:src="@{/js/user/mypage.js}"></script>
+
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="/">What Seoul</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="/citydata">지금 서울은?</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">커뮤니티</a>
+            </li>
+
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
+                <a class="nav-link" onclick="logout()">로그아웃</a>
+            </li>
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
+                <a class="nav-link" href="/mypage">마이페이지</a>
+            </li>
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
+                <span class="nav-link" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
+            </li>
+
+            <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
+                <a class="nav-link" href="/login">로그인</a>
+            </li>
+            <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
+                <a class="nav-link" href="/signup">회원가입</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="mb-4">마이페이지</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <p><strong>아이디:</strong> <span th:text="${loginUserInfo.userId}">sample_id</span></p>
+            <p><strong>이메일:</strong> <span th:text="${loginUserInfo.email}">sample@mail.com</span></p>
+            <p><strong>별명:</strong> <span th:text="${loginUserInfo.nickName}">닉네임</span></p>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-primary" data-toggle="modal" data-target="#updateModal">회원정보 수정</button>
+        <button class="btn btn-danger" onclick="withdrawUser()">회원 탈퇴</button>
+    </div>
+</div>
+
+<!-- 회원정보 수정 모달 -->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="update-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form th:action="@{/users/{id}(id=${loginUserInfo.id})}" method="post" id="update-form">
+            <input type="hidden" name="_method" value="put"/> <!-- PUT 메서드 사용 -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="update-modal-label">회원정보 수정</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="currPassword">현재 비밀번호</label>
+                        <input type="password" class="form-control" id="currPassword" name="currPassword">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">신규 비밀번호</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newEmail">신규 이메일</label>
+                        <input type="email" class="form-control" id="newEmail" name="newEmail">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newNickName">신규 별명</label>
+                        <input type="text" class="form-control" id="newNickName" name="newNickName">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">수정하기</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    function withdrawUser() {
+        alert("회원 탈퇴 구현 전");
+    }
+</script>
+<!-- Bootstrap JS, Popper.js, jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
