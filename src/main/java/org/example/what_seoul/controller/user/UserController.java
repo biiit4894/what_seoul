@@ -1,6 +1,7 @@
 package org.example.what_seoul.controller.user;
 
-import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.user.dto.*;
@@ -32,8 +33,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getUserDetailById(id));
     }
 
-    @PutMapping("")
-    public ResponseEntity<CommonResponse<?>> updateUserInfo(@RequestBody ReqUpdateUserInfoDTO req) {
+    @PutMapping("/update")
+    public ResponseEntity<CommonResponse<ResUpdateUserDTO>> updateUserInfo(@RequestBody ReqUpdateUserInfoDTO req) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.updateUserInfo(req));
+    }
+
+    @PutMapping("/withdraw")
+    public ResponseEntity<CommonResponse<ResWithdrawUserDTO>> withdrawUser(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.withdrawUser(request, response));
     }
 }

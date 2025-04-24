@@ -1,4 +1,4 @@
-package org.example.what_seoul.util;
+package org.example.what_seoul.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +12,8 @@ import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
+import org.example.what_seoul.service.citydata.PcpMsgHistoryService;
+import org.example.what_seoul.util.XmlElementNames;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -42,13 +44,15 @@ public class CitydataScheduler {
     private final WeatherRepository weatherRepository;
     private final CultureEventRepository cultureEventRepository;
 
+    private final PcpMsgHistoryService pcpMsgHistoryService;
+
     @Value("${seoul.open.api.url}")
     private String url;
 
     /**
-     * 5분 간격으로 배치 작업 수행
+     * 5분 간격으로 배치 작업 수행 -> 임시적으로 60분
      */
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(fixedRate = 60 * 60 * 1000)
     public void call() {
         LocalDateTime beforeTime = LocalDateTime.now();
 
@@ -252,6 +256,12 @@ public class CitydataScheduler {
                 }
             }
         }
+
+        // PCP_MSG 값 추출
+        String pcpMsg = weatherData.getOrDefault(XmlElementNames.PCP_MSG, "No Tag");
+
+        // 히스토리 저장
+        pcpMsgHistoryService.saveIfNotExists(pcpMsg);
 
         // Map에서 주어진 key(XmlElementNames)에 해당하는 값을 가져오고, 만약 해당 key가 없다면 "No Tag"를 기본값으로 반환
         return new Weather(

@@ -1,5 +1,7 @@
 package org.example.what_seoul.service.user;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -148,7 +151,7 @@ public class UserService {
      * @return 회원 정보 수정 성공 시 CommonResponse를, 실패 시 CommonErrorResponse를 반환한다.
      */
     @Transactional
-    public CommonResponse<?> updateUserInfo(ReqUpdateUserInfoDTO req) {
+    public CommonResponse<ResUpdateUserDTO> updateUserInfo(ReqUpdateUserInfoDTO req) {
         Long id = getLoginUserInfo().getId();
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -233,6 +236,34 @@ public class UserService {
         );
     }
 
+    /**
+     * 회원 탈퇴 기능
+     * - soft delete 방식으로 회원을 탈퇴 처리한다.
+     * - deletedAt 필드에 나타난 DateTime으로부터 30일 이상의 시간이 지났다면 hard delete 처리한다.
+     * - 매일 오전 3시 마다 UserCleanupScheduler에서 삭제해야 하는 유저를 확인한 후 처리한다.
+     * - 현재 사용자 인증 정보를 제거하고 세션을 무효화한다.
+     * - TODO: 향후 유저가 직접 생성하는 데이터가 추가된다면, soft delete 상태에 있는 유저 데이터는 타 유저가 조회할 수 없도록 세부적인 구현을 추가한다.
+     * @return 회원 탈퇴 성공 시 CommonResponse를, 실패 시 CommonErrorResponse를 반환한다.
+     */
+    @Transactional
+    public CommonResponse<ResWithdrawUserDTO> withdrawUser(HttpServletRequest request, HttpServletResponse response) {
+        Long id = getLoginUserInfo().getId();
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        if (user.getDeletedAt() != null) {
+            throw new IllegalStateException("이미 탈퇴한 사용자입니다.");
+        }
+
+        user.deactivate();
+
+        new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+
+        return new CommonResponse<>(
+                true,
+                "회원 탈퇴 완료",
+                ResWithdrawUserDTO.from(user)
+        );
+    }
+
     public LoginUserInfoDTO getLoginUserInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) authentication.getPrincipal();
@@ -258,8 +289,4 @@ public class UserService {
         return principal;
 
     }
-
-
-
-
 }
