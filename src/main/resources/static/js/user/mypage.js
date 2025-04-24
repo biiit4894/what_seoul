@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("수정할 정보를 입력해 주세요.")
 
         }
-        fetch('/api/user', {
+        fetch('/api/user/update', {
             method: 'PUT',
             headers: {
                 "Content-Type": "application/json"
@@ -62,3 +62,28 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+function withdrawUser() {
+    if(confirm("정말 탈퇴하시겠습니까?") === true) {
+        fetch('/api/user/withdraw', {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json"
+            },
+        }).then(response => response.json()
+            .then(data => ({status: response.status, body: data}))
+            .then(({status, body}) => {
+                if (status === 200) {
+                    alert("회원 탈퇴가 완료되었습니다.");
+                    window.location.href = "/";
+                } else {
+                    alert(body.message || "회원탈퇴에 실패했습니다.");
+                }
+            })
+            .catch(error => {
+                console.log("Error: ", error);
+                alert("회원탈퇴에 실패했습니다.");
+            }));
+    }
+
+}
