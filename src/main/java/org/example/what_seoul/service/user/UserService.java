@@ -9,6 +9,7 @@ import jakarta.validation.ValidatorFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
+import org.example.what_seoul.common.validation.CustomValidator;
 import org.example.what_seoul.controller.user.dto.*;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.CustomValidationException;
@@ -30,7 +31,7 @@ import java.util.*;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
-
+    private final CustomValidator customValidator;
 
     /**
      * 회원 가입 기능
@@ -44,9 +45,7 @@ public class UserService {
         Map<String, List<String>> errors = new HashMap<>();
 
         // 1. Request DTO 유효성 검증
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation<ReqCreateUserDTO>> violations = validator.validate(req);
+        Set<ConstraintViolation<ReqCreateUserDTO>> violations = customValidator.validate(req);
 
         for (ConstraintViolation<ReqCreateUserDTO> violation : violations) {
             errors.computeIfAbsent(violation.getPropertyPath().toString(), key -> new ArrayList<>())
@@ -94,7 +93,7 @@ public class UserService {
 
         return new CommonResponse<>(
                 true,
-                "User Created",
+                "회원 가입 성공",
                 ResCreateUserDTO.from(newUser)
         );
     }
@@ -120,7 +119,7 @@ public class UserService {
                     )
             );
         }
-        return new CommonResponse<>(true, "Get User Detail List Success", new PageImpl<>(userSummaryList, pageable, users.getTotalElements()));
+        return new CommonResponse<>(true, "회원 정보 리스트 조회 성공", new PageImpl<>(userSummaryList, pageable, users.getTotalElements()));
     }
 
     @Transactional(readOnly = true) // TODO: @Transactional 세부 옵션 설정
@@ -138,7 +137,7 @@ public class UserService {
         );
         return new CommonResponse<>(
                 true,
-                "Get User Detail Success",
+                "회원 상세 정보 조회 성공",
                 userDetailRes
         );
     }
@@ -171,9 +170,7 @@ public class UserService {
         Map<String, List<String>> errors = new HashMap<>();
 
         // 1. Request DTO 유효성 검증
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation<ReqUpdateUserInfoDTO>> violations = validator.validate(req);
+        Set<ConstraintViolation<ReqUpdateUserInfoDTO>> violations = customValidator.validate(req);
 
         for (ConstraintViolation<ReqUpdateUserInfoDTO> violation : violations) {
             errors.computeIfAbsent(violation.getPropertyPath().toString(), key -> new ArrayList<>())
@@ -231,7 +228,7 @@ public class UserService {
 
         return new CommonResponse<>(
                 true,
-                "회원 정보 수정 완료",
+                "회원 정보 수정 성공",
                 ResUpdateUserDTO.from(user)
         );
     }
@@ -259,7 +256,7 @@ public class UserService {
 
         return new CommonResponse<>(
                 true,
-                "회원 탈퇴 완료",
+                "회원 탈퇴 성공",
                 ResWithdrawUserDTO.from(user)
         );
     }
