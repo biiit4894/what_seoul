@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReqUpdateUserInfoDTO {
-    @NotBlank
+    @NotBlank(message = "기존 비밀번호는 필수로 입력해야 합니다.")
     private String currPassword;
 
     @Size(min=4, max=20, message="4자 이상 20자 이하이어야 합니다.")
