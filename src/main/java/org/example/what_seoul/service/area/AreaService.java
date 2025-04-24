@@ -4,10 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.controller.area.dto.AreaDTO;
-import org.example.what_seoul.controller.area.dto.ReqGetAreaListByCurrentLocationDTO;
-import org.example.what_seoul.controller.area.dto.ResGetAreaListByKeywordDTO;
-import org.example.what_seoul.controller.area.dto.ResGetAreaListByCurrentLocationDTO;
+import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.util.LocationChecker;
@@ -27,6 +24,7 @@ public class AreaService {
     private final AreaRepository areaRepository;
     private final LocationChecker locationChecker;
 
+    // TODO: message 및 메소드명 변경 필요
     public CommonResponse<ResGetAreaListByCurrentLocationDTO> getLocationBasedCityData(ReqGetAreaListByCurrentLocationDTO reqGetAreaListByCurrentLocationDTO) {
         List<AreaDTO> nearestPlaces = locationChecker.findLocations(reqGetAreaListByCurrentLocationDTO.getLatitude(), reqGetAreaListByCurrentLocationDTO.getLongitude());
         return new CommonResponse<>(
@@ -40,12 +38,12 @@ public class AreaService {
         List<Area> areaList = areaRepository.findByAreaNameContaining(query.trim()).orElseThrow(() -> new EntityNotFoundException("Area not found"));
 
         WKTReader wktReader = new WKTReader(new GeometryFactory());
-        List<AreaDTO> AreaDTOList = new ArrayList<>();
+        List<AreaDTO> areaDTOList = new ArrayList<>();
 
         for (Area area : areaList) {
             try {
                 Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                AreaDTOList.add(AreaDTO.from(area, polygon));
+                areaDTOList.add(AreaDTO.from(area, polygon));
             } catch (ParseException e) {
 
                 log.error("Error parsing WKT: {}", e.getMessage());
@@ -56,7 +54,82 @@ public class AreaService {
         return new CommonResponse<>(
                 true,
                 "장소 조회 성공",
-                new ResGetAreaListByKeywordDTO(AreaDTOList)
+                new ResGetAreaListByKeywordDTO(areaDTOList)
         );
     }
+
+    public CommonResponse<List<AreaDTO>> getAllAreaList() {
+        List<Area> areaList = areaRepository.findAll();
+
+        WKTReader wktReader = new WKTReader(new GeometryFactory());
+        List<AreaDTO> areaDTOList = new ArrayList<>();
+
+        for (Area area : areaList) {
+            try {
+                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
+                areaDTOList.add(AreaDTO.from(area, polygon));
+            } catch (ParseException e) {
+
+                log.error("Error parsing WKT: {}", e.getMessage());
+                throw new RuntimeException("Invalid polygon data", e);
+            }
+        }
+
+        return new CommonResponse<>(
+                true,
+                "전체 장소 조회 성공",
+                areaDTOList
+        );
+    }
+
+    public CommonResponse<List<ResGetAreaWithCongestionLevelDTO>> getAllAreasWithCongestionLevel() {
+        List<AreaWithCongestionLevelDTO> areaList = areaRepository.findAllAreasWithCongestionLevel();
+
+        WKTReader wktReader = new WKTReader(new GeometryFactory());
+        List<ResGetAreaWithCongestionLevelDTO> areaDTOList = new ArrayList<>();
+
+        for (AreaWithCongestionLevelDTO area : areaList) {
+            try {
+                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
+                areaDTOList.add(ResGetAreaWithCongestionLevelDTO.from(area, polygon));
+            } catch (ParseException e) {
+
+                log.error("Error parsing WKT: {}", e.getMessage());
+                throw new RuntimeException("Invalid polygon data", e);
+            }
+        }
+
+        return new CommonResponse<>(
+                true,
+                "전체 장소 혼잡도 조회 성공",
+                areaDTOList
+        );
+    }
+
+    public CommonResponse<List<ResGetAreaWithWeatherDTO>> getAllAreasWithWeather() {
+        List<AreaWithWeatherDTO> areaList = areaRepository.findAllAreasWithWeather();
+
+        WKTReader wktReader = new WKTReader(new GeometryFactory());
+        List<ResGetAreaWithWeatherDTO> areaDTOList = new ArrayList<>();
+
+        for (AreaWithWeatherDTO area : areaList) {
+            try {
+                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
+                areaDTOList.add(ResGetAreaWithWeatherDTO.from(area, polygon));
+            } catch (ParseException e) {
+                log.error("Error parsing WKT: {}", e.getMessage());
+                throw new RuntimeException("Invalid polygon data", e);
+            }
+        }
+
+        return new CommonResponse<>(
+                true,
+                "전체 장소 날씨 조회 성공",
+                areaDTOList
+        );
+
+    }
+
+
+
 }

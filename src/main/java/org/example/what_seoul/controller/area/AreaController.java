@@ -2,12 +2,12 @@ package org.example.what_seoul.controller.area;
 
 import lombok.AllArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
-import org.example.what_seoul.controller.area.dto.ReqGetAreaListByCurrentLocationDTO;
-import org.example.what_seoul.controller.area.dto.ResGetAreaListByKeywordDTO;
-import org.example.what_seoul.controller.area.dto.ResGetAreaListByCurrentLocationDTO;
+import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.service.area.AreaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/area")
@@ -23,5 +23,20 @@ public class AreaController {
     @GetMapping("")
     public ResponseEntity<CommonResponse<ResGetAreaListByKeywordDTO>> getAreaListByKeyword(@RequestParam String query) {
         return ResponseEntity.ok().body(areaService.getAreaListByKeyword(query));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<CommonResponse<List<AreaDTO>>> getAllAreaList() {
+        return ResponseEntity.ok().body(areaService.getAllAreaList());
+    }
+
+    @GetMapping("/all/ppltn")
+    public ResponseEntity<CommonResponse<List<ResGetAreaWithCongestionLevelDTO>>> getAllAreaListWithCongestionLevel() {
+        return ResponseEntity.ok().body(areaService.getAllAreasWithCongestionLevel());
+    }
+
+    @GetMapping("/all/weather")
+    public ResponseEntity<CommonResponse<List<ResGetAreaWithWeatherDTO>>> getAllAreaListWithWeather() {
+        return ResponseEntity.ok().body(areaService.getAllAreasWithWeather());
     }
 }
