@@ -131,13 +131,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<CommonErrorResponse<Object>> handleGenericException(Exception e) {
-        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-                "Internal Server Error",
-                "An unexpected error occurred."
-        );
-        log.error("{}", e.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<CommonErrorResponse<Object>> handleGenericException(Exception e) {
+//        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+//                "Internal Server Error",
+//                "An unexpected error occurred."
+//        );
+//        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }

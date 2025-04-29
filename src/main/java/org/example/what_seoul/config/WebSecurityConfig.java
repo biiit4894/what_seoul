@@ -27,7 +27,7 @@ public class WebSecurityConfig {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setMatchingRequestParameterName(null);
         httpSecurity.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/area/all", "/api/area/all/weather", "/api/area/all/ppltn", "/", "/login", "/signup", "/api/user/signup", "/api/user/{id}").permitAll()
+                        .requestMatchers("/api/area/all", "/api/area/all/weather", "/api/area/all/ppltn", "/", "/login", "/signup", "/api/user/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/user/{id}").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/api/user/update", "/api/user/withdraw").authenticated()

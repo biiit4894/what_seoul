@@ -8,12 +8,10 @@ import org.example.what_seoul.config.WebSecurityTestConfig;
 import org.example.what_seoul.controller.user.dto.*;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.service.user.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,7 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
-@MockBean(JpaMetamodelMappingContext.class)
 @Import(WebSecurityTestConfig.class)  // 테스트를 위한 custom security configuration
 
 class UserControllerTest {
@@ -48,21 +45,11 @@ class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-
-    @BeforeEach
-    void setUp() {
-        ReqCreateUserDTO req = new ReqCreateUserDTO("test", "password123!", "test@test.com", "test");
-        User user = new User("test", "password123!", "test@test.com", "test");
-        ResCreateUserDTO res = ResCreateUserDTO.from(user);
-
-        CommonResponse<ResCreateUserDTO> commonResponse = new CommonResponse<>(true, "회원 가입 성공", res);
-
-        when(userService.createUser(any(ReqCreateUserDTO.class))).thenReturn(commonResponse);
-    }
 
     @Test
     @DisplayName("회원가입 컨트롤러 성공 테스트")
@@ -89,12 +76,12 @@ class UserControllerTest {
     @DisplayName("회원정보 리스트 조회 컨트롤러 성공 테스트")
     void getUserList() throws Exception {
         // Given - SecurityContext에 로그인 사용자 설정
-        String username = "test"; // 기존 가입한 test 유저 이름
+        String username = "test";
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .withUsername(username)
                 .password("encodedPassword") // 굳이 실제 비밀번호가 아니어도 됨
-                .roles("USER")  // 권한 설정
+                .roles("ADMIN")  // 권한 설정
                 .build();
 
         UsernamePasswordAuthenticationToken authentication =
@@ -133,7 +120,21 @@ class UserControllerTest {
     @Test
     @DisplayName("회원정보 상세 조회 컨트롤러 성공 테스트")
     void getUserDetailById() throws Exception {
-        // Given
+        // Given - SecurityContext에 로그인 사용자 설정
+        String username = "test";
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User
+                .withUsername(username)
+                .password("encodedPassword") // 굳이 실제 비밀번호가 아니어도 됨
+                .roles("USER")  // 권한 설정
+                .build();
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Given - 조회할 유저 Mock 데이터 설정
         Long id = 1L;
         User user = new User("test", "test1234!", "test@test.com", "testNickName");
         ResGetUserDetailDTO res = ResGetUserDetailDTO.from(user);
@@ -226,6 +227,61 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.deletedAt").exists());
     }
 
+    @Test
+    @DisplayName("존재하지 않는 URL 요청 시 403 Access Denied 응답")
+    void nonExistingUrl() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/user/non-existing-endpoint"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
 
+    @Test
+    @DisplayName("회원가입 컨트롤러 실패 테스트 - 잘못된 HTTP 메서드 요청 시 405 Method Not Supported 응답")
+    void wrongHttpMethod() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/user/signup"))
+                .andDo(print())
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    @DisplayName("회원정보 리스트 조회 컨트롤러 실패 테스트 - 로그인 없이 호출 시 403 Access Denied 응답")
+    void getUserListUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/user/list")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("회원정보 상세 조회 컨트롤러 실패 테스트 - 로그인 없이 호출 시 403 Access Denied 응답")
+    void getUserDetailByIdUnauthorized() throws Exception {
+        Long id = 1L;
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/user/{id}", id)
+                        .param("page", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("회원정보 수정 컨트롤러 실패 테스트 - 로그인 없이 호출 시 403 Access Denied 응답")
+    void updateUserInfoUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/user/update")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 컨트롤러 실패 테스트 - 로그인 없이 호출 시 403 Access Denied 응답")
+    void withdrawUserUnauthorized() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/user/withdraw")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
 
 }
