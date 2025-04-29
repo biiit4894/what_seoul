@@ -34,6 +34,10 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String nickName;
 
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private RoleType role;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -44,11 +48,12 @@ public class User implements UserDetails {
     @Column
     private LocalDateTime deletedAt;
 
-    public User(String userId, String password, String email, String nickName, LocalDateTime createdAt) {
+    public User(String userId, String password, String email, String nickName, RoleType role, LocalDateTime createdAt) {
         this.userId = userId;
         this.password = password;
         this.email = email;
         this.nickName = nickName;
+        this.role = role;
         this.createdAt = createdAt;
     }
 
@@ -57,6 +62,7 @@ public class User implements UserDetails {
         this.password = password;
         this.email = email;
         this.nickName = nickName;
+        this.role = RoleType.USER;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -79,7 +85,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("user"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

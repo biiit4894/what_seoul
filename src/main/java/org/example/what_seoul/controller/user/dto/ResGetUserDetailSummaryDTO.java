@@ -5,29 +5,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.user.User;
 
-import java.time.LocalDateTime;
-
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResGetUserDetailDTO {
+public class ResGetUserDetailSummaryDTO {
     private Long id;
     private String userId;
     private String email;
     private String nickName;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
 
-    public static ResGetUserDetailDTO from(User user) {
-        return new ResGetUserDetailDTO(
+    public static ResGetUserDetailSummaryDTO from(User user) {
+        return new ResGetUserDetailSummaryDTO(
                 user.getId(),
                 user.getUserId(),
                 user.getEmail(),
-                user.getNickName(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getDeletedAt()
+                user.getNickName()
         );
     }
 }
