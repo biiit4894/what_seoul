@@ -117,15 +117,8 @@ public class UserService {
     public CommonResponse<ResGetUserDetailDTO> getUserDetailById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
 
-        ResGetUserDetailDTO userDetailRes = new ResGetUserDetailDTO(
-                user.getId(),
-                user.getUserId(),
-                user.getEmail(),
-                user.getNickName(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getDeletedAt()
-        );
+        ResGetUserDetailDTO userDetailRes = ResGetUserDetailDTO.from(user);
+
         return new CommonResponse<>(
                 true,
                 "회원 정보 상세 조회 성공",
