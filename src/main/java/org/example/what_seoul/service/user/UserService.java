@@ -3,9 +3,6 @@ package org.example.what_seoul.service.user;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -99,7 +97,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public CommonResponse<Page<ResGetUserSummaryDTO>> getUserList(int page, int size) {
+    public CommonResponse<Page<ResGetUserDetailSummaryDTO>> getUserList(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> users = userRepository.findAll(pageable);
         long totalUserCount = userRepository.count();
@@ -108,17 +106,10 @@ public class UserService {
             throw new IllegalArgumentException("Invalid Page Size.");
         }
 
-        List<ResGetUserSummaryDTO> userSummaryList = new ArrayList<>();
-        for (User user : users) {
-            userSummaryList.add(
-                    new ResGetUserSummaryDTO(
-                            user.getId(),
-                            user.getUserId(),
-                            user.getEmail(),
-                            user.getNickName()
-                    )
-            );
-        }
+        List<ResGetUserDetailSummaryDTO> userSummaryList = users.stream()
+                .map(ResGetUserDetailSummaryDTO::from)
+                .collect(Collectors.toList());
+
         return new CommonResponse<>(true, "회원 정보 리스트 조회 성공", new PageImpl<>(userSummaryList, pageable, users.getTotalElements()));
     }
 
@@ -137,7 +128,7 @@ public class UserService {
         );
         return new CommonResponse<>(
                 true,
-                "회원 상세 정보 조회 성공",
+                "회원 정보 상세 조회 성공",
                 userDetailRes
         );
     }

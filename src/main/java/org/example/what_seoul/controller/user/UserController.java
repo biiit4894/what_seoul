@@ -24,7 +24,7 @@ public class UserController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<CommonResponse<Page<ResGetUserSummaryDTO>>> getUserList(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size) {
+    public ResponseEntity<CommonResponse<Page<ResGetUserDetailSummaryDTO>>> getUserList(@RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "size", defaultValue = "10") int size) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getUserList(page, size));
     }
 
