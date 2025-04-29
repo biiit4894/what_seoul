@@ -36,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UserController.class)
 @Import(WebSecurityTestConfig.class)  // 테스트를 위한 custom security configuration
-
 class UserControllerTest {
 
     @Autowired

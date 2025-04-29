@@ -96,15 +96,16 @@ public class UserService {
         );
     }
 
+    /**
+     * 회원 정보 리스트 조회 기능
+     * @param page
+     * @param size
+     * @return
+     */
     @Transactional(readOnly = true)
     public CommonResponse<Page<ResGetUserDetailSummaryDTO>> getUserList(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<User> users = userRepository.findAll(pageable);
-        long totalUserCount = userRepository.count();
-
-        if (size > totalUserCount) {
-            throw new IllegalArgumentException("Invalid Page Size.");
-        }
 
         List<ResGetUserDetailSummaryDTO> userSummaryList = users.stream()
                 .map(ResGetUserDetailSummaryDTO::from)
@@ -113,6 +114,11 @@ public class UserService {
         return new CommonResponse<>(true, "회원 정보 리스트 조회 성공", new PageImpl<>(userSummaryList, pageable, users.getTotalElements()));
     }
 
+    /**
+     * 회원 정보 상세 조회 기능
+     * @param id
+     * @return
+     */
     @Transactional(readOnly = true) // TODO: @Transactional 세부 옵션 설정
     public CommonResponse<ResGetUserDetailDTO> getUserDetailById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
@@ -168,39 +174,48 @@ public class UserService {
         // 이미 사용 중인 이메일, 별명 사용 불가능
 
         if (reqCurrPassword != null) {
+            // 현재 비밀번호를 정확히 입력하지 않은 경우
             if (!encoder.matches(reqCurrPassword, currPassword)) {
                 errors.computeIfAbsent("currPassword", key -> new ArrayList<>()).add("비밀번호가 일치하지 않습니다."); // matches(raw, encoded)
             }
-
+            // 현재 비밀번호는 정확히 입력했으나 아무런 값도 변경하지 않는 경우
             if (encoder.matches(reqCurrPassword, currPassword) && nothingToUpdate) {
                 errors.computeIfAbsent("nothingToUpdate", key -> new ArrayList<>()).add("수정할 정보를 입력해 주세요.");
             }
         }
 
         if (reqNewPassword != null) {
+            // 기존의 비밀번호와 같은 비밀번호로 변경하는 경우
             if(encoder.matches(reqNewPassword, currPassword)) {
                 errors.computeIfAbsent("newPassword", key -> new ArrayList<>()).add("새로운 비밀번호로 변경해 주세요.");
             }
         }
 
         if (reqNewEmail != null) {
+            // 기존의 이메일과 같은 이메일로 변경하는 경우
             if (currEmail.equals(reqNewEmail)) {
                 errors.computeIfAbsent("newEmail", key -> new ArrayList<>()).add("새로운 이메일로 변경해 주세요.");
-            } else if (userRepository.existsByEmail(reqNewEmail)) {
+            }
+            // 다른 계정이 사용 중인 이메일로 변경하는 경우
+            else if (userRepository.existsByEmail(reqNewEmail)) {
                 errors.computeIfAbsent("newEmail", key -> new ArrayList<>()).add("이미 사용 중인 이메일입니다.");
             }
         }
 
         if (reqNewNickName != null) {
+            // 기존의 별명과 같은 별명으로 변경하는 경우
             if (currNickName.equals(reqNewNickName)) {
                 errors.computeIfAbsent("newNickName", key -> new ArrayList<>()).add("새로운 별명으로 변경해 주세요.");
-            } else if(userRepository.existsByNickName(reqNewNickName)) {
+            }
+            // 다른 계정이 사용 중인 별명으로 변경하는 경우
+            else if(userRepository.existsByNickName(reqNewNickName)) {
                 errors.computeIfAbsent("newNickName", key -> new ArrayList<>()).add("이미 사용 중인 별명입니다.");
             }
         }
 
         // 3. 1) Request DTO 유효성 검증 및 2) 비즈니스 검증에서 발생한 모든 에러를 포함하여 예외를 던진다.
         if (!errors.isEmpty()) {
+            log.warn("회원 정보 수정 실패 - validation errors: {}", errors);
             throw new CustomValidationException(errors);
         }
 
