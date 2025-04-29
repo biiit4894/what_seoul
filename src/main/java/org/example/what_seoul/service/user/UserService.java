@@ -121,7 +121,7 @@ public class UserService {
      */
     @Transactional(readOnly = true) // TODO: @Transactional 세부 옵션 설정
     public CommonResponse<ResGetUserDetailDTO> getUserDetailById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         ResGetUserDetailDTO userDetailRes = ResGetUserDetailDTO.from(user);
 
@@ -266,8 +266,7 @@ public class UserService {
         if (user != null) {
             log.info("getLoginUserInfo: user not null");
         } else {
-            log.info("getLoginUserInfo: user null");
-
+            throw new IllegalArgumentException("로그인한 사용자 정보가 없습니다.");
         }
         return LoginUserInfoDTO.from(user);
     }
