@@ -160,4 +160,93 @@ public class AreaServiceTest {
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
         System.out.println(json);
     }
+
+    @Test
+    @DisplayName("[실패] 현위치 기반 장소 리스트 조회 Service")
+    void getAreaListByCurrentLocation_failure() {
+        // Given
+        ReqGetAreaListByCurrentLocationDTO request = new ReqGetAreaListByCurrentLocationDTO(37.0, 127.0);
+
+        given(locationChecker.findLocations(anyDouble(), anyDouble()))
+                .willThrow(new RuntimeException("Location service failed"));
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAreaListByCurrentLocation(request));
+        assertEquals("현위치 인근 장소 조회에 실패했습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 장소 검색 Service - 데이터 없음")
+    void getAreaListByKeyword_entityNotFound() {
+        // Given
+        String query = "존재하지 않는 장소명";
+
+        given(areaRepository.findByAreaNameContaining(anyString()))
+                .willReturn(Optional.empty());
+
+        // When & Then
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> areaService.getAreaListByKeyword(query));
+        assertEquals("장소를 찾지 못했습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 장소 검색 Service - WKT 파싱 오류")
+    void getAreaListByKeyword_invalidWkt() {
+        String query = "정상 키워드";
+        // Given
+        List<Area> areaList = List.of(
+                new Area(null, null, "A", "INVALID_WKT")
+        );
+
+        given(areaRepository.findByAreaNameContaining(anyString())).willReturn(Optional.of(areaList));
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAreaListByKeyword(query));
+        assertTrue(exception.getMessage().contains("Invalid polygon data for area"));
+    }
+
+    @Test
+    @DisplayName("[실패] 전체 장소 리스트 조회 Service - WKT 파싱 오류")
+    void getAllAreaList_invalidWkt() {
+        // Given
+        List<Area> areaList = List.of(
+                new Area(null, null, "A", "INVALID_WKT")
+        );
+
+        given(areaRepository.findAll()).willReturn(areaList);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAllAreaList());
+        assertTrue(exception.getMessage().contains("Invalid polygon data for area"));
+    }
+
+    @Test
+    @DisplayName("[실패] 전체 장소 혼잡도 조회 Service - WKT 파싱 오류")
+    void getAllAreasWithCongestionLevel_invalidWkt() {
+        // Given
+        List<AreaWithCongestionLevelDTO> dtoList = List.of(
+                new AreaWithCongestionLevelDTO(null, null, "A", "INVALID_WKT", "혼잡")
+        );
+
+        given(areaRepository.findAllAreasWithCongestionLevel()).willReturn(dtoList);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAllAreasWithCongestionLevel());
+        assertTrue(exception.getMessage().contains("Invalid polygon data for area"));
+    }
+
+    @Test
+    @DisplayName("[실패] 전체 장소 날씨 조회 Service - WKT 파싱 오류")
+    void getAllAreasWithWeather_invalidWkt() {
+        // Given
+        List<AreaWithWeatherDTO> dtoList = List.of(
+                new AreaWithWeatherDTO(null, null, "A", "INVALID_WKT", "24°C", "맑음")
+        );
+
+        given(areaRepository.findAllAreasWithWeather()).willReturn(dtoList);
+
+        // When & Then
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAllAreasWithWeather());
+        assertTrue(exception.getMessage().contains("Invalid polygon data for area"));
+    }
 }
