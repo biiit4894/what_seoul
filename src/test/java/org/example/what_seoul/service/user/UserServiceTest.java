@@ -70,7 +70,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원가입 서비스 성공 테스트")
+    @DisplayName("[성공] 회원가입 Service")
     void createUser() throws JsonProcessingException {
         // Given
         ReqCreateUserDTO req = new ReqCreateUserDTO("test", "test1234!", "test@test.com", "testNickName");
@@ -110,7 +110,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원정보 리스트 조회 서비스 성공 테스트")
+    @DisplayName("[성공] 회원정보 리스트 조회 Service")
     void getUserList() throws JsonProcessingException {
         // Given
         int page = 0;
@@ -146,7 +146,7 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원정보 상세 조회 서비스 성공 테스트")
+    @DisplayName("[성공] 회원정보 상세 조회 Service")
     void getUserDetailById() throws JsonProcessingException {
         // Given
         Long id = 1L;
@@ -168,7 +168,7 @@ public class UserServiceTest {
         System.out.println(json);
     }
 
-    @DisplayName("회원 정보 수정 서비스 성공 테스트")
+    @DisplayName("[성공] 회원 정보 수정 Service")
     @Test
     void updateUserInfo() throws JsonProcessingException {
         // Given
@@ -203,7 +203,7 @@ public class UserServiceTest {
         System.out.println(json);
     }
 
-    @DisplayName("회원 탈퇴 서비스 성공 테스트")
+    @DisplayName("[성공] 회원 탈퇴 Service")
     @Test
     void withdrawUser() throws JsonProcessingException {
         // Given
@@ -231,7 +231,7 @@ public class UserServiceTest {
         System.out.println(json);
     }
 
-    @DisplayName("회원가입 서비스 실패 테스트 - 중복 값 존재")
+    @DisplayName("[실패] 회원가입 Service - 중복 값 존재")
     @Test
     void createUser_DuplicateFields() {
         // Given
@@ -254,7 +254,7 @@ public class UserServiceTest {
     }
 
 
-    @DisplayName("회원가입 서비스 실패 테스트 - 유효성 검사 실패")
+    @DisplayName("[실패] 회원가입 Service - 유효성 검사 실패")
     @Test
     void createUser_InvalidFields() {
         // Given
@@ -281,7 +281,7 @@ public class UserServiceTest {
         assertTrue(errors.get("email").contains("이메일 형식이 올바르지 않습니다."));
     }
 
-    @DisplayName("회원 리스트 조회 서비스 실패 테스트 - 잘못된 페이지 번호")
+    @DisplayName("[실패] 회원 리스트 조회 Service - 잘못된 페이지 번호")
     @Test
     void getUserList_InvalidPageNumber() {
         // Given
@@ -296,7 +296,7 @@ public class UserServiceTest {
         assertEquals("Page index must not be less than zero", exception.getMessage());
     }
 
-    @DisplayName("회원 리스트 조회 서비스 실패 테스트 - 잘못된 페이지 크기")
+    @DisplayName("[실패] 회원 리스트 조회 Service - 잘못된 페이지 크기")
     @Test
     void getUserList_InvalidPageSize() {
         // Given
@@ -312,7 +312,7 @@ public class UserServiceTest {
     }
 
 
-    @DisplayName("회원 정보 상세 조회 서비스 실패 테스트 - 사용자를 찾을 수 없음")
+    @DisplayName("[실패] 회원 정보 상세 조회 Service - 사용자를 찾을 수 없음")
     @Test
     void getUserDetailById_UserNotFound() {
         // Given
@@ -327,7 +327,7 @@ public class UserServiceTest {
         assertEquals("사용자를 찾을 수 없습니다.", exception.getMessage());
     }
 
-    @DisplayName("회원 정보 수정 서비스 실패 테스트 - 변경 항목 없음")
+    @DisplayName("[실패] 회원 정보 수정 Service - 변경 항목 없음")
     @Test
     void updateUserInfo_NothingToUpdate() {
         // Given
@@ -354,7 +354,7 @@ public class UserServiceTest {
         assertTrue(exception.getErrors().containsKey("nothingToUpdate"));
     }
 
-    @DisplayName("회원 탈퇴 서비스 실패 테스트 - 이미 탈퇴한 사용자")
+    @DisplayName("[실패] 회원 탈퇴 Service - 이미 탈퇴한 사용자")
     @Test
     void withdrawUser_AlreadyWithdrawn() {
         // Given
@@ -379,7 +379,7 @@ public class UserServiceTest {
         assertEquals("이미 탈퇴한 사용자입니다.", exception.getMessage());
     }
 
-    @DisplayName("회원 탈퇴 서비스 실패 테스트 - 로그인한 사용자 정보를 찾을 수 없음")
+    @DisplayName("[실패] 회원 탈퇴 Service - 로그인한 사용자 정보를 찾을 수 없음")
     @Test
     void withdrawUser_LoginUserInfoNotFound() {
         // SecurityContext에 인증 정보 세팅

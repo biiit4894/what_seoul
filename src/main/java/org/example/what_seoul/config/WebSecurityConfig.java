@@ -27,11 +27,16 @@ public class WebSecurityConfig {
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setMatchingRequestParameterName(null);
         httpSecurity.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/area/all", "/api/area/all/weather", "/api/area/all/ppltn", "/", "/login", "/signup", "/api/user/signup").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/user/{id}").hasAnyRole("ADMIN", "USER")
-                        .requestMatchers("/api/user/update", "/api/user/withdraw").authenticated()
-                        .anyRequest().denyAll())
+                // 누구나 접근 가능
+                .requestMatchers("/", "/login", "/signup", "/api/user/signup").permitAll()
+                // ADMIN 접근 가능
+                .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN")
+                // ADMIN 또는 USER 접근 가능
+                .requestMatchers(HttpMethod.GET, "/api/user/{id}").hasAnyRole("ADMIN", "USER")
+                // 로그인 시 접근 가능
+                .requestMatchers("/api/user/update", "/api/user/withdraw").authenticated()
+                .requestMatchers("/api/area/**").authenticated()
+                .anyRequest().denyAll())
                 .formLogin(auth -> auth
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
