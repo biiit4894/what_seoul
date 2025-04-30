@@ -16,8 +16,8 @@ public class AreaController {
     private final AreaService areaService;
 
     @PostMapping("/location")
-    public ResponseEntity<CommonResponse<ResGetAreaListByCurrentLocationDTO>> getAreaListByCurrentLocation(@RequestBody ReqGetAreaListByCurrentLocationDTO reqGetAreaListByCurrentLocationDTO) {
-        return ResponseEntity.ok().body(areaService.getLocationBasedCityData(reqGetAreaListByCurrentLocationDTO));
+    public ResponseEntity<CommonResponse<ResGetAreaListByCurrentLocationDTO>> getAreaListByCurrentLocation(@RequestBody ReqGetAreaListByCurrentLocationDTO req) {
+        return ResponseEntity.ok().body(areaService.getAreaListByCurrentLocation(req));
     }
 
     @GetMapping("")
