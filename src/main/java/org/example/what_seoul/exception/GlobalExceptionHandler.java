@@ -61,6 +61,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(DatabaseException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleDatabaseException(DatabaseException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+          "Database Exception",
+                e.getMessage()
+        );
+        log.error("Database Exception : {}", e.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<CommonErrorResponse<Object>> handleEntityNotFoundException(EntityNotFoundException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
