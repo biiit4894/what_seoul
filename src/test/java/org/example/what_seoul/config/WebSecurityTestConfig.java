@@ -19,9 +19,9 @@ public class WebSecurityTestConfig {
                 // ADMIN만 접근 가능
                 .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN")
                 // 로그인 시 접근 가능
-                .requestMatchers("/api/user/update", "/api/user/withdraw").authenticated()
                 .requestMatchers("/api/user/**").authenticated()
                 .requestMatchers("/api/area/**").authenticated()
+                .requestMatchers("/api/citydata/**").authenticated()
                 .anyRequest().denyAll()
         ).csrf(auth -> auth.disable());
 
