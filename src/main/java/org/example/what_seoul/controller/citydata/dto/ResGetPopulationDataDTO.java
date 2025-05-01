@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResPopulationDTO {
+public class ResGetPopulationDataDTO {
     private Long id;
     private String congestionLevel;
     private String congestionMessage;
@@ -19,9 +19,9 @@ public class ResPopulationDTO {
     private String populationMax;
     private String populationUpdateTime;
     private Long areaId;
-    private List<ResPopulationForecastDTO> forecasts;
+    private List<PopulationForecastDTO> forecasts;
 
-    public ResPopulationDTO(Population population) {
+    public ResGetPopulationDataDTO(Population population) {
         this.id = population.getId();
         this.congestionLevel = population.getCongestionLevel();
         this.congestionMessage = population.getCongestionMessage();
@@ -30,10 +30,10 @@ public class ResPopulationDTO {
         this.populationUpdateTime = population.getPopulationUpdateTime();
         this.areaId = population.getArea().getId();
         this.forecasts = population.getForecasts().stream()
-                .map(ResPopulationForecastDTO::from)
+                .map(PopulationForecastDTO::from)
                 .collect(Collectors.toList());
     }
-    public static ResPopulationDTO from(Population population) {
-        return new ResPopulationDTO(population);
+    public static ResGetPopulationDataDTO from(Population population) {
+        return new ResGetPopulationDataDTO(population);
     }
 }

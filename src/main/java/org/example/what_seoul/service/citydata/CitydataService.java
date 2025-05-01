@@ -28,31 +28,31 @@ public class CitydataService {
     private final AreaRepository areaRepository;
     private final LocationChecker locationChecker;
 
-    public CommonResponse<ResPopulationDTO> findPopulationDataByAreaId(Long areaId) {
+    public CommonResponse<ResGetPopulationDataDTO> findPopulationDataByAreaId(Long areaId) {
         Population population = populationRepository.findByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("Population data not found"));
 
         return new CommonResponse<>(
                 true,
-                "인구 현황 데이터 조회 성공",
-                ResPopulationDTO.from(population)
+                "장소별 인구 현황 데이터 조회 성공",
+                ResGetPopulationDataDTO.from(population)
         );
     }
 
-    public CommonResponse<ResWeatherDTO> findWeatherDataByAreaId(Long areaId) {
+    public CommonResponse<ResGetWeatherDataDTO> findWeatherDataByAreaId(Long areaId) {
         Weather weather = weatherRepository.findByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("Weather data not found"));
         return new CommonResponse<>(
                 true,
-                "날씨 현황 데이터 조회 성공",
-                ResWeatherDTO.from(weather)
+                "장소별 날씨 현황 데이터 조회 성공",
+                ResGetWeatherDataDTO.from(weather)
         );
     }
 
-    public CommonResponse<List<ResCultureEventDTO>> findCultureEventDataByAreaId(Long areaId) {
+    public CommonResponse<List<ResGetCultureEventDataDTO>> findCultureEventDataByAreaId(Long areaId) {
         List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("Culture Event data not found"));
         return new CommonResponse<>(
                 true,
-                "문화행사 데이터 조회 성공",
-                ResCultureEventDTO.from(cultureEventList)
+                "장소별 문화행사 데이터 조회 성공",
+                ResGetCultureEventDataDTO.from(cultureEventList)
         );
     }
 }

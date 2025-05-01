@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResCultureEventDTO {
+public class ResGetCultureEventDataDTO {
     private Long id;
     private String eventName;
     private String eventPeriod;
@@ -22,7 +22,7 @@ public class ResCultureEventDTO {
     private String url;
     private Long areaId;
 
-    public ResCultureEventDTO(CultureEvent cultureEvent) {
+    public ResGetCultureEventDataDTO(CultureEvent cultureEvent) {
         this.id = cultureEvent.getId();
         this.eventName = cultureEvent.getEventName();
         this.eventPeriod = cultureEvent.getEventPeriod();
@@ -34,9 +34,9 @@ public class ResCultureEventDTO {
         this.areaId = cultureEvent.getArea().getId();
     }
 
-    public static List<ResCultureEventDTO> from(List<CultureEvent> cultureEventList) {
+    public static List<ResGetCultureEventDataDTO> from(List<CultureEvent> cultureEventList) {
         return cultureEventList.stream()
-                .map(ResCultureEventDTO::new)
+                .map(ResGetCultureEventDataDTO::new)
                 .collect(Collectors.toList());
     }
 }

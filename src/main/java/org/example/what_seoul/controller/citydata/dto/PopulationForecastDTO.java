@@ -8,21 +8,21 @@ import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResPopulationForecastDTO {
+public class PopulationForecastDTO {
     private Long id;
     private String forecastCongestionLevel;
     private String forecastPopulationMin;
     private String forecastPopulationMax;
     private String forecastTime;
 
-    public ResPopulationForecastDTO(PopulationForecast populationForecast) {
+    public PopulationForecastDTO(PopulationForecast populationForecast) {
         this.id = populationForecast.getId();
         this.forecastCongestionLevel = populationForecast.getForecastCongestionLevel();
         this.forecastPopulationMin = populationForecast.getForecastPopulationMin();
         this.forecastPopulationMax = populationForecast.getForecastPopulationMax();
         this.forecastTime = populationForecast.getForecastTime();
     }
-    public static ResPopulationForecastDTO from(PopulationForecast populationForecast) {
-        return new ResPopulationForecastDTO(populationForecast);
+    public static PopulationForecastDTO from(PopulationForecast populationForecast) {
+        return new PopulationForecastDTO(populationForecast);
     }
 }
