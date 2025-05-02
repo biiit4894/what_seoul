@@ -27,9 +27,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonErrorResponse<Object>> handleNoResourceFoundException(NoResourceFoundException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
                 "Resource Not Found",
-                e.getMessage() // TODO: 보안상 적절한 context인지 고려
+                "요청한 리소스를 찾을 수 없습니다."
         );
-        log.error("{}", e.getMessage());
+        log.error("No Resource Found Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
                 "Invalid Request",
                 errorMessage
         );
-        log.error("{}", e.getMessage());
+        log.error("Http Message Not Readable Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
                 "Illegal Argument Exception",
                 e.getMessage()
         );
-        log.error("{}", e.getMessage());
+        log.error("Illegal Argument Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
           "Database Exception",
                 e.getMessage()
         );
-        log.error("Database Exception : {}", e.getMessage());
+        log.error("Database Exception : {}", e.getMessage(), e);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -78,7 +78,7 @@ public class GlobalExceptionHandler {
                 "Entity Not Found",
                 e.getMessage()
         );
-        log.error("{}", e.getMessage());
+        log.error("Entity Not Found Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
@@ -106,7 +106,7 @@ public class GlobalExceptionHandler {
                 "Validation Failed",
                 errors
         );
-        log.error("Validation error: {}", errors);
+        log.error("Validation errors: {}", errors);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -128,7 +128,7 @@ public class GlobalExceptionHandler {
           "Data Integrity Violation",
           e.getMessage() // TODO: context 반환 방식 수정
         );
-        log.error("{}", e.getMessage());
+        log.error("Data Integrity Violation Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -138,8 +138,18 @@ public class GlobalExceptionHandler {
                 "Password Mismatch",
                 e.getMessage()
         );
-        log.error("{}", e.getMessage());
+        log.error("Password Mismatch Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CitydataSchedulerException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleCitydataSchedulerException(CitydataSchedulerException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Citydata Scheduler Error",
+                e.getMessage()
+        );
+        log.error("Citydata Scheduler Exception : {}", e.getMessage(), e);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 //    @ExceptionHandler(Exception.class)
