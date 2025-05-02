@@ -16,17 +16,17 @@ public class CitydataController {
     private final CitydataService citydataService;
 
     @GetMapping("/population/{areaId}")
-    public ResponseEntity<CommonResponse<ResPopulationDTO>> getPopulationData(@PathVariable Long areaId) {
+    public ResponseEntity<CommonResponse<ResGetPopulationDataDTO>> getPopulationData(@PathVariable Long areaId) {
         return ResponseEntity.ok().body(citydataService.findPopulationDataByAreaId(areaId));
     }
 
     @GetMapping("/weather/{areaId}")
-    public ResponseEntity<CommonResponse<ResWeatherDTO>> getWeatherData(@PathVariable Long areaId) {
+    public ResponseEntity<CommonResponse<ResGetWeatherDataDTO>> getWeatherData(@PathVariable Long areaId) {
         return ResponseEntity.ok().body(citydataService.findWeatherDataByAreaId(areaId));
     }
 
     @GetMapping("/event/{areaId}")
-    public ResponseEntity<CommonResponse<List<ResCultureEventDTO>>> getCultureEventData(@PathVariable Long areaId) {
+    public ResponseEntity<CommonResponse<List<ResGetCultureEventDataDTO>>> getCultureEventData(@PathVariable Long areaId) {
         return ResponseEntity.ok().body(citydataService.findCultureEventDataByAreaId(areaId));
     }
 }

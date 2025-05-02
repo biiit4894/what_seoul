@@ -8,7 +8,7 @@ import org.example.what_seoul.domain.citydata.weather.Weather;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResWeatherDTO {
+public class ResGetWeatherDataDTO {
     private Long id;
     private String temperature;
     private String maxTemperature;
@@ -21,7 +21,7 @@ public class ResWeatherDTO {
     private String weatherUpdateTime;
     private Long areaId;
 
-    public ResWeatherDTO(Weather weather) {
+    public ResGetWeatherDataDTO(Weather weather) {
         this.id = weather.getId();
         this.temperature = weather.getTemperature();
         this.maxTemperature = weather.getMaxTemperature();
@@ -35,7 +35,7 @@ public class ResWeatherDTO {
         this.areaId = weather.getArea().getId();
     }
 
-    public static ResWeatherDTO from(Weather weather) {
-        return new ResWeatherDTO(weather);
+    public static ResGetWeatherDataDTO from(Weather weather) {
+        return new ResGetWeatherDataDTO(weather);
     }
 }
