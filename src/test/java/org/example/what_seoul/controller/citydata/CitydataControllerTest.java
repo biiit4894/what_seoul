@@ -104,6 +104,7 @@ public class CitydataControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data.temperature").value("18°C"))
                 .andExpect(jsonPath("$.data.pcpMsg").value("비 또는 눈 소식이 없어요."));
     }
