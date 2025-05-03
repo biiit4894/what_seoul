@@ -14,9 +14,14 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 
 @Configuration
 @EnableWebSecurity
-@Profile("test")
-public class WebSecurityTestConfig {
-    @Bean(name = "securityFilterChainForTest")
+@Profile("test-h2")
+public class WebSecurityTestWithH2Config {
+    @Bean(name = "configureForTestWithH2Config")
+    public WebSecurityCustomizer configure() {      // 스프링 시큐리티 기능 비활성화
+        return web -> web.ignoring().requestMatchers(toH2Console());
+    }
+
+    @Bean(name = "securityFilterChainForTestWithH2Config")
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 // 누구나 접근 가능
@@ -33,7 +38,7 @@ public class WebSecurityTestConfig {
         return http.build();
     }
 
-    @Bean(name = "bCryptPasswordEncoderForTest")
+    @Bean(name = "bCryptPasswordEncoderForTestWithH2Config")
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }

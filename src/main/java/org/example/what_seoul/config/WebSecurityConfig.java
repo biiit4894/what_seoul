@@ -3,6 +3,8 @@ package org.example.what_seoul.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +18,7 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 @EnableWebSecurity
 @Configuration
 @Slf4j
+@Profile("dev")
 public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer configure() {      // 스프링 시큐리티 기능 비활성화
@@ -35,6 +38,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/user/**").authenticated()
                 .requestMatchers("/api/area/**").authenticated()
                 .requestMatchers("/api/citydata/**").authenticated()
+                .requestMatchers("/citydata/**").authenticated()
+                .requestMatchers("/mypage").authenticated()
                 .anyRequest().denyAll())
                 .formLogin(auth -> auth
                         .loginPage("/login")
@@ -53,6 +58,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    @Primary
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
