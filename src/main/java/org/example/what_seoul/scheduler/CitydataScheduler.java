@@ -124,7 +124,7 @@ public class CitydataScheduler {
      * @param area
      * @return
      */
-    private CompletableFuture<CityData> fetchCityData(Area area, boolean isUpdateCultureEventHour) {
+    CompletableFuture<CityData> fetchCityData(Area area, boolean isUpdateCultureEventHour) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
