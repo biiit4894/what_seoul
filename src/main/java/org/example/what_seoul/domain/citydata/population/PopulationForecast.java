@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * 인구 예측값 (향후 12시간에 대한 인구 예측 현황)
  */
@@ -40,6 +42,12 @@ public class PopulationForecast {
     @Column(nullable = false)
     private String forecastTime;
 
+    /**
+     * 인구 예측값 저장 일시
+     */
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "population_id", nullable = false)
     private Population population;
@@ -49,6 +57,7 @@ public class PopulationForecast {
         this.forecastPopulationMin = forecastPopulationMin;
         this.forecastPopulationMax = forecastPopulationMax;
         this.forecastTime = forecastTime;
+        this.createdAt = LocalDateTime.now();
         this.population = population;
     }
 }

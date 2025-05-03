@@ -19,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CitydataController.class)
+@ActiveProfiles("test")
 @Import(WebSecurityTestConfig.class) // 테스트를 위한 custom security configuration
 public class CitydataControllerTest {
     @Autowired
@@ -104,7 +106,6 @@ public class CitydataControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data.temperature").value("18°C"))
                 .andExpect(jsonPath("$.data.pcpMsg").value("비 또는 눈 소식이 없어요."));
     }

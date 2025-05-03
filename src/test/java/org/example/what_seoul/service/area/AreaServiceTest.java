@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class AreaServiceTest {
     @InjectMocks
     private AreaService areaService;
@@ -186,7 +188,7 @@ public class AreaServiceTest {
 
         // When & Then
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> areaService.getAreaListByKeyword(query));
-        assertEquals("장소를 찾지 못했습니다.", exception.getMessage());
+        assertEquals("장소 검색에 실패했습니다.", exception.getMessage());
     }
 
     @Test

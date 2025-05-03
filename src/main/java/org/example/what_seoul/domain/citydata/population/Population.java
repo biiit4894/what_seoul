@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.Area;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,13 +52,19 @@ public class Population {
     private String populationUpdateTime;
 
     /**
-     * 예측 인구 데이터
+     * 실시간 인구 현황 데이터 저장 일시
+     */
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    /**
+     * 예측 인구 데이터(인구 예측값)
      */
     @OneToMany(mappedBy = "population", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PopulationForecast> forecasts = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_id", nullable = false)
     private Area area;
 
     public Population(String congestionLevel, String congestionMessage, String populationMin, String populationMax, String populationUpdateTime, Area area) {
@@ -66,6 +73,7 @@ public class Population {
         this.populationMin = populationMin;
         this.populationMax = populationMax;
         this.populationUpdateTime = populationUpdateTime;
+        this.createdAt = LocalDateTime.now();
         this.area = area;
     }
 }

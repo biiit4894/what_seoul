@@ -50,7 +50,7 @@ public class AreaService {
      */
     public CommonResponse<ResGetAreaListByKeywordDTO> getAreaListByKeyword(String query) {
         try {
-            List<Area> areaList = areaRepository.findByAreaNameContaining(query.trim()).orElseThrow(() -> new EntityNotFoundException("Area not found"));
+            List<Area> areaList = areaRepository.findByAreaNameContaining(query.trim()).orElseThrow(() -> new EntityNotFoundException("장소 검색에 실패했습니다."));
 
             List<AreaDTO> areaDTOList = convertAreaDtoAreaDTOList(areaList);
 
@@ -61,7 +61,7 @@ public class AreaService {
             );
         } catch (EntityNotFoundException e) {
             log.error("장소 검색 실패: {}", e.getMessage());
-            throw new EntityNotFoundException("장소를 찾지 못했습니다.", e);
+            throw new EntityNotFoundException("장소 검색에 실패했습니다.", e);
         }
     }
 

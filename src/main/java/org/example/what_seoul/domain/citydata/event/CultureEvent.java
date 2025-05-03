@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.Area;
 
+import java.time.LocalDateTime;
+
 /**
  * 문화행사 현황
  */
@@ -58,8 +60,14 @@ public class CultureEvent {
     @Column(nullable = false)
     private String url;
 
+    /**
+     * 문화행사 데이터 저장 일시
+     */
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id")
+    @JoinColumn(name = "area_id", nullable = false)
     private Area area;
 
     public CultureEvent(String eventName, String eventPeriod, String eventPlace, String eventX, String eventY, String thumbnail, String url, Area area) {
@@ -70,6 +78,7 @@ public class CultureEvent {
         this.eventY = eventY;
         this.thumbnail = thumbnail;
         this.url = url;
+        this.createdAt = LocalDateTime.now();
         this.area = area;
     }
 
