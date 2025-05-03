@@ -60,6 +60,9 @@ public class CultureEvent {
     @Column(nullable = false)
     private String url;
 
+    /**
+     * 문화행사 데이터 저장 일시
+     */
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

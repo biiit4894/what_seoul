@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.Area;
 
+import java.time.LocalDateTime;
+
 /**
  * 날씨 현황
  */
@@ -70,6 +72,12 @@ public class Weather {
     @Column(nullable = false)
     private String weatherUpdateTime;
 
+    /**
+     * 날씨 현황 데이터 저장 일시
+     */
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "area_id", nullable = false)
     private Area area;
@@ -84,6 +92,7 @@ public class Weather {
         this.pm10 = pm10;
         this.pcpMsg = pcpMsg;
         this.weatherUpdateTime = weatherUpdateTime;
+        this.createdAt = LocalDateTime.now();
         this.area = area;
     }
 }

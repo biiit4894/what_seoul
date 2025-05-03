@@ -3,6 +3,7 @@ package org.example.what_seoul.scheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.domain.citydata.Area;
+import org.example.what_seoul.domain.citydata.CityData;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
@@ -18,7 +19,6 @@ import org.example.what_seoul.util.XmlElementNames;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -31,10 +31,9 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -57,7 +56,6 @@ public class CitydataScheduler {
      * - 5분 간격으로 배치 작업 수행
      * - 단, 문화 행사 데이터는 매일 00시, 06시, 12시, 18시에 갱신하도록 한다.
      */
-    @Transactional
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void call() {
         LocalDateTime beforeTime = LocalDateTime.now(); // 작업 수행 시작 시간
@@ -68,34 +66,26 @@ public class CitydataScheduler {
         // 서울시내 핫스팟 장소 116곳 조회
         List<Area> areas = areaRepository.findAll();
 
-        List<Population> populationList = new ArrayList<>();
-        List<PopulationForecast> populationForecastList = new ArrayList<>();
-        List<Weather> weatherList = new ArrayList<>();
-        List<CultureEvent> cultureEventList = new ArrayList<>();
+        List<CompletableFuture<CityData>> allFutures = areas.stream()
+                .map(area -> fetchCityData(area, isUpdateCultureEventHour))
+                .toList();
 
-        for (Area area : areas) {
-            // 각 장소에 대한 도시데이터 fetch
-            Document document = fetchCityData(area);
+        List<Population> populationList = allFutures.stream()
+                .map(CompletableFuture::join)
+                .map(CityData::getPopulation)
+                .collect(Collectors.toList());
 
-            // 실시간 인구 현황 데이터 파싱
-            Population population = parsePopulationData(document, area);
-            populationList.add(population);
+        List<PopulationForecast> populationForecastList = allFutures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(cityData -> cityData.getPopulationForecast().stream())
+                .collect(Collectors.toList());
 
-            // 인구 예측값 데이터 파싱
-            List<PopulationForecast> forecastList = parsePopulationForecastData(document, population, area);
-            populationForecastList.addAll(forecastList);
+        List<Weather> weatherList = allFutures.stream()
+                .map(CompletableFuture::join)
+                .map(CityData::getWeather)
+                .collect(Collectors.toList());
 
-            // 날씨 현황 데이터 파싱
-            Weather weather = parseWeatherData(document, area);
-            weatherList.add(weather);
-
-            // 문화행사 현황 데이터 파싱 (매일 00시, 06시, 12시, 18시에만 진행)
-            if (isUpdateCultureEventHour) {
-                List<CultureEvent> cultureEvent = parseCultureEventData(document, area);
-                cultureEventList.addAll(cultureEvent);
-            }
-
-        }
+        List<CultureEvent> cultureEventList;
 
         // 기존 데이터 삭제 후 새 데이터 저장
         populationRepository.deleteAll();
@@ -108,9 +98,15 @@ public class CitydataScheduler {
         weatherRepository.saveAll(weatherList);
 
         if (isUpdateCultureEventHour) { // 매일 00시, 06시, 12시, 18시에만 진행
+            cultureEventList = allFutures.stream()
+                    .map(CompletableFuture::join)
+                    .flatMap(cityData -> cityData.getCultureEvent().stream())
+                    .collect(Collectors.toList());
+
             cultureEventRepository.deleteAll();
             cultureEventRepository.saveAll(cultureEventList);
         }
+
 
         LocalDateTime afterTime = LocalDateTime.now();
         log.info("호출 시작 시간 = {}", beforeTime);
@@ -128,21 +124,31 @@ public class CitydataScheduler {
      * @param area
      * @return
      */
-    private Document fetchCityData(Area area) {
-        try {
-            String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
-            String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
-            log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
-            log.info("encoded area name: {}" , encodedAreaName);
+    private CompletableFuture<CityData> fetchCityData(Area area, boolean isUpdateCultureEventHour) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
+                String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
+                log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
+                log.info("encoded area name: {}", encodedAreaName);
 
-            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse(url + encodedAreaName);
-            document.getDocumentElement().normalize();
-            return document;
-        } catch (ParserConfigurationException | IOException | SAXException e) {
-            log.error("failed to fetch city data for area {}: {}", area.getAreaName(), e.getMessage());
-            throw new CitydataSchedulerException("도시 데이터 fetch에 실패했습니다.");
-        }
+                DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                Document document = documentBuilder.parse(url + encodedAreaName);
+                document.getDocumentElement().normalize();
+
+                Population population = parsePopulationData(document, area);
+                List<PopulationForecast> populationForecast = parsePopulationForecastData(document, population, area);
+                Weather weather = parseWeatherData(document, area);
+
+                List<CultureEvent> cultureEvent = isUpdateCultureEventHour ? parseCultureEventData(document, area) : Collections.emptyList();
+
+                return new CityData(population, populationForecast, weather, cultureEvent);
+            } catch (ParserConfigurationException | IOException | SAXException e) {
+                log.error("failed to fetch city data for area {}: {}", area.getAreaName(), e.getMessage());
+                throw new CitydataSchedulerException("도시 데이터 fetch에 실패했습니다.");
+            }
+        });
+
     }
 
     /**
@@ -199,6 +205,7 @@ public class CitydataScheduler {
      *
      * @param document
      * @param population
+     * @param area
      * @return
      */
     private List<PopulationForecast> parsePopulationForecastData(Document document, Population population, Area area) {
