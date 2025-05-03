@@ -2,6 +2,12 @@ package org.example.what_seoul.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.what_seoul.domain.user.RoleType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,13 +26,16 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
-//@Component
+@Component
 @Profile("dev")
 @RequiredArgsConstructor
 @Slf4j
@@ -40,8 +49,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String[] args) throws IOException {
-        userRepository.save(new User("admin", encoder.encode("admin1234!"), "admin@admin.com", "관리자", LocalDateTime.now().minusDays(1)));
-//        if (userRepository.count() == 0) {
+        if (userRepository.count() == 0) {
+            userRepository.save(new User("admin", encoder.encode("admin1234!"), "admin@admin.com", "관리자", RoleType.ADMIN, LocalDateTime.now().minusDays(1)));
+
 //            // 테스트용 유저 100인 생성
 //            List<User> testUsers = new ArrayList<>();
 //
@@ -58,7 +68,7 @@ public class DataInitializer implements CommandLineRunner {
 //            }
 //
 //            userRepository.saveAll(testUsers);
-//        }
+        }
 
         if (areaRepository.count() == 0) {
 //            // 서울시 116개 핫스팟 정보 저장

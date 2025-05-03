@@ -64,7 +64,7 @@ public class CultureEvent {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id")
+    @JoinColumn(name = "area_id", nullable = false)
     private Area area;
 
     public CultureEvent(String eventName, String eventPeriod, String eventPlace, String eventX, String eventY, String thumbnail, String url, Area area) {

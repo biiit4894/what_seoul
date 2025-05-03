@@ -56,8 +56,8 @@ public class Population {
     @OneToMany(mappedBy = "population", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PopulationForecast> forecasts = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_id", nullable = false)
     private Area area;
 
     public Population(String congestionLevel, String congestionMessage, String populationMin, String populationMax, String populationUpdateTime, Area area) {

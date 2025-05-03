@@ -53,13 +53,17 @@ public class CitydataScheduler {
 
 
     /**
-     * 인구 현황, 인구 예측값 데이터 및 날씨 현황 데이터를 갱신한다. (문화행사 데이터를 제외한 모든 유형의 도시데이터를 갱신한다.)
+     * 인구 현황(+인구 예측값) 데이터, 날씨 현황 데이터, 문화행사 데이터 를 갱신한다.
      * - 5분 간격으로 배치 작업 수행
+     * - 단, 문화 행사 데이터는 매일 00시, 06시, 12시, 18시에 갱신하도록 한다.
      */
     @Transactional
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void call() {
-        LocalDateTime beforeTime = LocalDateTime.now();
+        LocalDateTime beforeTime = LocalDateTime.now(); // 작업 수행 시작 시간
+        int hour = beforeTime.getHour();
+
+        boolean isUpdateCultureEventHour = (hour % 6) == 0; // 문화행사 데이터를 저장하는 시간인지 여부
 
         // 서울시내 핫스팟 장소 116곳 조회
         List<Area> areas = areaRepository.findAll();
@@ -67,6 +71,7 @@ public class CitydataScheduler {
         List<Population> populationList = new ArrayList<>();
         List<PopulationForecast> populationForecastList = new ArrayList<>();
         List<Weather> weatherList = new ArrayList<>();
+        List<CultureEvent> cultureEventList = new ArrayList<>();
 
         for (Area area : areas) {
             // 각 장소에 대한 도시데이터 fetch
@@ -83,6 +88,13 @@ public class CitydataScheduler {
             // 날씨 현황 데이터 파싱
             Weather weather = parseWeatherData(document, area);
             weatherList.add(weather);
+
+            // 문화행사 현황 데이터 파싱 (매일 00시, 06시, 12시, 18시에만 진행)
+            if (isUpdateCultureEventHour) {
+                List<CultureEvent> cultureEvent = parseCultureEventData(document, area);
+                cultureEventList.addAll(cultureEvent);
+            }
+
         }
 
         // 기존 데이터 삭제 후 새 데이터 저장
@@ -90,9 +102,15 @@ public class CitydataScheduler {
         populationForecastRepository.deleteAll();
         weatherRepository.deleteAll();
 
+
         populationRepository.saveAll(populationList);
         populationForecastRepository.saveAll(populationForecastList);
         weatherRepository.saveAll(weatherList);
+
+        if (isUpdateCultureEventHour) { // 매일 00시, 06시, 12시, 18시에만 진행
+            cultureEventRepository.deleteAll();
+            cultureEventRepository.saveAll(cultureEventList);
+        }
 
         LocalDateTime afterTime = LocalDateTime.now();
         log.info("호출 시작 시간 = {}", beforeTime);
@@ -101,42 +119,6 @@ public class CitydataScheduler {
         long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
         log.info("소요 시간 = {}초", totalTime);
 
-    }
-
-    /**
-     * 문화행사 데이터 갱신
-     * - 매일 00시, 06시, 12시, 18시에 작업을 수행한다.
-     * - 이는 문화행사 데이터는 기타 유형의 데이터와 같이 최소 5분 간격으로 갱신되는 것이 아니라, 1일 주기로 갱신되기 때문이다.
-     */
-    @Transactional
-    @Scheduled(cron = "0 0 0,6,12,18 * * *")
-    public void callForCultureEventData() {
-        LocalDateTime beforeTime = LocalDateTime.now();
-
-        // 서울시내 핫스팟 장소 116곳 조회
-        List<Area> areas = areaRepository.findAll();
-
-        List<CultureEvent> cultureEventList = new ArrayList<>();
-
-        for (Area area : areas) {
-            // 각 장소에 대한 도시데이터 fetch
-            Document document = fetchCityData(area);
-
-            // 문화행사 현황 데이터 파싱
-            List<CultureEvent> cultureEvent = parseCultureEventData(document, area);
-            cultureEventList.addAll(cultureEvent);
-        }
-
-        // 기존 데이터 삭제 후 새 데이터 저장
-        cultureEventRepository.deleteAll();
-        cultureEventRepository.saveAll(cultureEventList);
-
-        LocalDateTime afterTime = LocalDateTime.now();
-        log.info("문화행사 데이터 스케줄러 호출 시작 시간 = {}", beforeTime);
-        log.info("문화행사 데이터 스케줄러 호출 종료 시간 = {}", afterTime);
-
-        long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
-        log.info("문화행사 데이터 저장 소요 시간 = {}초", totalTime);
     }
 
 
@@ -150,7 +132,7 @@ public class CitydataScheduler {
         try {
             String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
             String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
-            log.info("sanitized area name: {}", sanitizedAreaName);
+            log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
             log.info("encoded area name: {}" , encodedAreaName);
 
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -328,7 +310,6 @@ public class CitydataScheduler {
         try {
             List<CultureEvent> cultureEventList = new ArrayList<>();
             NodeList cultureEventNodeList = document.getElementsByTagName(XmlElementNames.EVENT_STTS.getXmlElementName());
-            log.info("area: {}, area id: {}, length: {}", area.getAreaName(), area.getId(), document.getElementsByTagName(XmlElementNames.EVENT_STTS.getXmlElementName()).getLength());
             String eventNm = "No Tag";
             String eventPeriod = "No Tag";
             String eventPlace = "No Tag";

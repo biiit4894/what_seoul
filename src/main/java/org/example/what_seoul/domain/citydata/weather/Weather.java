@@ -70,8 +70,8 @@ public class Weather {
     @Column(nullable = false)
     private String weatherUpdateTime;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "area_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_id", nullable = false)
     private Area area;
 
     public Weather(String temperature, String maxTemperature, String minTemperature, String pm25Index, String pm25, String pm10Index, String pm10, String pcpMsg, String weatherUpdateTime, Area area) {
