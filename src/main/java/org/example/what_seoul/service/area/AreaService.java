@@ -6,22 +6,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.domain.citydata.Area;
+import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.repository.area.AreaRepository;
+import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.util.LocationChecker;
-import org.locationtech.jts.geom.GeometryFactory;
+import org.example.what_seoul.util.PolygonParser;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AreaService {
     private final AreaRepository areaRepository;
+    private final CultureEventRepository cultureEventRepository;
     private final LocationChecker locationChecker;
 
     /**
@@ -87,18 +91,11 @@ public class AreaService {
     public CommonResponse<List<ResGetAreaWithCongestionLevelDTO>> getAllAreasWithCongestionLevel() {
         List<AreaWithCongestionLevelDTO> areaList = areaRepository.findAllAreasWithCongestionLevel();
 
-        WKTReader wktReader = new WKTReader(new GeometryFactory());
         List<ResGetAreaWithCongestionLevelDTO> areaDTOList = new ArrayList<>();
 
         for (AreaWithCongestionLevelDTO area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                areaDTOList.add(ResGetAreaWithCongestionLevelDTO.from(area, polygon));
-            } catch (ParseException e) {
-
-                log.error("WKT 파싱 오류: {}", e.getMessage());
-                throw new RuntimeException("Invalid polygon data for area: " + area.getAreaName(), e);
-            }
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            areaDTOList.add(ResGetAreaWithCongestionLevelDTO.from(area, polygon));
         }
 
         return new CommonResponse<>(
@@ -115,18 +112,11 @@ public class AreaService {
     public CommonResponse<List<ResGetAreaWithWeatherDTO>> getAllAreasWithWeather() {
         List<AreaWithWeatherDTO> areaList = areaRepository.findAllAreasWithWeather();
 
-        WKTReader wktReader = new WKTReader(new GeometryFactory());
         List<ResGetAreaWithWeatherDTO> areaDTOList = new ArrayList<>();
 
         for (AreaWithWeatherDTO area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                areaDTOList.add(ResGetAreaWithWeatherDTO.from(area, polygon));
-            } catch (ParseException e) {
-                log.error("WKT 파싱 오류: {}", e.getMessage());
-                throw new RuntimeException("Invalid polygon data for area: " + area.getAreaName(), e);
-
-            }
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            areaDTOList.add(ResGetAreaWithWeatherDTO.from(area, polygon));
         }
 
         return new CommonResponse<>(
@@ -136,19 +126,43 @@ public class AreaService {
         );
     }
 
+    /**
+     * 전체 장소 문화행사 조회 기능
+     * @return
+     */
+    public CommonResponse<List<ResGetAreaWithCultureEventDTO>> getAllAreasWithCultureEvent() {
+        List<Area> allAreas = areaRepository.findAll();
+        List<CultureEvent> allCultureEvents = cultureEventRepository.findAllWithArea();
+
+        Map<Long, List<CultureEvent>> eventMap = allCultureEvents.stream()
+                .filter(event -> event.getArea() != null && event.getArea().getId() != null) // null 필터링
+                .collect(Collectors.groupingBy(event -> event.getArea().getId()));
+
+        List<ResGetAreaWithCultureEventDTO> result = allAreas.stream()
+                .map(area -> {
+                    Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+                    List<CultureEvent> cultureEventsForArea = eventMap.getOrDefault(area.getId(), Collections.emptyList());
+                    return ResGetAreaWithCultureEventDTO.from(area, cultureEventsForArea, polygon);
+                }).toList();
+
+        return new CommonResponse<>(
+                true,
+                "전체 장소 문화행사 조회 성공",
+                result
+        );
+    }
+
+    /**
+     * 장소 도메인 객체를 DTO 형태로 반환하는 메소드
+     * @param areaList
+     * @return
+     */
     private List<AreaDTO> convertAreaDtoAreaDTOList(List<Area> areaList) {
-        WKTReader wktReader = new WKTReader(new GeometryFactory());
         List<AreaDTO> areaDTOList = new ArrayList<>();
 
         for (Area area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                areaDTOList.add(AreaDTO.from(area, polygon));
-            } catch (ParseException e) {
-
-                log.error("WKT 파싱 오류: {}", e.getMessage());
-                throw new RuntimeException("Invalid polygon data for area: " + area.getAreaName(), e);
-            }
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            areaDTOList.add(AreaDTO.from(area, polygon));
         }
 
         return areaDTOList;

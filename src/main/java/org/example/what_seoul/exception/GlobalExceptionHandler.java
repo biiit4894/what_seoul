@@ -10,9 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.ArrayList;
@@ -31,6 +34,15 @@ public class GlobalExceptionHandler {
         );
         log.error("No Resource Found Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleMethodNotAllowed(HttpRequestMethodNotSupportedException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Method Not Allowed",
+                e.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -58,6 +70,24 @@ public class GlobalExceptionHandler {
                 e.getMessage()
         );
         log.error("Illegal Argument Exception : {}", e.getMessage(), e);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleMissingRequestParam(MissingServletRequestParameterException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Missing Request Parameter",
+                String.format("필수 파라미터 '%s'가 누락되었습니다.", e.getParameterName())
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Type Mismatch",
+                String.format("'%s' 값을 '%s' 타입으로 변환할 수 없습니다.", e.getValue(), e.getRequiredType().getSimpleName())
+        );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -94,22 +124,22 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<CommonErrorResponse<Object>> handleValidationException(MethodArgumentNotValidException e) {
-        Map<String, List<String>> errors = new HashMap<>();
-        for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-            errors.computeIfAbsent(fieldError.getField(), key -> new ArrayList<>()).add(fieldError.getDefaultMessage());
-
-        }
-
-        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-                "Validation Failed",
-                errors
-        );
-        log.error("Validation errors: {}", errors);
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<CommonErrorResponse<Object>> handleValidationException(MethodArgumentNotValidException e) {
+//        Map<String, List<String>> errors = new HashMap<>();
+//        for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
+//            errors.computeIfAbsent(fieldError.getField(), key -> new ArrayList<>()).add(fieldError.getDefaultMessage());
+//
+//        }
+//
+//        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+//                "Validation Failed",
+//                errors
+//        );
+//        log.error("Validation errors: {}", errors);
+//
+//        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+//    }
 
     @ExceptionHandler(DuplicateFieldException.class)
     public ResponseEntity<CommonErrorResponse<Map<String, String>>> handleDuplicateFieldException(DuplicateFieldException e) {
@@ -152,12 +182,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<CommonErrorResponse<Object>> handleGenericException(Exception e) {
-//        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-//                "Internal Server Error",
-//                "An unexpected error occurred."
-//        );
-//        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleGenericException(Exception e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Internal Server Error",
+                e.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

@@ -72,6 +72,30 @@ function getAllAreasWithWeather() {
 
 }
 
+function getAllAreasWithCultureEvent() {
+    selectedPolygon = null;
+    removeAreaNameControl(); // 장소명 컨트롤 제거
+    removeInfoIcons(); // info-icon 제거
+    removeLegendOverlay(); // 혼잡도 범례 제거
+
+    document.getElementById('citydata').innerHTML = '';
+
+    fetch(`/api/area/all/event`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => response.json())
+        .then(data => {
+            const areas = data.data;
+            console.log(areas);
+            clearCustomLabels();
+            clearPolygons();
+            showAllPolygons(areas, {useCultureEvent: true});
+
+        })
+        .catch(error => console.error("Error:", error));
+}
 // 혼잡도 범례 제거
 function removeLegendOverlay() {
     const existingLegend = document.querySelector('.legend-control');
@@ -119,12 +143,14 @@ function createLegendOverlay(map) {
 function showAllPolygons(areas, options = {}) {
     const {
         useCongestionLevel = false,
-        useTemperature = false
+        useTemperature = false,
+        useCultureEvent = false
     } = options;
 
     console.log("---")
     console.log("useCongestionLevel: ", useCongestionLevel);
     console.log("useTemperature: ", useTemperature);
+    console.log("useCultureEvent: ", useCultureEvent);
     console.log("---")
 
     areas.forEach((area) => {
@@ -145,6 +171,36 @@ function showAllPolygons(areas, options = {}) {
 
         // 지도 경계 조정
         adjustMapBounds(polygon);
+
+        // 문화행사 데이터가 있을 경우 문화행사 정보 표시
+        if (useCultureEvent && area.cultureEventList && area.cultureEventList.length > 0) {
+            area.cultureEventList.forEach(event => {
+                // 문화행사의 X, Y 좌표를 사용하여 점을 찍음
+                const eventLocation = new google.maps.LatLng(event.eventY, event.eventX);
+                const eventMarker = new google.maps.Marker({
+                    position: eventLocation,
+                    map: map,
+                    title: event.eventName,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 6,
+                        fillColor: '#FFD700',
+                        fillOpacity: 1,
+                        strokeColor: '#FFA500',
+                        strokeWeight: 1
+                    }
+                });
+
+                // 점에 대한 클릭 이벤트 처리
+                eventMarker.addListener("click", () => {
+                    const sameLocationEvents = area.cultureEventList.filter(e =>
+                        e.eventX === event.eventX && e.eventY === event.eventY
+                    );
+                    cultureEventSingleModal(sameLocationEvents);
+                });
+
+            });
+        }
     })
 }
 

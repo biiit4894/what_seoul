@@ -3,6 +3,7 @@ package org.example.what_seoul.repository.area;
 import org.example.what_seoul.controller.area.dto.AreaWithCongestionLevelDTO;
 import org.example.what_seoul.controller.area.dto.AreaWithWeatherDTO;
 import org.example.what_seoul.domain.citydata.Area;
+import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
