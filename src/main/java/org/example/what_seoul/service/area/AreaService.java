@@ -11,10 +11,7 @@ import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.util.LocationChecker;
 import org.example.what_seoul.util.PolygonParser;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -94,18 +91,11 @@ public class AreaService {
     public CommonResponse<List<ResGetAreaWithCongestionLevelDTO>> getAllAreasWithCongestionLevel() {
         List<AreaWithCongestionLevelDTO> areaList = areaRepository.findAllAreasWithCongestionLevel();
 
-        WKTReader wktReader = new WKTReader(new GeometryFactory());
         List<ResGetAreaWithCongestionLevelDTO> areaDTOList = new ArrayList<>();
 
         for (AreaWithCongestionLevelDTO area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                areaDTOList.add(ResGetAreaWithCongestionLevelDTO.from(area, polygon));
-            } catch (ParseException e) {
-
-                log.error("WKT 파싱 오류: {}", e.getMessage());
-                throw new RuntimeException("Invalid polygon data for area: " + area.getAreaName(), e);
-            }
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            areaDTOList.add(ResGetAreaWithCongestionLevelDTO.from(area, polygon));
         }
 
         return new CommonResponse<>(
@@ -122,18 +112,11 @@ public class AreaService {
     public CommonResponse<List<ResGetAreaWithWeatherDTO>> getAllAreasWithWeather() {
         List<AreaWithWeatherDTO> areaList = areaRepository.findAllAreasWithWeather();
 
-        WKTReader wktReader = new WKTReader(new GeometryFactory());
         List<ResGetAreaWithWeatherDTO> areaDTOList = new ArrayList<>();
 
         for (AreaWithWeatherDTO area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                areaDTOList.add(ResGetAreaWithWeatherDTO.from(area, polygon));
-            } catch (ParseException e) {
-                log.error("WKT 파싱 오류: {}", e.getMessage());
-                throw new RuntimeException("Invalid polygon data for area: " + area.getAreaName(), e);
-
-            }
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            areaDTOList.add(ResGetAreaWithWeatherDTO.from(area, polygon));
         }
 
         return new CommonResponse<>(
@@ -175,18 +158,11 @@ public class AreaService {
      * @return
      */
     private List<AreaDTO> convertAreaDtoAreaDTOList(List<Area> areaList) {
-        WKTReader wktReader = new WKTReader(new GeometryFactory());
         List<AreaDTO> areaDTOList = new ArrayList<>();
 
         for (Area area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                areaDTOList.add(AreaDTO.from(area, polygon));
-            } catch (ParseException e) {
-
-                log.error("WKT 파싱 오류: {}", e.getMessage());
-                throw new RuntimeException("Invalid polygon data for area: " + area.getAreaName(), e);
-            }
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            areaDTOList.add(AreaDTO.from(area, polygon));
         }
 
         return areaDTOList;
