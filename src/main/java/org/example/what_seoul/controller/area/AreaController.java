@@ -39,4 +39,11 @@ public class AreaController {
     public ResponseEntity<CommonResponse<List<ResGetAreaWithWeatherDTO>>> getAllAreaListWithWeather() {
         return ResponseEntity.ok().body(areaService.getAllAreasWithWeather());
     }
+
+    @GetMapping("/all/event")
+    public ResponseEntity<CommonResponse<List<ResGetAreaWithCultureEventDTO>>> getAllAreasWithCultureEvent() {
+        return ResponseEntity.ok().body(areaService.getAllAreasWithCultureEvent());
+    }
+
+
 }
