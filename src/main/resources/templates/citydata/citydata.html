@@ -25,6 +25,7 @@
     <script th:src="@{/js/citydata/citydata.js}"></script>
     <script th:src="@{/js/citydata/weatherModal.js}"></script>
     <script th:src="@{/js/citydata/cultureEventModal.js}"></script>
+    <script th:src="@{/js/citydata/cultureEventSingleModal.js}"></script>
     <script th:src="@{/js/citydata/populationModal.js}"></script>
 
 </head>
@@ -75,6 +76,7 @@
     <button class="btn btn-success mt-3" onclick="getAreaListByCurrentLocation()">현위치 기준 조회</button>
     <button class="btn btn-success mt-2" onclick="getAllAreasWithCongestionLevel()">전체 혼잡도 조회</button>
     <button class="btn btn-success mt-2" onclick="getAllAreasWithWeather()">전체 날씨 조회</button>
+    <button class="btn btn-success mt-2" onclick="getAllAreasWithCultureEvent()">전체 문화행사 조회</button>
 
     <p class="text-muted mt-2" id="location"></p>
     <p class="text-muted" id="citydata"></p>
