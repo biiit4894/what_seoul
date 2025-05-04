@@ -258,6 +258,106 @@ public class AreaControllerTest {
                 .andExpect(jsonPath("$.data[1].pcpMsg").value("약한 비"));
     }
 
+    @Test
+    @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
+    @DisplayName("[성공] 전체 장소 문화행사 조회 Controller")
+    void getAllAreasWithCultureEvent() throws Exception {
+        // Given
+        List<ResGetAreaWithCultureEventDTO> responseList = List.of(
+                new ResGetAreaWithCultureEventDTO(
+                        1L,
+                        "서울시 강남구 장소명 1",
+                        List.of(
+                                new CoordinateDTO(
+                                        37.5,
+                                        127.0
+                                ),
+                                new CoordinateDTO(
+                                        37.5,
+                                        127.1
+                                )
+                        ),
+                        List.of(
+                                new CultureEventDTO(
+                                        1L,
+                                        "행사 A",
+                                        "2025-01-01~2025-06-01",
+                                        "강남 문화센터",
+                                        "37.5",
+                                        "127.0",
+                                        "이미지 경로",
+                                        "https://example.com"
+                                ),
+                                new CultureEventDTO(
+                                        2L,
+                                        "행사 B",
+                                        "2025-03-14~2024-07-10",
+                                        "강남 전시회장",
+                                        "36.9",
+                                        "127.0",
+                                        "이미지 경로",
+                                        "https://example.com"
+                                ))
+                ),
+                new ResGetAreaWithCultureEventDTO(
+                        2L,
+                        "서울시 강남구 장소명 2",
+                        List.of(
+                                new CoordinateDTO(
+                                        37.6,
+                                        127.0
+                                ),
+                                new CoordinateDTO(
+                                        37.6,
+                                        127.1
+                                )
+                        ),
+                        List.of(
+                                new CultureEventDTO(
+                                        3L,
+                                        "행사 A-1",
+                                        "2025-01-01~2025-06-01",
+                                        "강남 문화센터-1",
+                                        "37.5",
+                                        "127.0",
+                                        "이미지 경로",
+                                        "https://example.com"
+                                ),
+                                new CultureEventDTO(
+                                        4L,
+                                        "행사 B-1",
+                                        "2025-03-14~2024-07-10",
+                                        "강남 전시회장-1",
+                                        "36.9",
+                                        "127.0",
+                                        "이미지 경로",
+                                        "https://example.com"
+                                ))
+                )
+        );
+
+        CommonResponse<List<ResGetAreaWithCultureEventDTO>> response = new CommonResponse<>(true, "전체 장소 문화행사 조회 성공", responseList);
+
+        given(areaService.getAllAreasWithCultureEvent()).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(get("/api/area/all/event"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("전체 장소 문화행사 조회 성공"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].areaId").value(1L))
+                .andExpect(jsonPath("$.data[0].areaName").value("서울시 강남구 장소명 1"))
+                .andExpect(jsonPath("$.data[0].cultureEventList").isArray())
+                .andExpect(jsonPath("$.data[0].cultureEventList[0].eventName").value("행사 A"))
+                .andExpect(jsonPath("$.data[0].cultureEventList[1].eventName").value("행사 B"))
+                .andExpect(jsonPath("$.data[1].areaId").value(2L))
+                .andExpect(jsonPath("$.data[1].areaName").value("서울시 강남구 장소명 2"))
+                .andExpect(jsonPath("$.data[1].cultureEventList").isArray())
+                .andExpect(jsonPath("$.data[1].cultureEventList[0].eventName").value("행사 A-1"))
+                .andExpect(jsonPath("$.data[1].cultureEventList[1].eventName").value("행사 B-1"));
+    }
 
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
@@ -372,5 +472,20 @@ public class AreaControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/area/all/weather"))  // 잘못된 POST 요청
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
+    @DisplayName("[실패] 전체 장소 문화행사 조회 Controller - Polygon ")
+    void getAllAreasWithCultureEvent_polygonParsingError() throws Exception {
+        // Given
+        given(areaService.getAllAreasWithCultureEvent())
+                .willThrow(new RuntimeException("Invalid polygon data for area: 서울시 강남구 장소명1"));
+
+        // When & Then
+        mockMvc.perform(get("/api/area/all/event"))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.context").value("Invalid polygon data for area: 서울시 강남구 장소명1"));
     }
 }
