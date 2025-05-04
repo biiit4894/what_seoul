@@ -66,7 +66,7 @@ public class User implements UserDetails {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void changeUserInfo(String password, String email, String nickName) {
+    public void updateUserInfo(String password, String email, String nickName) {
         if (password != null) {
             this.password = password;
         }
