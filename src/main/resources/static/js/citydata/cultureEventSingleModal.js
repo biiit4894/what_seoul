@@ -30,14 +30,14 @@ function cultureEventSingleModal(events) {
     const eventContainer = document.createElement("div");
     eventContainer.className = "event-container";
 
-    // 📌 주소 요소를 미리 생성해 놓음 (비어있는 상태)
+    // 주소 요소를 미리 생성해 놓음 (비어있는 상태)
     const addressElem = document.createElement("p");
     addressElem.innerText = "📌 위치: 주소를 불러오는 중...";
     addressElem.style.color = "#777";
     addressElem.style.fontSize = "0.85em";
     addressElem.style.marginBottom = "8px";
 
-// 먼저 추가해 둠 (이때는 텍스트만 임시로 표시됨)
+    // 주소 요소를 eventContainer에 먼저 추가해 둠
     eventContainer.appendChild(addressElem);
 
     getAddressFromCoords(events[0].eventY, events[0].eventX) // 좌표값을 도로명주소로 변환
