@@ -123,7 +123,7 @@ function showReviewModal(cultureEventId, eventName) {
 
     const backButton = document.createElement("button");
     backButton.className = "btn btn-outline-secondary btn-sm mr-2";
-    backButton.innerText = "< 행사 목록으로";
+    backButton.innerText = "<";
     backButton.style.fontSize = "0.8rem";
     backButton.onclick = () => {
         const cached = loadFromLocal("cachedCultureEvents");
@@ -247,11 +247,7 @@ function showReviewModal(cultureEventId, eventName) {
     };
 
 
-    function formatDateTime(dateTimeStr) {
-        const [date, time] = dateTimeStr.split("T");
-        const hhmm = time.slice(0, 5);
-        return `${date} ${hhmm}`;
-    }
+
 
     reviewList.addEventListener("scroll", () => {
         if (reviewList.scrollTop + reviewList.clientHeight >= reviewList.scrollHeight - 10) {
@@ -278,7 +274,7 @@ function showCreateReviewForm(cultureEventId, eventName) {
 
     const backButton = document.createElement("button");
     backButton.className = "btn btn-outline-secondary btn-sm mr-2";
-    backButton.innerText = "< 후기 목록으로";
+    backButton.innerText = "<";
     backButton.style.fontSize = "0.8rem";
     backButton.onclick = () => showReviewModal(cultureEventId, eventName);
 
@@ -293,8 +289,10 @@ function showCreateReviewForm(cultureEventId, eventName) {
 
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
+    textarea.id = "content"
     textarea.placeholder = "후기를 입력하세요 (최대 300자)";
     textarea.maxLength = 300;
+    textarea.rows = 6;
     textarea.required = true;
     textarea.style.width = "100%";
     textarea.style.height = "100px";
@@ -310,6 +308,8 @@ function showCreateReviewForm(cultureEventId, eventName) {
 
     form.onsubmit = function (e) {
         e.preventDefault();
+
+        document.querySelectorAll(".error-message").forEach(el => el.remove());
 
         const content = textarea.value.trim();
         if (!content) {
@@ -357,7 +357,7 @@ function showEditReviewForm(cultureEventId, review, eventName) {
 
     const backButton = document.createElement("button");
     backButton.className = "btn btn-outline-secondary btn-sm mr-2";
-    backButton.innerText = "< 후기 목록으로";
+    backButton.innerText = "<";
     backButton.style.fontSize = "0.8rem";
     backButton.onclick = () => {
         showReviewModal(cultureEventId, eventName);
@@ -366,12 +366,24 @@ function showEditReviewForm(cultureEventId, review, eventName) {
     const title = document.createElement("h5");
     title.innerText = `✏️ '${eventName}' 후기 수정`;
 
+    const createdAt = formatDateTime(review.createdAt);
+    const updatedAt = review.updatedAt ? formatDateTime(review.updatedAt) : null;
+
+    const updatedInfo = updatedAt ? ` (수정일자: ${updatedAt})` : "";
+
+    const reviewInfo = document.createElement("p");
+    reviewInfo.innerHTML = `<strong>${review.author}</strong> 작성일자 ${createdAt}${updatedInfo}`;
+    reviewInfo.style.fontSize = "0.85rem";
+    reviewInfo.style.textAlign = "left";
+
     modalHeader.appendChild(backButton);
     modalHeader.appendChild(title);
 
     const form = document.createElement("form");
     form.onsubmit = function (e) {
         e.preventDefault();
+        document.querySelectorAll(".error-message").forEach(el => el.remove());
+
         const newContent = textarea.value.trim();
         if (!newContent) {
             alert("후기 내용을 입력해주세요.");
@@ -385,11 +397,18 @@ function showEditReviewForm(cultureEventId, review, eventName) {
             },
             body: JSON.stringify({ content: newContent })
         })
-            .then(res => {
-                if (!res.ok) throw new Error("수정 실패");
-                return res.json();
-            })
-            .then(() => {
+            .then(async res => {
+                const response = await res.json();
+                if (!res.ok) {
+                    // 서버에서 유효성 오류를 context에 담아 보낸 경우
+                    if (response.context && response.context.content) {
+                        displayErrorMessages(response.context.content);
+                        return; // 오류 메시지 보여주고 종료
+                    }
+                    throw new Error("수정 실패"); // 그 외 예외
+                }
+
+                // 성공 시
                 alert("후기가 수정되었습니다.");
                 showReviewModal(cultureEventId, eventName);
             })
@@ -398,6 +417,8 @@ function showEditReviewForm(cultureEventId, review, eventName) {
 
     const textarea = document.createElement("textarea");
     textarea.className = "form-control";
+    textarea.id = "content"
+    textarea.maxLength = 300;
     textarea.value = review.content;
     textarea.rows = 6;
     textarea.style.width = "100%";
@@ -414,8 +435,32 @@ function showEditReviewForm(cultureEventId, review, eventName) {
     form.appendChild(submitBtn);
 
     modalContent.appendChild(modalHeader);
+    modalContent.appendChild(reviewInfo);
     modalContent.appendChild(form);
     modal.appendChild(modalContent);
+
+
+}
+
+// DateTime -> YYYY-MM-DD HH:mm 변환 함수
+function formatDateTime(dateTimeStr) {
+    const [date, time] = dateTimeStr.split("T");
+    const hhmm = time.slice(0, 5);
+    return `${date} ${hhmm}`;
+}
+
+// 에러 메시지 표시 함수
+function displayErrorMessages(errors) {
+    errors.forEach(errorMsg => {
+        const textarea = document.querySelector('#content');
+        const errorMessage = document.createElement("div");
+        errorMessage.className = "text-danger error-message";
+        errorMessage.style.textAlign = "left";
+        errorMessage.style.fontSize = "0.7rem";
+        errorMessage.textContent = errorMsg;
+        // textarea 아래에 에러 메시지 추가
+        textarea.parentNode.insertBefore(errorMessage, textarea.nextSibling);
+    });
 }
 
 
