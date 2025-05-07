@@ -8,7 +8,6 @@ import org.example.what_seoul.service.board.BoardService;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,9 +36,9 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.deleteBoard(id));
     }
 
-    @GetMapping("/{cultureEventId}")
+    @GetMapping("")
     public ResponseEntity<CommonResponse<Slice<ResGetBoardDTO>>> getBoardsByCultureEventId(
-            @PathVariable Long cultureEventId,
+            @RequestParam(name = "cultureEventId") Long cultureEventId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size
     ) {

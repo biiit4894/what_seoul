@@ -38,6 +38,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/user/**").authenticated()
                 .requestMatchers("/api/area/**").authenticated()
                 .requestMatchers("/api/citydata/**").authenticated()
+                .requestMatchers("/api/board/**").authenticated()
                 .requestMatchers("/citydata/**").authenticated()
                 .requestMatchers("/mypage").authenticated()
                 .anyRequest().denyAll())
