@@ -1,4 +1,6 @@
-function cultureEventSingleModal(events) {
+function cultureEventSingleModal(areaName, events) {
+    saveToLocal("cachedCultureEvents", {areaName, events});
+
     const existingModal = document.getElementById("culture-event-modal");
     if (existingModal) {
         existingModal.remove();
@@ -15,7 +17,7 @@ function cultureEventSingleModal(events) {
     modalHeader.className = "modal-header";
 
     const title = document.createElement("h5");
-    title.innerText = `🎭 문화행사 상세 정보`
+    title.innerText = `🎭 ${areaName}의 문화행사 정보`;
 
     const closeButton = document.createElement("span");
     closeButton.className = "close-button";
@@ -30,7 +32,6 @@ function cultureEventSingleModal(events) {
     const eventContainer = document.createElement("div");
     eventContainer.className = "event-container";
 
-    // 주소 요소를 미리 생성해 놓음 (비어있는 상태)
     const addressElem = document.createElement("p");
     addressElem.innerText = "📌 위치: 주소를 불러오는 중...";
     addressElem.style.color = "#777";
@@ -75,10 +76,21 @@ function cultureEventSingleModal(events) {
         eventLink.target = "_blank";
         eventLink.innerText = "🔗 상세 정보 보기";
 
+        const reviewButton = document.createElement("button");
+        reviewButton.className = "btn btn-outline-secondary btn-sm mr-2";
+        reviewButton.innerText = "📝 후기 보기";
+        reviewButton.style.width = "fit-content";
+        reviewButton.style.marginTop = "10px";
+        reviewButton.style.fontSize = "0.8rem";
+        reviewButton.onclick = function () {
+            showReviewModal(event.cultureEventId, event.eventName);
+        };
+
         eventInfo.appendChild(eventName);
         eventInfo.appendChild(eventPeriod);
         eventInfo.appendChild(eventPlace);
         eventInfo.appendChild(eventLink);
+        eventInfo.appendChild(reviewButton);
 
         eventCard.appendChild(eventImg);
         eventCard.appendChild(eventInfo);
@@ -96,3 +108,314 @@ function cultureEventSingleModal(events) {
         }
     });
 }
+
+function showReviewModal(cultureEventId, eventName) {
+    console.log("cultureEventId: ", cultureEventId);
+    console.log("typeof cultureEventId: ", typeof cultureEventId);
+    const modal = document.getElementById("culture-event-modal");
+    modal.innerHTML = ""; // 기존 내용 제거
+
+    const modalContent = document.createElement("div");
+    modalContent.className = "culture-event-modal-content";
+
+    const modalHeader = document.createElement("div");
+    modalHeader.className = "modal-header";
+
+    const backButton = document.createElement("button");
+    backButton.className = "btn btn-outline-secondary btn-sm mr-2";
+    backButton.innerText = "< 행사 목록으로";
+    backButton.style.fontSize = "0.8rem";
+    backButton.onclick = () => {
+        const cached = loadFromLocal("cachedCultureEvents");
+        if (cached && cached.events) {
+            cultureEventSingleModal(cached.areaName, cached.events);
+        }
+    };
+
+    const title = document.createElement("h5");
+    title.innerText = `📝 '${eventName}' 후기 목록`;
+
+    const writeButton = document.createElement("button");
+    writeButton.className = "btn btn-outline-secondary btn-sm mr-2";
+    writeButton.innerText = "후기 작성하기";
+    writeButton.style.fontSize = "0.8rem";
+    writeButton.onclick = () => {
+        showCreateReviewForm(cultureEventId, eventName);
+    };
+
+    modalHeader.appendChild(backButton);
+    modalHeader.appendChild(title);
+    modalHeader.appendChild(writeButton);  // 제목 아래에 버튼
+
+
+    const reviewList = document.createElement("div");
+    reviewList.className = "review-list";
+    reviewList.style.height = "300px";
+    reviewList.style.overflowY = "auto";
+
+    let page = 0;
+    let isLast = false;
+
+    const loadReviews = () => {
+        if (isLast) return;
+
+        fetch(`/api/board?cultureEventId=${cultureEventId}&page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                const reviews = data.data.content;
+
+                // 후기 없을 경우 메시지
+                if (page === 0 && reviews.length === 0) {
+                    const noReviewMsg = document.createElement("p");
+                    noReviewMsg.innerText = "등록된 후기가 없습니다.";
+                    noReviewMsg.style.textAlign = "center";
+                    noReviewMsg.style.marginTop = "20px";
+                    reviewList.appendChild(noReviewMsg);
+                    isLast = true;
+                    return;
+                }
+
+                reviews.forEach(review => {
+                    const createdAt = formatDateTime(review.createdAt);
+                    const updatedAt = review.updatedAt ? formatDateTime(review.updatedAt) : null;
+
+                    const item = document.createElement("div");
+                    item.className = "review-item";
+                    item.style.textAlign = "left";
+                    item.style.fontSize = "0.9em";
+
+                    const updatedInfo = updatedAt ? ` (수정일자: ${updatedAt})` : "";
+
+                    const header = document.createElement("p");
+                    header.innerHTML = `<strong>${review.author}</strong> 작성일자 ${createdAt}${updatedInfo}`;
+
+                    const content = document.createElement("p");
+                    content.innerText = review.content;
+                    content.style.overflowWrap = "break-word"; // 긴 단어 자동 줄바꿈
+                    content.style.whiteSpace = "pre-wrap"; // 개행(\n)은 그대로 줄바꿈 적용하되 긴 단어는 자동 줄바꿈
+
+                    item.appendChild(header);
+                    item.appendChild(content);
+
+                    // 수정/삭제 버튼
+                    if (review.editable) {
+                        const editBtn = document.createElement("button");
+                        editBtn.className = "btn btn-secondary btn-sm mr-2";
+                        editBtn.innerText = "수정";
+                        editBtn.style.marginRight = "8px";
+                        editBtn.onclick = () => {
+                            showEditReviewForm(cultureEventId, review, eventName);
+                        };
+
+                        const deleteBtn = document.createElement("button");
+                        deleteBtn.className = "btn btn-danger btn-sm";
+                        deleteBtn.innerText = "삭제";
+                        deleteBtn.onclick = () => {
+                            if (confirm("정말 삭제하시겠습니까?")) {
+                                fetch(`/api/board/${review.id}`, {
+                                    method: "DELETE"
+                                })
+                                    .then(res => {
+                                        if (!res.ok) throw new Error("삭제 실패");
+                                        return res.json();
+                                    })
+                                    .then(() => {
+                                        alert("삭제되었습니다.");
+                                        reviewList.innerHTML = ""; // 초기화 후 다시 불러오기
+                                        page = 0;
+                                        isLast = false;
+                                        loadReviews();
+                                    })
+                                    .catch(() => alert("삭제 중 오류 발생"));
+                            }
+                        };
+
+                        const buttonWrap = document.createElement("div");
+                        buttonWrap.appendChild(editBtn);
+                        buttonWrap.appendChild(deleteBtn);
+                        item.appendChild(buttonWrap);
+                    }
+
+                    const divider = document.createElement("hr");
+                    item.appendChild(divider);
+                    reviewList.appendChild(item);
+                });
+
+                isLast = data.data.last;
+                page++;
+            });
+    };
+
+
+    function formatDateTime(dateTimeStr) {
+        const [date, time] = dateTimeStr.split("T");
+        const hhmm = time.slice(0, 5);
+        return `${date} ${hhmm}`;
+    }
+
+    reviewList.addEventListener("scroll", () => {
+        if (reviewList.scrollTop + reviewList.clientHeight >= reviewList.scrollHeight - 10) {
+            loadReviews();
+        }
+    });
+
+    loadReviews();
+
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(reviewList);
+    modal.appendChild(modalContent);
+}
+
+function showCreateReviewForm(cultureEventId, eventName) {
+    const modal = document.getElementById("culture-event-modal");
+    modal.innerHTML = ""; // 기존 내용 제거
+
+    const modalContent = document.createElement("div");
+    modalContent.className = "culture-event-modal-content";
+
+    const modalHeader = document.createElement("div");
+    modalHeader.className = "modal-header";
+
+    const backButton = document.createElement("button");
+    backButton.className = "btn btn-outline-secondary btn-sm mr-2";
+    backButton.innerText = "< 후기 목록으로";
+    backButton.style.fontSize = "0.8rem";
+    backButton.onclick = () => showReviewModal(cultureEventId, eventName);
+
+    const title = document.createElement("h5");
+    title.innerText = `✍️ '${eventName}' 후기 작성`;
+
+    modalHeader.appendChild(backButton);
+    modalHeader.appendChild(title);
+
+    const form = document.createElement("form");
+    form.className = "review-form";
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "form-control";
+    textarea.placeholder = "후기를 입력하세요 (최대 300자)";
+    textarea.maxLength = 300;
+    textarea.required = true;
+    textarea.style.width = "100%";
+    textarea.style.height = "100px";
+
+    const submitButton = document.createElement("button");
+    submitButton.className = "btn btn-primary mt-2";
+    submitButton.type = "submit";
+    submitButton.innerText = "등록";
+    submitButton.style.fontSize = "0.8rem";
+
+    form.appendChild(textarea);
+    form.appendChild(submitButton);
+
+    form.onsubmit = function (e) {
+        e.preventDefault();
+
+        const content = textarea.value.trim();
+        if (!content) {
+            alert("후기를 입력해주세요.");
+            return;
+        }
+
+        fetch("/api/board", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                content: content,
+                cultureEventId: cultureEventId
+            })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("후기 작성 실패");
+                return res.json();
+            })
+            .then(() => {
+                alert("후기가 등록되었습니다.");
+                showReviewModal(cultureEventId, eventName); // 다시 후기 목록 보기로 이동
+            })
+            .catch(() => {
+                alert("후기 작성 중 오류가 발생했습니다.");
+            });
+    };
+
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(form);
+    modal.appendChild(modalContent);
+}
+
+function showEditReviewForm(cultureEventId, review, eventName) {
+    const modal = document.getElementById("culture-event-modal");
+    modal.innerHTML = ""; // 기존 내용 제거
+
+    const modalContent = document.createElement("div");
+    modalContent.className = "culture-event-modal-content";
+
+    const modalHeader = document.createElement("div");
+    modalHeader.className = "modal-header";
+
+    const backButton = document.createElement("button");
+    backButton.className = "btn btn-outline-secondary btn-sm mr-2";
+    backButton.innerText = "< 후기 목록으로";
+    backButton.style.fontSize = "0.8rem";
+    backButton.onclick = () => {
+        showReviewModal(cultureEventId, eventName);
+    };
+
+    const title = document.createElement("h5");
+    title.innerText = `✏️ '${eventName}' 후기 수정`;
+
+    modalHeader.appendChild(backButton);
+    modalHeader.appendChild(title);
+
+    const form = document.createElement("form");
+    form.onsubmit = function (e) {
+        e.preventDefault();
+        const newContent = textarea.value.trim();
+        if (!newContent) {
+            alert("후기 내용을 입력해주세요.");
+            return;
+        }
+
+        fetch(`/api/board/${review.id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ content: newContent })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("수정 실패");
+                return res.json();
+            })
+            .then(() => {
+                alert("후기가 수정되었습니다.");
+                showReviewModal(cultureEventId, eventName);
+            })
+            .catch(() => alert("수정 중 오류 발생"));
+    };
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "form-control";
+    textarea.value = review.content;
+    textarea.rows = 6;
+    textarea.style.width = "100%";
+    textarea.style.marginTop = "10px";
+
+    const submitBtn = document.createElement("button");
+    submitBtn.className = "btn btn-primary mt-2";
+    submitBtn.type = "submit";
+    submitBtn.innerText = "저장";
+    submitBtn.style.fontSize = "0.8rem";
+    submitBtn.style.marginTop = "10px";
+
+    form.appendChild(textarea);
+    form.appendChild(submitBtn);
+
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(form);
+    modal.appendChild(modalContent);
+}
+
+
