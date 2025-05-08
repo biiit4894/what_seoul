@@ -35,7 +35,7 @@ public class ResGetBoardDTO {
         this.content = board.getContent();
         this.createdAt = board.getCreatedAt();
         this.updatedAt = board.getUpdatedAt();
-        this.author = board.getUser().getNickName();
+        this.author = board.getUser().getDeletedAt() != null ? "(탈퇴한 유저)" : board.getUser().getNickName();
         this.eventName = board.getCultureEvent().getEventName();
         this.isEditable = loginUserInfo.getRole() == RoleType.ADMIN || board.getUser().getId().equals(loginUserInfo.getId());
     }
