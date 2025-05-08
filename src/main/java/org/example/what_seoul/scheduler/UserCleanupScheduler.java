@@ -1,7 +1,10 @@
 package org.example.what_seoul.scheduler;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.domain.user.User;
+import org.example.what_seoul.repository.board.BoardRepository;
 import org.example.what_seoul.repository.user.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserCleanupScheduler {
     private final UserRepository userRepository;
+    private final BoardRepository boardRepository;
 
     /**
      * 회원 탈퇴 기능과 연계되어, 매일 오전 3시마다 hard delete해야 하는 유저를 파악해 삭제하는 메소드.
@@ -23,7 +27,11 @@ public class UserCleanupScheduler {
     @Transactional
     public void deleteUsers() {
         LocalDateTime deadline = LocalDateTime.now().minusDays(30);
-        List<User> oldUsers = userRepository.findByDeletedAtBefore(deadline).orElseThrow(() -> new IllegalArgumentException("비활성화된 사용자를 찾을 수 없습니다."));
+        List<User> oldUsers = userRepository.findByDeletedAtBefore(deadline);
+        oldUsers.forEach(user -> {
+            List<Board> boards = boardRepository.findAllByUserId(user.getId());
+            boardRepository.deleteAll(boards);
+        });
 
         userRepository.deleteAll(oldUsers);
     }
