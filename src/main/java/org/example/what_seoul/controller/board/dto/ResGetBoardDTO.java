@@ -1,5 +1,6 @@
 package org.example.what_seoul.controller.board.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,20 +16,13 @@ import java.time.LocalDateTime;
 public class ResGetBoardDTO {
     private Long id;
     private String content;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
     private String author;
     private String eventName;
     private boolean isEditable;
-
-    public ResGetBoardDTO(Board board) {
-        this.id = board.getId();
-        this.content = board.getContent();
-        this.createdAt = board.getCreatedAt();
-        this.updatedAt = board.getUpdatedAt();
-        this.author = board.getUser().getNickName();
-        this.eventName = board.getCultureEvent().getEventName();
-    }
 
     public ResGetBoardDTO(Board board, LoginUserInfoDTO loginUserInfo) {
         this.id = board.getId();
@@ -42,9 +36,5 @@ public class ResGetBoardDTO {
 
     public static ResGetBoardDTO from(Board board, LoginUserInfoDTO loginUserInfo) {
         return new ResGetBoardDTO(board, loginUserInfo);
-    }
-
-    public static ResGetBoardDTO from(Board board) {
-        return new ResGetBoardDTO(board);
     }
 }
