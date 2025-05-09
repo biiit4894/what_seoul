@@ -196,7 +196,7 @@ function showAllPolygons(areas, options = {}) {
                     const sameLocationEvents = area.cultureEventList.filter(e =>
                         e.eventX === event.eventX && e.eventY === event.eventY
                     );
-                    cultureEventSingleModal(sameLocationEvents);
+                    cultureEventSingleModal(area.areaName, sameLocationEvents);
                 });
 
             });
@@ -267,7 +267,7 @@ function drawPolygonWithOptions(
 
     polygon.addListener('mouseover', () => {
         polygon.setOptions(hoverStyle);
-        showLabel(areaId); // ✅
+        showLabel(areaId);
 
     });
 
@@ -275,7 +275,7 @@ function drawPolygonWithOptions(
         // 클릭된 상태가 아니면 다시 연하게 변경
         if (selectedPolygon !== polygon) {
             polygon.setOptions(defaultStyle);
-            hideLabel(areaId); // ✅
+            hideLabel(areaId);
         }
     });
 
@@ -345,7 +345,7 @@ function createCustomLabelWithOptions(map, position, text, color, labelId, isTem
     labelDiv.id = `custom-label-${labelId}`;
     labelDiv.textContent = text;
 
-    const yOffset = isTemperatureLabel ? -15 : 5; // ✅ 겹치지 않도록 오프셋 조정
+    const yOffset = isTemperatureLabel ? -15 : 5; // 겹치지 않도록 오프셋 조정
 
     labelDiv.style.position = "absolute";
     labelDiv.style.padding = "2px 6px";

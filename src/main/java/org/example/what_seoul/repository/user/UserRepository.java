@@ -11,7 +11,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserId(String userId);
     Optional<User> findByEmail(String email);
     Optional<User> findByNickName(String nickName);
-    Optional<List<User>> findByDeletedAtBefore(LocalDateTime deadline);
+    List<User> findByDeletedAtBefore(LocalDateTime deadline);
     boolean existsByEmail(String Email);
 
     boolean existsByNickName(String nickName);

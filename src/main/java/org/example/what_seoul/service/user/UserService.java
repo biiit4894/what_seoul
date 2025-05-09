@@ -219,17 +219,13 @@ public class UserService {
             throw new CustomValidationException(errors);
         }
 
-        user.changeUserInfo(
+        user.updateUserInfo(
                 reqNewPassword != null ? encoder.encode(reqNewPassword) : null, // rawPassword cannot be null 방지
                 reqNewEmail,
                 reqNewNickName
         );
 
-        return new CommonResponse<>(
-                true,
-                "회원 정보 수정 성공",
-                ResUpdateUserDTO.from(user)
-        );
+        return new CommonResponse<>(true, "회원 정보 수정 성공", ResUpdateUserDTO.from(user));
     }
 
     /**
