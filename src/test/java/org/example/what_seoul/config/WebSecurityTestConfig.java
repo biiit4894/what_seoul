@@ -27,6 +27,7 @@ public class WebSecurityTestConfig {
                 .requestMatchers("/api/user/**").authenticated()
                 .requestMatchers("/api/area/**").authenticated()
                 .requestMatchers("/api/citydata/**").authenticated()
+                .requestMatchers("/api/board/**").authenticated()
                 .anyRequest().denyAll()
         ).csrf(auth -> auth.disable());
 

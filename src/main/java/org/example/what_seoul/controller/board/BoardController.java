@@ -21,6 +21,15 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.CREATED).body(boardService.createBoard(req));
     }
 
+    @GetMapping("")
+    public ResponseEntity<CommonResponse<Slice<ResGetBoardDTO>>> getBoardsByCultureEventId(
+            @RequestParam(name = "cultureEventId") Long cultureEventId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByCultureEventId(cultureEventId, page, size));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<ResGetBoardDTO>> getBoardById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardById(id));
@@ -35,15 +44,5 @@ public class BoardController {
     public ResponseEntity<CommonResponse<ResDeleteBoardDTO>> deleteBoard(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.deleteBoard(id));
     }
-
-    @GetMapping("")
-    public ResponseEntity<CommonResponse<Slice<ResGetBoardDTO>>> getBoardsByCultureEventId(
-            @RequestParam(name = "cultureEventId") Long cultureEventId,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size
-    ) {
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByCultureEventId(cultureEventId, page, size));
-    }
-
 
 }

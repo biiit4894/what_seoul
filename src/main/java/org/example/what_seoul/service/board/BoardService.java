@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
 import org.example.what_seoul.controller.board.dto.*;
-import org.example.what_seoul.controller.user.dto.ReqUpdateUserInfoDTO;
 import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.user.RoleType;
@@ -51,12 +50,6 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public CommonResponse<ResGetBoardDTO> getBoardById(Long id) {
-        Board board = boardRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("문화행사 후기를 찾을 수 없습니다. 후기 id = " + id));
-        return new CommonResponse<>(true, "문화행사 후기 조회 성공", ResGetBoardDTO.from(board));
-    }
-
-    @Transactional(readOnly = true)
     public CommonResponse<Slice<ResGetBoardDTO>> getBoardsByCultureEventId(Long cultureEventId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Slice<Board> boardSlice = boardRepository.findAllByCultureEventId(cultureEventId, pageable);
@@ -65,6 +58,13 @@ public class BoardService {
         Slice<ResGetBoardDTO> result = boardSlice.map(board -> ResGetBoardDTO.from(board, loginUserInfo));
 
         return new CommonResponse<>(true, "장소별 문화행사 후기 목록 조회 성공", result);
+    }
+
+    @Transactional(readOnly = true)
+    public CommonResponse<ResGetBoardDTO> getBoardById(Long id) {
+        LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
+        Board board = boardRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("문화행사 후기를 찾을 수 없습니다. 후기 id = " + id));
+        return new CommonResponse<>(true, "문화행사 후기 조회 성공", ResGetBoardDTO.from(board, loginUserInfo));
     }
 
     @Transactional
