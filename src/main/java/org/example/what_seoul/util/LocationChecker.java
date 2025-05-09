@@ -7,8 +7,6 @@ import org.example.what_seoul.controller.area.dto.AreaDTO;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.locationtech.jts.geom.*;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,8 +18,7 @@ import java.util.PriorityQueue;
  * 사용자의 현재 위치 좌표를 기반으로,
  * 해당 위치를 포함하는 지역(Area)을 찾아 반환하거나,
  * 포함하는 지역이 없을 경우 가장 가까운 3개의 지역을 찾아 반환하는 클래스
- *
- * 내부적으로 JTS 라이브러리를 사용하여 WKT 문자열을 Polygon 객체로 파싱하고,
+ㅅ * 내부적으로 JTS 라이브러리를 사용하여 WKT 문자열을 Polygon 객체로 파싱하고,
  * Geometry 연산을 통해 포함 여부 및 거리 계산을 수행한다.
  */
 @Component
@@ -64,18 +61,12 @@ public class LocationChecker {
         List<Area> areaList = areaRepository.findAll();
         List<AreaDTO> nearestPlaces = new ArrayList<>();
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
-        WKTReader wktReader = new WKTReader(geometryFactory);
 
         // 유저 위치를 포함하는 폴리곤 찾기
         for (Area area : areaList) {
-            try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
-                if (polygon.contains(userLocation)) {
-                    nearestPlaces.add(AreaDTO.from(area, polygon));
-                }
-            } catch (ParseException e) {
-                log.error("Error parsing WKT: {}", e.getMessage());
-                throw new RuntimeException(e);
+            Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
+            if (polygon.contains(userLocation)) {
+                nearestPlaces.add(AreaDTO.from(area, polygon));
             }
         }
 
@@ -87,7 +78,7 @@ public class LocationChecker {
         PriorityQueue<PlaceDistance> pq = new PriorityQueue<>(Comparator.comparingDouble(p -> p.distance));
         for (Area area : areaList) {
             try {
-                Polygon polygon = (Polygon) wktReader.read(area.getPolygonWkt());
+                Polygon polygon = PolygonParser.parse(area.getPolygonWkt(), area.getAreaName());
                 double distance = polygon.distance(userLocation);
                 pq.offer(new PlaceDistance(area.getId(), area.getAreaName(), distance, polygon));
             } catch (Exception e) {
