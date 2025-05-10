@@ -98,13 +98,40 @@ public class CitydataScheduler {
         weatherRepository.saveAll(weatherList);
 
         if (isUpdateCultureEventHour) { // 매일 00시, 06시, 12시, 18시에만 진행
-            cultureEventList = allFutures.stream()
+            List<CultureEvent> allEvents = cultureEventRepository.findAll();
+
+            // 행사 종료 여부를 판단해 isEnded 필드 값 갱신
+            List<CultureEvent> isEndedUpdatedEvents = new ArrayList<>();
+            for (CultureEvent event : allEvents) {
+                if (event.updateIsEnded(event.evaluateIsEnded())) {
+                    isEndedUpdatedEvents.add(event);
+                }
+            }
+            cultureEventRepository.saveAll(isEndedUpdatedEvents); // isEnded값이 갱신된 행사들만 변경사항을 DB에 반영
+
+            List<CultureEvent> fetchedEvents = allFutures.stream()
                     .map(CompletableFuture::join)
                     .flatMap(cityData -> cityData.getCultureEvent().stream())
-                    .collect(Collectors.toList());
+                    .toList();
 
-            cultureEventRepository.deleteAll();
-            cultureEventRepository.saveAll(cultureEventList);
+            List<CultureEvent> updatedEvents = new ArrayList<>();
+            for (CultureEvent newCultureEvent : fetchedEvents) {
+                Optional<CultureEvent> existingCultureEvent = cultureEventRepository.findByEventNameAndArea(newCultureEvent.getEventName(), newCultureEvent.getArea());
+
+                // 문화행사 이름과 관련 장소(Area)가 동일할 경우 새롭게 fetch된 문화행사 정보로 갱신
+                if (existingCultureEvent.isPresent()) {
+                    log.info("event {} is present", newCultureEvent.getEventName());
+                    CultureEvent existing = existingCultureEvent.get();
+                    if(existing.updateFrom(newCultureEvent)) {
+                        updatedEvents.add(existing);
+                    }
+                } else {
+                    log.info("event {} is new", newCultureEvent.getEventName());
+                    cultureEventRepository.save(newCultureEvent); // 아예 새로운 행사라면 DB에 새로 저장
+                }
+            }
+
+            cultureEventRepository.saveAll(updatedEvents); // 정보가 갱신된(updateFrom된) 행사들만 변경사항을 DB에 반영
         }
 
 
