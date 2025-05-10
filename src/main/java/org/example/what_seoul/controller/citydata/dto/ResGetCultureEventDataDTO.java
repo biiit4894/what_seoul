@@ -20,6 +20,7 @@ public class ResGetCultureEventDataDTO {
     private String eventY;
     private String thumbnail;
     private String url;
+    private Boolean isEnded;
     private Long areaId;
 
     public ResGetCultureEventDataDTO(CultureEvent cultureEvent) {
@@ -31,6 +32,7 @@ public class ResGetCultureEventDataDTO {
         this.eventY = cultureEvent.getEventY();
         this.thumbnail = cultureEvent.getThumbnail();
         this.url = cultureEvent.getUrl();
+        this.isEnded = cultureEvent.getIsEnded();
         this.areaId = cultureEvent.getArea().getId();
     }
 

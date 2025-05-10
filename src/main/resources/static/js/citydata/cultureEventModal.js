@@ -42,6 +42,7 @@ function cultureEventModal(data) {
         data.data.forEach(event => {
             const eventCard = document.createElement("div");
             eventCard.className = "event-card";
+            eventCard.style.position = "relative"; // 오버레이 배치를 위한 설정
 
             const eventImg = document.createElement("img");
             eventImg.src = event.thumbnail;
@@ -72,6 +73,15 @@ function cultureEventModal(data) {
 
             eventCard.appendChild(eventImg);
             eventCard.appendChild(eventInfo);
+
+            // 종료된 행사는 overlay 추가 및 종료된 행사 문구 표기
+            if (event.isEnded === true) {
+                const overlay = document.createElement("div");
+                overlay.className = "event-overlay";
+                overlay.innerText = "종료된 행사";
+                eventCard.appendChild(overlay);
+            }
+
             eventContainer.appendChild(eventCard);
         });
     }

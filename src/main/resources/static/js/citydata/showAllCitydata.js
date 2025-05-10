@@ -91,7 +91,7 @@ function getAllAreasWithCultureEvent() {
             console.log(areas);
             clearCustomLabels();
             clearPolygons();
-            showAllPolygons(areas, {useCultureEvent: true});
+            showAllPolygons(areas, { useCultureEvent : true});
 
         })
         .catch(error => console.error("Error:", error));

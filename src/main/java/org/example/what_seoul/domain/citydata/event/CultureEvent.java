@@ -68,7 +68,7 @@ public class CultureEvent {
      * 문화행사 종료 여부
      */
     @Column(nullable = false)
-    private boolean isEnded;
+    private Boolean isEnded;
 
     /**
      * 문화행사 데이터 저장 일시
@@ -100,7 +100,6 @@ public class CultureEvent {
         this.createdAt = LocalDateTime.now();
         this.area = area;
     }
-
 
     /**
      * 행사 이름과 관련 Area가 같은 행사일 경우 정보를 갱신하는 메소드

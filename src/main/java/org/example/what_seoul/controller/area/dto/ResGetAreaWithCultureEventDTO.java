@@ -35,7 +35,8 @@ public class ResGetAreaWithCultureEventDTO {
                         e.getEventX(),
                         e.getEventY(),
                         e.getThumbnail(),
-                        e.getUrl()
+                        e.getUrl(),
+                        e.getIsEnded()
                 )).toList();
 
         return new ResGetAreaWithCultureEventDTO(
