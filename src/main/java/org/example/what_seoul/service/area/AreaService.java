@@ -13,6 +13,7 @@ import org.example.what_seoul.util.LocationChecker;
 import org.example.what_seoul.util.PolygonParser;
 import org.locationtech.jts.geom.Polygon;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +34,7 @@ public class AreaService {
      * @param req
      * @return
      */
+    @Transactional(readOnly = true)
     public CommonResponse<ResGetAreaListByCurrentLocationDTO> getAreaListByCurrentLocation(ReqGetAreaListByCurrentLocationDTO req) {
         try {
             List<AreaDTO> nearestPlaces = locationChecker.findLocations(req.getLatitude(), req.getLongitude());
@@ -52,6 +54,7 @@ public class AreaService {
      * @param query
      * @return
      */
+    @Transactional(readOnly = true)
     public CommonResponse<ResGetAreaListByKeywordDTO> getAreaListByKeyword(String query) {
         try {
             List<Area> areaList = areaRepository.findByAreaNameContaining(query.trim()).orElseThrow(() -> new EntityNotFoundException("장소 검색에 실패했습니다."));
@@ -73,6 +76,7 @@ public class AreaService {
      * 전체 장소 리스트 조회 기능
      * @return
      */
+    @Transactional(readOnly = true)
     public CommonResponse<List<AreaDTO>> getAllAreaList() {
         List<Area> areaList = areaRepository.findAll();
         List<AreaDTO> areaDTOList = convertAreaDtoAreaDTOList(areaList);
@@ -88,6 +92,7 @@ public class AreaService {
      * 전체 장소 혼잡도 조회 기능
      * @return
      */
+    @Transactional(readOnly = true)
     public CommonResponse<List<ResGetAreaWithCongestionLevelDTO>> getAllAreasWithCongestionLevel() {
         List<AreaWithCongestionLevelDTO> areaList = areaRepository.findAllAreasWithCongestionLevel();
 
@@ -109,6 +114,7 @@ public class AreaService {
      * 전체 장소 날씨 조회 기능
      * @return
      */
+    @Transactional(readOnly = true)
     public CommonResponse<List<ResGetAreaWithWeatherDTO>> getAllAreasWithWeather() {
         List<AreaWithWeatherDTO> areaList = areaRepository.findAllAreasWithWeather();
 
@@ -130,6 +136,7 @@ public class AreaService {
      * 전체 장소 문화행사 조회 기능
      * @return
      */
+    @Transactional(readOnly = true)
     public CommonResponse<List<ResGetAreaWithCultureEventDTO>> getAllAreasWithCultureEvent() {
         List<Area> allAreas = areaRepository.findAll();
         List<CultureEvent> allCultureEvents = cultureEventRepository.findAllWithArea();

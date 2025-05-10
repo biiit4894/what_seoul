@@ -14,6 +14,7 @@ import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
+import org.example.what_seoul.service.citydata.CitydataService;
 import org.example.what_seoul.service.citydata.PcpMsgHistoryService;
 import org.example.what_seoul.util.XmlElementNames;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CitydataScheduler {
+    private final CitydataService citydataService;
     private final AreaRepository areaRepository;
     private final PopulationRepository populationRepository;
     private final PopulationForecastRepository populationForecastRepository;
@@ -85,17 +87,9 @@ public class CitydataScheduler {
                 .map(CityData::getWeather)
                 .collect(Collectors.toList());
 
-        List<CultureEvent> cultureEventList;
 
         // 기존 데이터 삭제 후 새 데이터 저장
-        populationRepository.deleteAll();
-        populationForecastRepository.deleteAll();
-        weatherRepository.deleteAll();
-
-
-        populationRepository.saveAll(populationList);
-        populationForecastRepository.saveAll(populationForecastList);
-        weatherRepository.saveAll(weatherList);
+        citydataService.updateCityData(populationList, populationForecastList, weatherList);
 
         if (isUpdateCultureEventHour) { // 매일 00시, 06시, 12시, 18시에만 진행
             List<CultureEvent> allEvents = cultureEventRepository.findAll();
