@@ -11,4 +11,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Slice<Board> findAllByCultureEventId(Long cultureEventId, Pageable pageable);
 
     List<Board> findAllByUserId(Long userId);
+
+    boolean existsByCultureEventId(Long cultureEventId);
 }

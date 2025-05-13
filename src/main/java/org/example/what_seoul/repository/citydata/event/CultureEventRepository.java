@@ -19,4 +19,6 @@ public interface CultureEventRepository extends JpaRepository<CultureEvent, Long
     List<CultureEvent> findAllWithArea();
 
     Optional<CultureEvent> findByEventNameAndArea(String eventName, Area area);
+
+    List<CultureEvent> findAllByIsEndedTrue();
 }
