@@ -30,6 +30,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -307,41 +308,46 @@ public class CitydataServiceTest {
                 "테스트 지역",
                 "POLYGON (...)");
 
+        LocalDate now = LocalDate.now();
+
+        String expiredEventPeriod = now.minusMonths(4).withDayOfMonth(1) + "~" + now.minusMonths(4).withDayOfMonth(28);
+        String recentEventPeriod = now.minusMonths(2).withDayOfMonth(1) + "~" + now.minusMonths(2).withDayOfMonth(28);
+        String eventWithReviewPeriod = now.minusMonths(4).withDayOfMonth(1) + "~" + now.minusMonths(4).withDayOfMonth(15);
+
         // 종료일 기준 4개월 지난 행사 (삭제 대상)
         CultureEvent eventToDelete = new CultureEvent(
                 "행사1",
-                "2024-01-01~2024-01-31",
+                expiredEventPeriod,
                 "주소1",
                 "127.0", "37.0",
                 "thumb", "url", area
         );
-        ReflectionTestUtils.setField(eventToDelete, "id", 1L); // 테스트 환경에서 id 값 설정하기
+        ReflectionTestUtils.setField(eventToDelete, "id", 1L);
 
-        // 종료일 기준 2개월 지난 행사 (삭제 대상 아님)
+        // 종료일 기준 2개월 지난 행사 (삭제 대상이 아님)
         CultureEvent recentEvent = new CultureEvent(
                 "행사2",
-                "2024-03-01~2024-03-31",
+                recentEventPeriod,
                 "주소2",
                 "127.0", "37.0",
                 "thumb", "url", area
         );
-        ReflectionTestUtils.setField(recentEvent, "id", 2L); // 테스트 환경에서 id 값 설정하기
+        ReflectionTestUtils.setField(recentEvent, "id", 2L);
 
-        // 종료일 4개월 전인데 후기 존재 (삭제 대상 아님)
+        // 종료일 4개월 전인데 후기 존재 (삭제 대상이 아님)
         CultureEvent eventWithReview = new CultureEvent(
                 "행사3",
-                "2024-01-01~2024-01-15",
+                eventWithReviewPeriod,
                 "주소3",
                 "127.0", "37.0",
                 "thumb", "url", area
         );
-        ReflectionTestUtils.setField(eventWithReview, "id", 3L); // 테스트 환경에서 id 값 설정하기
+        ReflectionTestUtils.setField(eventWithReview, "id", 3L);
 
         List<CultureEvent> endedEvents = List.of(eventToDelete, recentEvent, eventWithReview);
 
         when(cultureEventRepository.findAllByIsEndedTrue()).thenReturn(endedEvents);
         when(boardRepository.existsByCultureEventId(1L)).thenReturn(false); // 삭제 대상
-        when(boardRepository.existsByCultureEventId(2L)).thenReturn(false); // 기간 미달
         when(boardRepository.existsByCultureEventId(3L)).thenReturn(true);  // 후기 존재
 
         // when

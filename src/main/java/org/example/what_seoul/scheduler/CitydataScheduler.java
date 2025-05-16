@@ -10,10 +10,6 @@ import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 import org.example.what_seoul.domain.citydata.weather.Weather;
 import org.example.what_seoul.exception.CitydataSchedulerException;
 import org.example.what_seoul.repository.area.AreaRepository;
-import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
-import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
-import org.example.what_seoul.repository.citydata.population.PopulationRepository;
-import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
 import org.example.what_seoul.service.citydata.CitydataParser;
 import org.example.what_seoul.service.citydata.CitydataService;
 //import org.example.what_seoul.service.citydata.PcpMsgHistoryService;
@@ -42,10 +38,6 @@ public class CitydataScheduler {
     private final CitydataService citydataService;
     private final CitydataParser citydataParser;
     private final AreaRepository areaRepository;
-    private final PopulationRepository populationRepository;
-    private final PopulationForecastRepository populationForecastRepository;
-    private final WeatherRepository weatherRepository;
-    private final CultureEventRepository cultureEventRepository;
 
 //    private final PcpMsgHistoryService pcpMsgHistoryService;
 

@@ -67,11 +67,7 @@ public class CitydataSchedulerTest {
         schedulerSpy = Mockito.spy(new CitydataScheduler(
                 citydataService,
                 citydataParser,
-                areaRepository,
-                populationRepository,
-                populationForecastRepository,
-                weatherRepository,
-                cultureEventRepository
+                areaRepository
         ));
     }
 
