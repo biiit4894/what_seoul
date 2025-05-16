@@ -153,9 +153,7 @@ public class CitydataService {
      * 1. `isEnded` 필드가 true인 행사.
      * 2. `endDate`가 현재 날짜로부터 3개월 이상 지난 행사.
      * 그런 후, `boardRepository`를 사용하여 해당 행사에 관련된 리뷰가 있는지 확인한다.
-     * 리뷰가 없는 행사만 삭제 대상이 된다.
-     *
-     * @note 리뷰가 없는 만료된 행사만 삭제된다.
+     * 리뷰가 없는 만료된 행사만 삭제 대상이 된다.
      */
     @Transactional
     public void deleteExpiredCultureEventsWithoutReviews() {
@@ -169,7 +167,7 @@ public class CitydataService {
                     String period = event.getEventPeriod();
                     if (period != null && period.contains("~")) {
                         try {
-                            String endDateStr = period.split("~")[1].trim(); // 종료일 부분
+                            String endDateStr = period.split("~")[1].trim(); // eventPeriod에서의 종료일 부분
                             LocalDate endDate = LocalDate.parse(endDateStr); // "YYYY-MM-DD" 형태로 파싱
                             return endDate.atStartOfDay().isBefore(cutoff);
                         } catch (Exception e) {
