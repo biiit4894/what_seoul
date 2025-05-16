@@ -16,4 +16,5 @@ public class CultureEventDTO {
     private String eventY;
     private String thumbnail;
     private String url;
+    private Boolean isEnded;
 }

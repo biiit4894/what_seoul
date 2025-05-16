@@ -120,35 +120,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<CommonErrorResponse<Object>> handleValidationException(MethodArgumentNotValidException e) {
-//        Map<String, List<String>> errors = new HashMap<>();
-//        for (FieldError fieldError : e.getBindingResult().getFieldErrors()) {
-//            errors.computeIfAbsent(fieldError.getField(), key -> new ArrayList<>()).add(fieldError.getDefaultMessage());
-//
-//        }
-//
-//        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-//                "Validation Failed",
-//                errors
-//        );
-//        log.error("Validation errors: {}", errors);
-//
-//        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-//    }
-
-    @ExceptionHandler(DuplicateFieldException.class)
-    public ResponseEntity<CommonErrorResponse<Map<String, String>>> handleDuplicateFieldException(DuplicateFieldException e) {
-        CommonErrorResponse<Map<String, String>> errorResponse = new CommonErrorResponse<>(
-                "Duplicate Fields Found",
-                e.getErrors()
-        );
-
-        log.error("Duplicate field error: {}", e.getErrors());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<CommonErrorResponse<Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
@@ -156,16 +127,6 @@ public class GlobalExceptionHandler {
           e.getMessage() // TODO: context 반환 방식 수정
         );
         log.error("Data Integrity Violation Exception : {}", e.getMessage(), e);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PasswordMismatchException.class)
-    public ResponseEntity<CommonErrorResponse<Object>> handlePasswordMismatchException(PasswordMismatchException e) {
-        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-                "Password Mismatch",
-                e.getMessage()
-        );
-        log.error("Password Mismatch Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 

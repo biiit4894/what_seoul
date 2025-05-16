@@ -286,7 +286,8 @@ public class AreaControllerTest {
                                         "37.5",
                                         "127.0",
                                         "이미지 경로",
-                                        "https://example.com"
+                                        "https://example.com",
+                                        false
                                 ),
                                 new CultureEventDTO(
                                         2L,
@@ -296,7 +297,8 @@ public class AreaControllerTest {
                                         "36.9",
                                         "127.0",
                                         "이미지 경로",
-                                        "https://example.com"
+                                        "https://example.com",
+                                        false
                                 ))
                 ),
                 new ResGetAreaWithCultureEventDTO(
@@ -321,7 +323,8 @@ public class AreaControllerTest {
                                         "37.5",
                                         "127.0",
                                         "이미지 경로",
-                                        "https://example.com"
+                                        "https://example.com",
+                                        false
                                 ),
                                 new CultureEventDTO(
                                         4L,
@@ -331,7 +334,8 @@ public class AreaControllerTest {
                                         "36.9",
                                         "127.0",
                                         "이미지 경로",
-                                        "https://example.com"
+                                        "https://example.com",
+                                        false
                                 ))
                 )
         );
