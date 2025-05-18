@@ -69,28 +69,22 @@
 <div class="wrapper-1">
     <h5>실시간 도시데이터 조회하기</h5>
     <label class="form-inline mt-3 position-relative">
-        <input id="keyword" type="text" class="form-control mr-2" placeholder="검색어"/>
+        <input id="keyword" type="text" class="form-control mr-2" placeholder="검색어" onkeydown="handleKeywordEnter(event)"/>
         <button class="btn btn-primary" onclick="getAreaListByKeyword()">장소 검색</button>
         <div id="search-results" class="mt-3 text-info"></div>
     </label>
+
+    <!-- 현위치 -->
+    <p class="text-muted mt-2" id="location"></p>
 
     <button class="btn btn-success mt-3" onclick="getAreaListByCurrentLocation()">현위치 기준 조회</button>
     <button class="btn btn-success mt-2" onclick="getAllAreasWithCongestionLevel()">전체 혼잡도 조회</button>
     <button class="btn btn-success mt-2" onclick="getAllAreasWithWeather()">전체 날씨 조회</button>
     <button class="btn btn-success mt-2" onclick="getAllAreasWithCultureEvent()">전체 문화행사 조회</button>
 
-    <p class="text-muted mt-2" id="location"></p>
     <p class="text-muted" id="citydata"></p>
 </div>
 <div id="map" class="border">
-<!--    &lt;!&ndash; ✅ 혼잡도 범례 박스 &ndash;&gt;-->
-<!--    <div id="congestion-legend" class="legend-box" style="display: none;">-->
-<!--        <strong>혼잡도 지표</strong>-->
-<!--        <div><span class="legend-color" style="background-color: #FF0000;"></span> 붐빔</div>-->
-<!--        <div><span class="legend-color" style="background-color: #ff8000;"></span> 약간 붐빔</div>-->
-<!--        <div><span class="legend-color" style="background-color: rgba(17,110,1,0.66);"></span> 보통</div>-->
-<!--        <div><span class="legend-color" style="background-color: #0059b0;"></span> 여유</div>-->
-<!--    </div>-->
 </div>
 <div id="current-location-btn">
     📍 현위치

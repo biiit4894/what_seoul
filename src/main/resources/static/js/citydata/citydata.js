@@ -52,6 +52,13 @@ window.addEventListener("load", adjustLayout);
 window.addEventListener("resize", adjustLayout); // 브라우저 크기가 변경될 때도 적ㅇㅇ
 
 // 키워드로 서울시 장소 검색
+function handleKeywordEnter(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // 폼 제출 방지
+        getAreaListByKeyword();
+    }
+}
+
 function getAreaListByKeyword() {
     let keyword = document.getElementById("keyword").value;
     if (!keyword.trim()) {
