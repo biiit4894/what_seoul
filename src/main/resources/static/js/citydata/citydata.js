@@ -86,8 +86,8 @@ function getAreaListByKeyword() {
                     areaLink.href = '#';
                     areaLink.innerText = `${index + 1}. ${area.areaName}`;
                     areaLink.onclick = function () {
-                        console.log("area id: ", area.id);
-                        console.log("typeof area id: ", typeof area.id);
+                        removeCultureEventMarkers();
+
                         // 클릭한 장소의 id, 이름을 전역변수에 저장
                         areaId = area.id;
                         areaName = area.areaName;
@@ -243,8 +243,8 @@ function getAreaListByCurrentLocation() {
                     placeLink.href = '#';
                     placeLink.innerText = `${index + 1}. ${place.areaName}`;
                     placeLink.onclick = function () {
-                        console.log("place.id:", place.id);
-                        console.log("typeof place.id:", typeof place.id);
+                        removeCultureEventMarkers();
+
                         // 클릭한 장소의 id, 이름을 전역변수에 저장
                         areaId = place.id;
                         areaName = place.areaName;

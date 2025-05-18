@@ -1,5 +1,6 @@
 let congestionLegendOverlay = null;
 let selectedPolygon = null;
+let cultureEventMarkers = [];
 
 function removeAreaNameControl() {
     const existingControl = document.querySelector('.area-name-control');
@@ -17,12 +18,18 @@ function removeInfoIcons() {
     });
 }
 
+function removeCultureEventMarkers() {
+    console.log("removeCultureEventMarkers");
+    cultureEventMarkers.forEach(marker => marker.setMap(null));
+    cultureEventMarkers = [];
+}
 
 // 전체 장소 정보 및 혼잡도 조회
 function getAllAreasWithCongestionLevel() {
     selectedPolygon = null;
     removeAreaNameControl(); // 장소명 컨트롤 제거
     removeInfoIcons(); // info-icon 제거
+    removeCultureEventMarkers(); // 문화행사 마커 제거
 
     document.getElementById('citydata').innerHTML = '';
 
@@ -51,6 +58,7 @@ function getAllAreasWithWeather() {
     removeAreaNameControl(); // 장소명 컨트롤 제거
     removeInfoIcons(); // info-icon 제거
     removeLegendOverlay(); // 혼잡도 범례 제거
+    removeCultureEventMarkers(); // 문화행사 마커 제거
 
     document.getElementById('citydata').innerHTML = '';
 
@@ -191,6 +199,8 @@ function showAllPolygons(areas, options = {}) {
                     }
                 });
 
+                cultureEventMarkers.push(eventMarker);
+
                 // 점에 대한 클릭 이벤트 처리
                 eventMarker.addListener("click", () => {
                     const sameLocationEvents = area.cultureEventList.filter(e =>
@@ -205,8 +215,6 @@ function showAllPolygons(areas, options = {}) {
 }
 
 function getColorByCongestionLevel(level) {
-    console.log("혼잡도 값(level):", level);
-
     // 혼잡도별 색상 매핑
     const colorMap = {
         '붐빔': '#FF0000',
