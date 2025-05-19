@@ -31,7 +31,7 @@ public class WebSecurityConfig {
         requestCache.setMatchingRequestParameterName(null);
         httpSecurity.authorizeHttpRequests(auth -> auth
                 // 누구나 접근 가능
-                .requestMatchers("/", "/login", "/signup", "/api/user/signup").permitAll()
+                .requestMatchers("/", "/login", "/signup", "/findId", "/findPw", "/api/user/signup", "/api/user/find/id").permitAll()
                 // ADMIN만 접근 가능
                 .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN")
                 // 로그인 시 접근 가능

@@ -35,4 +35,17 @@ public class UserViewController {
 
         return "user/mypage";
     }
+
+    @GetMapping("/findId")
+    public String findId(Model model) {
+        model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
+        return "user/find-id";
+    }
+
+    @GetMapping("/findPw")
+    public String findPassword(Model model) {
+        model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
+        return "user/find-pw";
+    }
+
 }

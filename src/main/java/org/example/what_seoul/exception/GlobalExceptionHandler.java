@@ -146,7 +146,7 @@ public class GlobalExceptionHandler {
                 "Access Denied",
                 e.getMessage()
         );
-        log.warn("Access Denied Exception: {}", e.getMessage(), e);
+        log.error("Access Denied Exception: {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
@@ -156,6 +156,7 @@ public class GlobalExceptionHandler {
                 "Internal Server Error",
                 e.getMessage()
         );
+        log.error("Generic Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
