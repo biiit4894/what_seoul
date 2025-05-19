@@ -1,5 +1,5 @@
 # what_seoul
-서울 실시간 도시데이터 조회 서비스 [왓서울(WhatSeoul)](https://github.com/WhatSEOUL/WhatSeoul)을 리팩토링합니다. (진행중)
+서울 실시간 도시데이터 조회 서비스 [왓서울(WhatSeoul)](https://github.com/WhatSEOUL/WhatSeoul)을 리팩토링합니다.
 <br>
 
 ## 개요
