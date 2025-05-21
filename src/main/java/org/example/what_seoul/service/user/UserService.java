@@ -24,6 +24,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -275,7 +276,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public CommonResponse<Void> findUserIdByEmail(ReqFindUserIdDTO req) {
         try {
-            User user = userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new EntityNotFoundException(""));
+            User user = userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
             String email = user.getEmail();
             String userId = user.getUserId();
@@ -299,6 +300,50 @@ public class UserService {
         } catch (MailException e) {
             log.error("아이디 찾기 이메일 전송 실패: {}", e.getMessage(), e);
             throw new RuntimeException("아이디 찾기 이메일 전송에 실패했습니다.");
+        }
+
+    }
+
+    /**
+     * 사용자가 입력한 이메일 주소로 초기화된 비밀번호를 전송한다.
+     *
+     * 이메일이 존재하지 않으면 EntityNotFoundException이 발생하며,
+     * 메일 전송에 실패할 경우 RuntimeException이 발생한다.
+     *
+     * @param req  사용자가 입력한 이메일 정보를 담은 요청 객체
+     * @return  응답 본문은 null이며, 성공 여부와 메시지만 포함된다.
+     * @throws EntityNotFoundException 이메일이 존재하지 않는 경우
+     * @throws RuntimeException 메일 전송에 실패한 경우
+     */
+    @Transactional
+    public CommonResponse<Void> resetPassword(ReqFindPasswordDTO req) {
+        try {
+            User user = userRepository.findByEmail(req.getEmail())
+                    .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+            String tempPassword = generateRandomPassword();
+            user.setPassword(encoder.encode(tempPassword));
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getEmail());
+            message.setSubject("[WhatSeoul] 임시 비밀번호 안내드립니다.");
+            message.setText(String.format("""
+           
+            안녕하세요, WhatSeoul입니다.
+    
+            임시 비밀번호가 발급되었습니다:
+            비밀번호: %s
+    
+            로그인 후 반드시 비밀번호를 변경해주세요.
+    
+            감사합니다.
+            """, tempPassword));
+
+            javaMailSender.send(message);
+            return new CommonResponse<>(true, "비밀번호 찾기 성공", null);
+        } catch (MailException e) {
+            log.error("비밀번호 찾기 이메일 전송 실패: {}", e.getMessage(), e);
+            throw new RuntimeException("비밀번호 찾기 이메일 전송에 실패했습니다.");
         }
 
     }
@@ -327,4 +372,16 @@ public class UserService {
         return principal;
 
     }
+
+    /**
+     * 랜덤 문자열(특수문자 포함) 생성
+     */
+    private String generateRandomPassword() {
+        String base = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 8);
+        String specials = "!@#$%";
+        SecureRandom random = new SecureRandom();
+        char specialChar = specials.charAt(random.nextInt(specials.length()));
+        return base + specialChar;
+    }
+
 }
