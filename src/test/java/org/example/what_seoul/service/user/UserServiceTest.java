@@ -3,6 +3,7 @@ package org.example.what_seoul.service.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
@@ -22,6 +23,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.mail.MailSendException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -32,6 +36,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -59,6 +64,9 @@ public class UserServiceTest {
 
     @Mock
     private CustomValidator customValidator;
+
+    @Mock
+    private JavaMailSender javaMailSender;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -118,7 +126,6 @@ public class UserServiceTest {
         int page = 0;
         int size = 5;
 
-        // Mocking pageable and user repository
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         List<User> userList = List.of(
                 new User("user1", "password1", "user1@test.com", "nick1"),
@@ -137,7 +144,6 @@ public class UserServiceTest {
         assertNotNull(response.getData());
         assertEquals(userList.size(), response.getData().getTotalElements());
 
-        // Verify the mapping of users to DTOs
         List<ResGetUserDetailSummaryDTO> userSummaryList = response.getData().getContent();
         assertEquals(userList.size(), userSummaryList.size());
         assertEquals("user1", userSummaryList.get(0).getUserId());
@@ -233,6 +239,41 @@ public class UserServiceTest {
         System.out.println(json);
     }
 
+    @Test
+    @DisplayName("[성공] 아이디 찾기 Service")
+    void findUserIdByEmail() {
+        // given
+        User user = new User("user1", "password1", "user1@test.com", "nick1");
+        when(userRepository.findByEmail("user1@test.com")).thenReturn(Optional.of(user));
+
+        // when
+        CommonResponse<Void> response = userService.findUserIdByEmail(new ReqFindUserIdDTO("user1@test.com"));
+
+        // then
+        assertTrue(response.isSuccess());
+        assertEquals("아이디 찾기 성공", response.getMessage());
+        assertNull(response.getData());
+        verify(javaMailSender, times(1)).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    @DisplayName("[성공] 비밀번호 찾기(비밀번호 초기화) Service")
+    void resetPassword() {
+        // given
+        User user = new User("user1", "password1", "user1@test.com", "nick1");
+        when(userRepository.findByEmail("user1@test.com")).thenReturn(Optional.of(user));
+        when(encoder.encode(any())).thenReturn("encodedTempPw");
+
+        // when
+        CommonResponse<Void> response = userService.resetPassword(new ReqFindPasswordDTO("user1@test.com"));
+
+        // then
+        assertTrue(response.isSuccess());
+        assertEquals("비밀번호 찾기 성공", response.getMessage());
+        assertNull(response.getData());
+        verify(javaMailSender, times(1)).send(any(SimpleMailMessage.class));
+    }
+
     @DisplayName("[실패] 회원가입 Service - 중복 값 존재")
     @Test
     void createUser_DuplicateFields() {
@@ -322,7 +363,7 @@ public class UserServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             userService.getUserDetailById(userId);
         });
 
@@ -396,5 +437,64 @@ public class UserServiceTest {
         });
 
         assertEquals("로그인한 사용자 정보가 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 아이디 찾기 Service - 존재하지 않는 이메일 (EntityNotFoundException)")
+    void findUserIdByEmail_notFound() {
+        // given
+        String email = "test@test.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.findUserIdByEmail(new ReqFindUserIdDTO(email)))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("사용자를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("[실패] 아이디 찾기 Service - 이메일 전송 실패 (MailException, RuntimeException)")
+    void findUserIdByEmail_mailSendFail() {
+        // given
+        String email = "test@test.com";
+        User user = new User("test", "password123", email, "닉네임");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        doThrow(new MailSendException("SMTP 오류")).when(javaMailSender).send(any(SimpleMailMessage.class));
+
+        // when & then
+        assertThatThrownBy(() -> userService.findUserIdByEmail(new ReqFindUserIdDTO(email)))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("아이디 찾기 이메일 전송에 실패했습니다.");
+    }
+
+    @Test
+    @DisplayName("[실패] 비밀번호 찾기(비밀번호 초기화) Service - 존재하지 않는 이메일 (EntityNotFoundException)")
+    void resetPassword_emailNotFound() {
+        String email = "test@test.com";
+
+        // given
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> userService.resetPassword(new ReqFindPasswordDTO(email)))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("사용자를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("[실패] 비밀번호 초기화 Service - 이메일 전송 실패 (MailException, RuntimeException)")
+    void resetPassword_mailSendFails() {
+        String email = "test@test.com";
+
+        // given
+        User user = new User("test", "oldPassword", email, "nick1");
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(encoder.encode(any())).thenReturn("encodedTempPw");
+        doThrow(new MailSendException("SMTP 오류")).when(javaMailSender).send(any(SimpleMailMessage.class));
+
+        // when & then
+        assertThatThrownBy(() -> userService.resetPassword(new ReqFindPasswordDTO(email)))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("비밀번호 찾기 이메일 전송에 실패했습니다.");
     }
 }

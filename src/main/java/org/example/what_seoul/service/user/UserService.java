@@ -301,7 +301,6 @@ public class UserService {
             log.error("아이디 찾기 이메일 전송 실패: {}", e.getMessage(), e);
             throw new RuntimeException("아이디 찾기 이메일 전송에 실패했습니다.");
         }
-
     }
 
     /**
