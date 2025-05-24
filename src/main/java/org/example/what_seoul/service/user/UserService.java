@@ -1,5 +1,6 @@
 package org.example.what_seoul.service.user;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
@@ -13,6 +14,9 @@ import org.example.what_seoul.exception.CustomValidationException;
 import org.example.what_seoul.repository.user.UserRepository;
 import org.example.what_seoul.service.user.dto.LoginUserInfoDTO;
 import org.springframework.data.domain.*;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +24,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +35,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
     private final CustomValidator customValidator;
+    private final JavaMailSender javaMailSender;
 
     /**
      * 회원 가입 기능
@@ -119,9 +125,9 @@ public class UserService {
      * @param id
      * @return
      */
-    @Transactional(readOnly = true) // TODO: @Transactional 세부 옵션 설정
+    @Transactional(readOnly = true)
     public CommonResponse<ResGetUserDetailDTO> getUserDetailById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         ResGetUserDetailDTO userDetailRes = ResGetUserDetailDTO.from(user);
 
@@ -142,7 +148,7 @@ public class UserService {
     @Transactional
     public CommonResponse<ResUpdateUserDTO> updateUserInfo(ReqUpdateUserInfoDTO req) {
         Long id = getLoginUserInfo().getId();
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
 
         // 실제 회원정보
         String currPassword = user.getPassword();
@@ -240,7 +246,7 @@ public class UserService {
     @Transactional
     public CommonResponse<ResWithdrawUserDTO> withdrawUser(HttpServletRequest request, HttpServletResponse response) {
         Long id = getLoginUserInfo().getId();
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         if (user.getDeletedAt() != null) {
             throw new IllegalStateException("이미 탈퇴한 사용자입니다.");
         }
@@ -254,6 +260,91 @@ public class UserService {
                 "회원 탈퇴 성공",
                 ResWithdrawUserDTO.from(user)
         );
+    }
+
+    /**
+     * 사용자가 입력한 이메일 주소로 해당 계정의 아이디를 전송한다.
+     *
+     * 이메일이 존재하지 않으면 EntityNotFoundException이 발생하며,
+     * 메일 전송에 실패할 경우 RuntimeException이 발생한다.
+     *
+     * @param req  사용자가 입력한 이메일 정보를 담은 요청 객체
+     * @return  응답 본문은 null이며, 성공 여부와 메시지만 포함된다.
+     * @throws EntityNotFoundException 이메일이 존재하지 않는 경우
+     * @throws RuntimeException 메일 전송에 실패한 경우
+     */
+    @Transactional(readOnly = true)
+    public CommonResponse<Void> findUserIdByEmail(ReqFindUserIdDTO req) {
+        try {
+            User user = userRepository.findByEmail(req.getEmail()).orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+            String email = user.getEmail();
+            String userId = user.getUserId();
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("noreply@whatseoul.com");
+            message.setTo(email);
+            message.setSubject("[WhatSeoul] 아이디 찾기 결과를 안내드립니다.");
+            message.setText(String.format("""
+            안녕하세요, WhatSeoul입니다.
+        
+            요청하신 아이디 찾기 결과입니다:
+            아이디: %s
+        
+            감사합니다.
+            """, userId));
+
+            javaMailSender.send(message);
+
+            return new CommonResponse<>(true, "아이디 찾기 성공", null);
+        } catch (MailException e) {
+            log.error("아이디 찾기 이메일 전송 실패: {}", e.getMessage(), e);
+            throw new RuntimeException("아이디 찾기 이메일 전송에 실패했습니다.");
+        }
+    }
+
+    /**
+     * 사용자가 입력한 이메일 주소로 초기화된 비밀번호를 전송한다.
+     *
+     * 이메일이 존재하지 않으면 EntityNotFoundException이 발생하며,
+     * 메일 전송에 실패할 경우 RuntimeException이 발생한다.
+     *
+     * @param req  사용자가 입력한 이메일 정보를 담은 요청 객체
+     * @return  응답 본문은 null이며, 성공 여부와 메시지만 포함된다.
+     * @throws EntityNotFoundException 이메일이 존재하지 않는 경우
+     * @throws RuntimeException 메일 전송에 실패한 경우
+     */
+    @Transactional
+    public CommonResponse<Void> resetPassword(ReqFindPasswordDTO req) {
+        try {
+            User user = userRepository.findByEmail(req.getEmail())
+                    .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+            String tempPassword = generateRandomPassword();
+            user.setPassword(encoder.encode(tempPassword));
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getEmail());
+            message.setSubject("[WhatSeoul] 임시 비밀번호 안내드립니다.");
+            message.setText(String.format("""
+           
+            안녕하세요, WhatSeoul입니다.
+    
+            임시 비밀번호가 발급되었습니다:
+            비밀번호: %s
+    
+            로그인 후 반드시 비밀번호를 변경해주세요.
+    
+            감사합니다.
+            """, tempPassword));
+
+            javaMailSender.send(message);
+            return new CommonResponse<>(true, "비밀번호 찾기 성공", null);
+        } catch (MailException e) {
+            log.error("비밀번호 찾기 이메일 전송 실패: {}", e.getMessage(), e);
+            throw new RuntimeException("비밀번호 찾기 이메일 전송에 실패했습니다.");
+        }
+
     }
 
     public LoginUserInfoDTO getLoginUserInfo() {
@@ -280,4 +371,16 @@ public class UserService {
         return principal;
 
     }
+
+    /**
+     * 랜덤 문자열(특수문자 포함) 생성
+     */
+    private String generateRandomPassword() {
+        String base = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 8);
+        String specials = "!@#$%";
+        SecureRandom random = new SecureRandom();
+        char specialChar = specials.charAt(random.nextInt(specials.length()));
+        return base + specialChar;
+    }
+
 }

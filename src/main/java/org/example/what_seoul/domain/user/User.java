@@ -83,6 +83,11 @@ public class User implements UserDetails {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
     }

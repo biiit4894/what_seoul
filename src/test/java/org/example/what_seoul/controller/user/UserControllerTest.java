@@ -1,6 +1,7 @@
 package org.example.what_seoul.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.what_seoul.common.dto.CommonResponse;
@@ -31,6 +32,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -190,6 +192,48 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("[성공] 아이디 찾기 Controller")
+    void findUserId() throws Exception {
+        // Given
+        ReqFindUserIdDTO reqDTO = new ReqFindUserIdDTO("test@example.com");
+        CommonResponse<Void> response = new CommonResponse<>(true, "아이디 찾기 성공", null);
+
+
+        // When & Then
+        when(userService.findUserIdByEmail(any(ReqFindUserIdDTO.class))).thenReturn(response);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/find/id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("아이디 찾기 성공"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("[성공] 비밀번호 찾기 Controller")
+    void findPassword() throws Exception {
+        // Given
+        ReqFindPasswordDTO reqDTO = new ReqFindPasswordDTO("test@example.com");
+        CommonResponse<Void> response = new CommonResponse<>(true, "비밀번호 찾기 성공", null);
+
+
+        // When & Then
+        when(userService.resetPassword(any(ReqFindPasswordDTO.class))).thenReturn(response);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/find/pw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqDTO)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("비밀번호 찾기 성공"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 존재하지 않는 URL 요청 시 404 Not Found 응답")
     void nonExistingUrl() throws Exception {
@@ -307,6 +351,43 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    @DisplayName("[실패] 아이디 찾기 - 존재하지 않는 이메일일 경우 404 Not Found 응답")
+    void findUserId_NotFound() throws Exception {
+        // given
+        ReqFindUserIdDTO reqDTO = new ReqFindUserIdDTO("nonexistent@example.com");
+
+        given(userService.findUserIdByEmail(any(ReqFindUserIdDTO.class)))
+                .willThrow(new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // when & then
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/find/id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqDTO)))
+                .andDo(print())
+                .andExpect(jsonPath("$.message").value("Entity Not Found"))
+                .andExpect(jsonPath("$.context").value("사용자를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("[실패] 비밀번호 찾기 - 존재하지 않는 이메일일 경우 404 Not Found 응답")
+    void findPassword_NotFound() throws Exception {
+        // given
+        ReqFindPasswordDTO reqDTO = new ReqFindPasswordDTO("nonexistent@example.com");
+
+        given(userService.resetPassword(any(ReqFindPasswordDTO.class)))
+                .willThrow(new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // when & then
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/find/pw")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reqDTO)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Entity Not Found"))
+                .andExpect(jsonPath("$.context").value("사용자를 찾을 수 없습니다."));
     }
 
 }

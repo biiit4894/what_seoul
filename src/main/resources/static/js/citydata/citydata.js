@@ -8,6 +8,27 @@ const LABEL_ZOOM_THRESHOLD = 12; // 이 줌 이상에서만 라벨 보이게 (�
 let areaNameControl;
 let areas = []; // 전체 장소 정보 관리
 
+document.addEventListener("DOMContentLoaded", () => {
+    const collapseBtn = document.getElementById("collapse-btn");
+    const expandBtn = document.getElementById("expand-btn");
+    const wrapperContent = document.querySelector(".wrapper-content");
+
+    collapseBtn.addEventListener("click", () => {
+        $(wrapperContent).slideUp(300, () => {
+            collapseBtn.style.display = "none";
+            expandBtn.style.display = "inline-block";
+        });
+    });
+
+    expandBtn.addEventListener("click", () => {
+        $(wrapperContent).slideDown(300, () => {
+            expandBtn.style.display = "none";
+            collapseBtn.style.display = "inline-block";
+        });
+    });
+});
+
+
 // navbar, buttonWrapper, map 3요소의 위치 정렬
 function adjustLayout() {
     const navbar = document.querySelector(".navbar");
@@ -47,11 +68,17 @@ window.onload = () => {
             showAllPolygons(areas); // 첫 로딩 시에는 폴리곤을 회색으로 표현
         });
 }
-// window.addEventListener("DOMContentLoaded", getAllAreas);
 window.addEventListener("load", adjustLayout);
 window.addEventListener("resize", adjustLayout); // 브라우저 크기가 변경될 때도 적ㅇㅇ
 
 // 키워드로 서울시 장소 검색
+function handleKeywordEnter(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // 폼 제출 방지
+        getAreaListByKeyword();
+    }
+}
+
 function getAreaListByKeyword() {
     let keyword = document.getElementById("keyword").value;
     if (!keyword.trim()) {
@@ -86,8 +113,8 @@ function getAreaListByKeyword() {
                     areaLink.href = '#';
                     areaLink.innerText = `${index + 1}. ${area.areaName}`;
                     areaLink.onclick = function () {
-                        console.log("area id: ", area.id);
-                        console.log("typeof area id: ", typeof area.id);
+                        removeCultureEventMarkers();
+
                         // 클릭한 장소의 id, 이름을 전역변수에 저장
                         areaId = area.id;
                         areaName = area.areaName;
@@ -243,8 +270,8 @@ function getAreaListByCurrentLocation() {
                     placeLink.href = '#';
                     placeLink.innerText = `${index + 1}. ${place.areaName}`;
                     placeLink.onclick = function () {
-                        console.log("place.id:", place.id);
-                        console.log("typeof place.id:", typeof place.id);
+                        removeCultureEventMarkers();
+
                         // 클릭한 장소의 id, 이름을 전역변수에 저장
                         areaId = place.id;
                         areaName = place.areaName;

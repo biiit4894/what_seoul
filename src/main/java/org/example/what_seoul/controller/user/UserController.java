@@ -45,4 +45,14 @@ public class UserController {
     public ResponseEntity<CommonResponse<ResWithdrawUserDTO>> withdrawUser(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.withdrawUser(request, response));
     }
+
+    @PostMapping("/find/id")
+    public ResponseEntity<CommonResponse<Void>> findUserId(@RequestBody ReqFindUserIdDTO req) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.findUserIdByEmail(req));
+    }
+
+    @PostMapping("/find/pw")
+    public ResponseEntity<CommonResponse<Void>> findPassword(@RequestBody ReqFindPasswordDTO req) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.resetPassword(req));
+    }
 }

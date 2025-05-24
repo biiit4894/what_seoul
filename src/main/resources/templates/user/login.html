@@ -8,13 +8,11 @@
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
-
-<!--    <link rel="stylesheet" typeof="text/css" th:href="@{/css/index.css}"/>-->
 </head>
 <body>
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">What Seoul</a>
+<nav class="navbar navbar-expand-lg custom-navbar">
+    <a class="navbar-brand font-weight-bold text-dark" href="/">What Seoul</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -22,27 +20,23 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="/citydata">지금 서울은?</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">커뮤니티</a>
-            </li>
-
-            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
-                <a class="nav-link" onclick="logout()">로그아웃</a>
+                <a class="nav-link text-secondary font-weight-light" href="/citydata">지금 서울은?</a>
             </li>
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
-                <a class="nav-link" href="/mypage">마이페이지</a>
+                <a class="nav-link text-secondary font-weight-light" onclick="logout()">로그아웃</a>
             </li>
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
-                <span class="nav-link" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
+                <a class="nav-link text-secondary font-weight-light" href="/mypage">마이페이지</a>
+            </li>
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}" style="margin-left: 1rem;">
+                <span class="navbar-text text-secondary font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
             <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
-                <a class="nav-link" href="/login">로그인</a>
+                <a class="nav-link text-secondary font-weight-light" href="/login">로그인</a>
             </li>
             <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
-                <a class="nav-link" href="/signup">회원가입</a>
+                <a class="nav-link text-secondary font-weight-light" href="/signup">회원가입</a>
             </li>
         </ul>
     </div>
@@ -76,6 +70,12 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block">로그인</button>
+                        <div class="text-center mt-3">
+                            <small>
+                                <a href="/findId" class="d-inline-block mr-2">아이디 찾기</a>
+                                <a href="/findPw" class="d-inline-block">비밀번호 찾기</a>
+                            </small>
+                        </div>
                     </form>
                 </div>
             </div>

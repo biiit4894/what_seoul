@@ -28,3 +28,7 @@ body {
     visibility: hidden; /* 요소를 보이지 않게 유지 */
 }
 
+.custom-navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* 아래쪽 그림자 */
+}
+
