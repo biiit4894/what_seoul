@@ -259,6 +259,10 @@ function drawPolygonWithOptions(
         fillOpacity: 0.6
     };
 
+    // ✅ 스타일 복원을 위한 개별 저장
+    polygon.__defaultStyle = { ...defaultStyle };
+    polygon.__hoverStyle = { ...hoverStyle };
+
     const center = getPolygonCenter(polygon);
     if (useTemperature && temperature !== undefined) {
         // 온도 라벨 (검은 글씨, 테두리+배경)
@@ -282,7 +286,7 @@ function drawPolygonWithOptions(
     polygon.addListener('mouseout', () => {
         // 클릭된 상태가 아니면 다시 연하게 변경
         if (selectedPolygon !== polygon) {
-            polygon.setOptions(defaultStyle);
+            polygon.setOptions(polygon.__defaultStyle);
             hideLabel(areaId);
         }
     });
@@ -290,7 +294,7 @@ function drawPolygonWithOptions(
     polygon.addListener('click', () => {
         // 기존 선택된 폴리곤이 있다면 다시 연하게 변경
         if (selectedPolygon && selectedPolygon !== polygon) {
-            selectedPolygon.setOptions(defaultStyle);
+            selectedPolygon.setOptions(selectedPolygon.__defaultStyle); // 개별 스타일 복원
             const prevLabel = document.getElementById(`custom-label-${selectedPolygon.areaName}`);
             if (prevLabel) {
                 prevLabel.style.opacity = "0.7";
@@ -302,7 +306,7 @@ function drawPolygonWithOptions(
         selectedPolygon = polygon;
         polygon.areaName = areaname; // 폴리곤에 이름 저장해두기
 
-        polygon.setOptions(hoverStyle);
+        polygon.setOptions(polygon.__hoverStyle);
         const labelDiv = document.getElementById(`custom-label-${areaId}`);
         if (labelDiv) {
             labelDiv.style.opacity = "1";
@@ -313,6 +317,14 @@ function drawPolygonWithOptions(
         console.log("# areaname from drawPolygonWithOptions : ", areaname);
         createAreaNameControl(map, areaname);
         addInfoIcons(areaId);
+
+        // 💡 현위치 + 폴리곤 함께 보기
+        if (latitude && longitude) {
+            const bounds = new google.maps.LatLngBounds();
+            polygon.getPath().forEach(coord => bounds.extend(coord));
+            bounds.extend(new google.maps.LatLng(latitude, longitude));
+            map.fitBounds(bounds);
+        }
     });
 
     polygons.push(polygon);
