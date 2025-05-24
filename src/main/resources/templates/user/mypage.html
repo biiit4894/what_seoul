@@ -9,6 +9,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" typeof="text/css" th:href="@{/css/index.css}"/>
+    <link rel="stylesheet" typeof="text/css" th:href="@{/css/user/mypage.css}"/>
     <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
     <script th:src="@{/js/common/common.js}"></script>
     <script th:src="@{/js/user/mypage.js}"></script>
@@ -60,7 +61,13 @@
 
     <div class="mt-4">
         <button class="btn btn-primary" data-toggle="modal" data-target="#updateModal">회원정보 수정</button>
-        <button class="btn btn-danger" onclick="withdrawUser()">회원 탈퇴</button>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#boardModal">나의 문화행사 후기 조회</button>
+
+    </div>
+    <div class="mt-2">
+        <a href="javascript:void(0);" class="text-muted small" style="text-decoration: underline;" onclick="withdrawUser()">
+            회원 탈퇴
+        </a>
     </div>
 </div>
 
@@ -107,6 +114,25 @@
         </form>
     </div>
 </div>
+
+<!-- 후기 목록 모달 -->
+<div class="modal fade" id="boardModal" tabindex="-1" role="dialog" aria-labelledby="boardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">내 후기 목록</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                <div id="board-list"></div>
+                <div id="loading" class="text-center mt-3" style="display: none;">불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap JS, Popper.js, jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
