@@ -35,6 +35,14 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardById(id));
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getBoardsByUserId(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByUserId(page, size));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<ResUpdateBoardDTO>> updateBoard(@PathVariable Long id, @RequestBody ReqUpdateBoardDTO req) {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.updateBoard(id, req));

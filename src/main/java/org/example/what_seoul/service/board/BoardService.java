@@ -52,7 +52,7 @@ public class BoardService {
     @Transactional(readOnly = true)
     public CommonResponse<Slice<ResGetBoardDTO>> getBoardsByCultureEventId(Long cultureEventId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Slice<Board> boardSlice = boardRepository.findAllByCultureEventId(cultureEventId, pageable);
+        Slice<Board> boardSlice = boardRepository.findSliceByCultureEventId(cultureEventId, pageable);
 
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
         Slice<ResGetBoardDTO> result = boardSlice.map(board -> ResGetBoardDTO.from(board, loginUserInfo));
@@ -65,6 +65,17 @@ public class BoardService {
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
         Board board = boardRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("문화행사 후기를 찾을 수 없습니다. 후기 id = " + id));
         return new CommonResponse<>(true, "문화행사 후기 조회 성공", ResGetBoardDTO.from(board, loginUserInfo));
+    }
+
+    @Transactional(readOnly = true)
+    public CommonResponse<Slice<ResGetMyBoardDTO>> getBoardsByUserId(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
+
+        Slice<Board> boardSlice = boardRepository.findSliceByUserId(loginUserInfo.getId(), pageable);
+        Slice<ResGetMyBoardDTO> result = boardSlice.map(ResGetMyBoardDTO::from);
+
+        return new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", result);
     }
 
     @Transactional

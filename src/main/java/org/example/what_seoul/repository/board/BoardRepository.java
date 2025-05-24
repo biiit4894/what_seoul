@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
-    Slice<Board> findAllByCultureEventId(Long cultureEventId, Pageable pageable);
+    Slice<Board> findSliceByCultureEventId(Long cultureEventId, Pageable pageable);
 
     List<Board> findAllByUserId(Long userId);
+
+    Slice<Board> findSliceByUserId(Long userId, Pageable pageable);
 
     boolean existsByCultureEventId(Long cultureEventId);
 }

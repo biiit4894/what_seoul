@@ -146,7 +146,7 @@ public class BoardServiceTest {
 
         Slice<Board> boardSlice = new SliceImpl<>(List.of(board1, board2), pageable, false);
 
-        given(boardRepository.findAllByCultureEventId(cultureEventId, pageable)).willReturn(boardSlice);
+        given(boardRepository.findSliceByCultureEventId(cultureEventId, pageable)).willReturn(boardSlice);
         given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(user.getId(), user.getUserId(), user.getEmail(), user.getNickName(), user.getRole(), user.getCreatedAt(), user.getUpdatedAt(), user.getDeletedAt()));
 
         // when
@@ -178,7 +178,7 @@ public class BoardServiceTest {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Slice<Board> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, false);
 
-        given(boardRepository.findAllByCultureEventId(cultureEventId, pageable)).willReturn(emptySlice);
+        given(boardRepository.findSliceByCultureEventId(cultureEventId, pageable)).willReturn(emptySlice);
         given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(1L, "test", "test@example.com", "작성자", RoleType.USER, LocalDateTime.now(), null, null));
 
         // when
