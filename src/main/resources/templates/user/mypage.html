@@ -48,26 +48,28 @@
     </div>
 </nav>
 
-<div class="container mt-5">
-    <h2 class="mb-4">마이페이지</h2>
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="w-100" style="max-width: 700px;">
+        <h2 class="mb-4">마이페이지</h2>
 
-    <div class="card">
-        <div class="card-body">
-            <p><strong>아이디:</strong> <span th:text="${loginUserInfo.userId}">sample_id</span></p>
-            <p><strong>이메일:</strong> <span th:text="${loginUserInfo.email}">sample@mail.com</span></p>
-            <p><strong>별명:</strong> <span th:text="${loginUserInfo.nickName}">닉네임</span></p>
+        <div class="card">
+            <div class="card-body">
+                <p><strong>아이디:</strong> <span th:text="${loginUserInfo.userId}">sample_id</span></p>
+                <p><strong>이메일:</strong> <span th:text="${loginUserInfo.email}">sample@mail.com</span></p>
+                <p><strong>별명:</strong> <span th:text="${loginUserInfo.nickName}">닉네임</span></p>
+            </div>
         </div>
-    </div>
 
-    <div class="mt-4">
-        <button class="btn btn-primary" data-toggle="modal" data-target="#updateModal">회원정보 수정</button>
-        <button class="btn btn-secondary" data-toggle="modal" data-target="#boardModal">나의 문화행사 후기 조회</button>
+        <div class="mt-4">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#updateModal">회원정보 수정</button>
+            <button class="btn btn-secondary" data-toggle="modal" data-target="#boardModal">나의 문화행사 후기 조회</button>
 
-    </div>
-    <div class="mt-2">
-        <a href="javascript:void(0);" class="text-muted small" style="text-decoration: underline;" onclick="withdrawUser()">
-            회원 탈퇴
-        </a>
+        </div>
+        <div class="mt-3 ml-1">
+            <a href="javascript:void(0);" class="text-muted small" style="text-decoration: underline;" onclick="withdrawUser()">
+                회원 탈퇴
+            </a>
+        </div>
     </div>
 </div>
 
@@ -75,7 +77,7 @@
 <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="update-modal-label" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <form th:action="@{/users/{id}(id=${loginUserInfo.id})}" method="post" id="update-form">
-            <input type="hidden" name="_method" value="put"/> <!-- PUT 메서드 사용 -->
+            <input type="hidden" name="_method" value="put"/>
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="update-modal-label">회원정보 수정</h5>
@@ -85,6 +87,10 @@
                 </div>
 
                 <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        변경을 원하는 항목을 입력하세요. 공란으로 남긴 항목은 변경되지 않습니다.<br>
+                        변경을 위해서는 <strong>현재 비밀번호</strong>를 입력해야 합니다.
+                    </p>
                     <div class="form-group">
                         <label for="currPassword">현재 비밀번호</label>
                         <input type="password" class="form-control" id="currPassword" name="currPassword">

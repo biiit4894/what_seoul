@@ -20,6 +20,7 @@ public class ResGetMyBoardDTO {
     private LocalDateTime updatedAt;
     private String eventName;
     private String eventPlace;
+    private String url;
     private String areaName;
     private boolean isEnded;
 
@@ -30,6 +31,7 @@ public class ResGetMyBoardDTO {
         this.updatedAt = board.getUpdatedAt();
         this.eventName = board.getCultureEvent().getEventName();
         this.eventPlace = board.getCultureEvent().getEventPlace();
+        this.url = board.getCultureEvent().getUrl();
         this.areaName = board.getCultureEvent().getArea().getAreaName();
         this.isEnded = board.getCultureEvent().getIsEnded();
     }
