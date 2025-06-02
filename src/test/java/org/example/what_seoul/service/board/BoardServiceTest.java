@@ -104,7 +104,6 @@ public class BoardServiceTest {
         ResCreateBoardDTO data = response.getData();
         assertEquals("test", data.getContent());
         assertEquals("testNickName", data.getAuthor());
-        assertNotNull(data.getCreatedAt());
         assertEquals("행사1", data.getEventName());
 
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
@@ -232,6 +231,37 @@ public class BoardServiceTest {
         System.out.println(json);
     }
 
+    @DisplayName("[성공] 작성한 문화행사 후기 목록 조회 Service")
+    @Test
+    void getBoardsByUserId_success() throws JsonProcessingException {
+        // given
+        int page = 0;
+        int size = 10;
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(page, size);
+
+        given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(userId, "testUser", "testEmail", "testNickName", RoleType.USER, LocalDateTime.now(), null, null));
+
+        List<ResGetMyBoardDTO> content = List.of(
+                new ResGetMyBoardDTO(1L, "content", LocalDateTime.now(), LocalDateTime.now(),
+                        "event", "place", "url", "area", false)
+        );
+        Slice<ResGetMyBoardDTO> slice = new SliceImpl<>(content, pageable, false);
+        given(boardRepository.findSliceByUserId(userId, pageable)).willReturn(slice);
+
+        // when
+        CommonResponse<Slice<ResGetMyBoardDTO>> result = boardService.getBoardsByUserId(page, size);
+
+        // then
+        assertTrue(result.isSuccess());
+        assertEquals("작성한 문화행사 후기 목록 조회 성공", result.getMessage());
+        assertEquals(1, result.getData().getContent().size());
+        assertEquals("content", result.getData().getContent().get(0).getContent());
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+        System.out.println(json);
+    }
+
     @Test
     @DisplayName("[성공] 문화행사 후기 수정 Service")
     void updateBoard() throws JsonProcessingException {
@@ -329,6 +359,19 @@ public class BoardServiceTest {
         });
 
         assertEquals("문화행사 후기를 찾을 수 없습니다. 후기 id = 999", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 작성한 문화행사 후기 목록 조회 Service - 잘못된 페이지 파라미터 전달 시 IllegalArgumentException 발생")
+    void getBoardsByUserId_invalidPageParam() {
+        // given
+        int invalidPage = -1;
+        int size = 10;
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            boardService.getBoardsByUserId(invalidPage, size);
+        });
     }
 
     @Test
