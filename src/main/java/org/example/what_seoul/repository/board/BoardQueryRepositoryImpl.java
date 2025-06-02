@@ -1,14 +1,17 @@
 package org.example.what_seoul.repository.board;
 
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.controller.board.dto.ResGetMyBoardDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,11 +21,12 @@ import static org.example.what_seoul.domain.citydata.QArea.area;
 import static org.example.what_seoul.domain.citydata.event.QCultureEvent.cultureEvent;
 
 @RequiredArgsConstructor
+@Slf4j
 public class BoardQueryRepositoryImpl implements BoardQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<ResGetMyBoardDTO> findSliceByUserId(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable) {
+    public Slice<ResGetMyBoardDTO> findSliceByUserId(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable,  Sort.Direction direction) {
 
         BooleanExpression dateCondition = null;
         if (startDateTime != null && endDateTime != null) {
@@ -31,6 +35,13 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
             dateCondition = board.createdAt.goe(startDateTime);
         } else if (endDateTime != null) {
             dateCondition = board.createdAt.loe(endDateTime);
+        }
+
+        OrderSpecifier<?> orderSpecifier;
+        if (direction == Sort.Direction.ASC) {
+            orderSpecifier = board.createdAt.asc();
+        } else {
+            orderSpecifier = board.createdAt.desc();
         }
 
         List<ResGetMyBoardDTO> results = queryFactory
@@ -49,7 +60,8 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
                 .join(cultureEvent.area, area)
                 .where(board.user.id.eq(userId)
                         .and(dateCondition != null ? dateCondition : Expressions.asBoolean(true).isTrue()))
-                .orderBy(board.createdAt.desc())
+//                .orderBy(board.createdAt.desc())
+                .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)
                 .fetch();

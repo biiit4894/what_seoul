@@ -63,10 +63,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // 내가 작성한 후기 조회 모달 - 무한 스크롤
-
     let reviewPage = 0;
     let reviewLoading = false;
     let reviewIsLast = false;
+    let sortDirection = 'desc';  // 기본 내림차순
+
 
     const boardList = document.getElementById("board-list");
     const boardModalBody = document.querySelector("#boardModal .modal-body");
@@ -76,12 +77,33 @@ document.addEventListener("DOMContentLoaded", function () {
     const endDateInput = document.getElementById("endDate");
     const filterDateBtn = document.getElementById("filterDateBtn");
 
-    
-    // 날짜 선택 후 조회하는 버튼
+    // 토글 버튼 하나로 대체
+    const sortToggleBtn = document.getElementById("sortToggleBtn");
+
+    // 버튼 초기 텍스트 세팅 함수
+    function updateSortButton() {
+        if (sortDirection === 'asc') {
+            sortToggleBtn.innerHTML = `작성일자 ↑`;  // ▲ 또는 ↑ 아이콘 사용 가능
+        } else {
+            sortToggleBtn.innerHTML = `작성일자 ↓`;  // ▼ 또는 ↓ 아이콘 사용 가능
+        }
+    }
+
+    // 날짜 선택 후 조회하는 버튼 클릭 이벤트
     filterDateBtn.onclick = () => {
         reviewPage = 0;
         reviewIsLast = false;
         boardList.innerHTML = "";
+        loadMoreReviews();
+    };
+
+    // 토글 버튼 클릭 이벤트
+    sortToggleBtn.onclick = () => {
+        sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
+        reviewPage = 0;
+        reviewIsLast = false;
+        boardList.innerHTML = "";
+        updateSortButton();
         loadMoreReviews();
     };
 
@@ -108,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
         reviewLoading = true;
         loadingIndicator.style.display = "block";
 
-        let url = `/api/board/my?page=${reviewPage}&size=10`;
+        let url = `/api/board/my?page=${reviewPage}&size=10&sort=${sortDirection}`;
 
         // 날짜 값이 있으면 쿼리 파라미터에 추가
         const startDateVal = startDateInput.value; // yyyy-MM-dd 포맷

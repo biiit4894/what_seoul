@@ -43,9 +43,10 @@ public class BoardController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(name = "sort", defaultValue = "desc") String sort
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByUserId(page, size, startDate, endDate));
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByUserId(page, size, startDate, endDate, sort));
     }
 
     @PutMapping("/{id}")
