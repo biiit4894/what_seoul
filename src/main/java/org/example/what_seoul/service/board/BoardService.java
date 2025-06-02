@@ -69,13 +69,12 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public CommonResponse<Slice<ResGetMyBoardDTO>> getBoardsByUserId(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size);
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
 
-        Slice<Board> boardSlice = boardRepository.findSliceByUserId(loginUserInfo.getId(), pageable);
-        Slice<ResGetMyBoardDTO> result = boardSlice.map(ResGetMyBoardDTO::from);
+        Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findSliceByUserId(loginUserInfo.getId(), pageable);
 
-        return new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", result);
+        return new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", boardSlice);
     }
 
     @Transactional

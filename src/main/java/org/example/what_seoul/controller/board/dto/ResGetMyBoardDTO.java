@@ -23,20 +23,4 @@ public class ResGetMyBoardDTO {
     private String url;
     private String areaName;
     private boolean isEnded;
-
-    public ResGetMyBoardDTO(Board board) {
-        this.id = board.getId();
-        this.content = board.getContent();
-        this.createdAt = board.getCreatedAt();
-        this.updatedAt = board.getUpdatedAt();
-        this.eventName = board.getCultureEvent().getEventName();
-        this.eventPlace = board.getCultureEvent().getEventPlace();
-        this.url = board.getCultureEvent().getUrl();
-        this.areaName = board.getCultureEvent().getArea().getAreaName();
-        this.isEnded = board.getCultureEvent().getIsEnded();
-    }
-
-    public static ResGetMyBoardDTO from(Board board) {
-        return new ResGetMyBoardDTO(board);
-    }
 }

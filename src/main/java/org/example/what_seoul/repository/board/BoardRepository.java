@@ -8,13 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface BoardRepository extends JpaRepository<Board, Long> {
+public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryRepository {
     Slice<Board> findSliceByCultureEventId(Long cultureEventId, Pageable pageable);
 
     List<Board> findAllByUserId(Long userId);
-
-    @EntityGraph(attributePaths = {"user", "cultureEvent", "cultureEvent.area"})
-    Slice<Board> findSliceByUserId(Long userId, Pageable pageable);
 
     boolean existsByCultureEventId(Long cultureEventId);
 }
