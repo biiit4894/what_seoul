@@ -63,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // 내가 작성한 후기 조회 모달 - 무한 스크롤
+
     let reviewPage = 0;
     let reviewLoading = false;
     let reviewIsLast = false;
@@ -70,6 +71,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const boardList = document.getElementById("board-list");
     const boardModalBody = document.querySelector("#boardModal .modal-body");
     const loadingIndicator = document.getElementById("loading");
+
+    const startDateInput = document.getElementById("startDate");
+    const endDateInput = document.getElementById("endDate");
+    const filterDateBtn = document.getElementById("filterDateBtn");
+
+    
+    // 날짜 선택 후 조회하는 버튼
+    filterDateBtn.onclick = () => {
+        reviewPage = 0;
+        reviewIsLast = false;
+        boardList.innerHTML = "";
+        loadMoreReviews();
+    };
 
     // 모달이 열릴 때 초기화 및 첫 로딩
     $('#boardModal').on('shown.bs.modal', function () {
@@ -94,8 +108,27 @@ document.addEventListener("DOMContentLoaded", function () {
         reviewLoading = true;
         loadingIndicator.style.display = "block";
 
-        fetch(`/api/board/my?page=${reviewPage}&size=10`)
-            .then(response => response.json())
+        let url = `/api/board/my?page=${reviewPage}&size=10`;
+
+        // 날짜 값이 있으면 쿼리 파라미터에 추가
+        const startDateVal = startDateInput.value; // yyyy-MM-dd 포맷
+        const endDateVal = endDateInput.value;
+
+        if (startDateVal) {
+            url += `&startDate=${startDateVal}`;
+        }
+        if (endDateVal) {
+            url += `&endDate=${endDateVal}`;
+        }
+
+        fetch(url)
+            .then(async response => {
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.context || "알 수 없는 오류가 발생했습니다.");
+                }
+                return response.json();
+            })
             .then(data => {
                 const slice = data.data;
 
@@ -231,6 +264,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 reviewPage++;
             })
             .catch(error => {
+                alert(error.message);
+                const emptyMessage = document.createElement("div");
+                emptyMessage.className = "text-center text-muted mt-3 mb-3";
+                emptyMessage.innerHTML = `<br> 앗! 후기를 불러오는데 문제가 생겼어요. <br> 잠시 후 다시 시도해주세요.`;
+                boardList.appendChild(emptyMessage);
                 console.error("후기 불러오기 실패:", error);
             })
             .finally(() => {

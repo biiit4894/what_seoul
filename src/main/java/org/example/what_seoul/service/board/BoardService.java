@@ -24,6 +24,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -68,11 +71,18 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public CommonResponse<Slice<ResGetMyBoardDTO>> getBoardsByUserId(int page, int size) {
+    public CommonResponse<Slice<ResGetMyBoardDTO>> getBoardsByUserId(int page, int size, LocalDate startDate, LocalDate endDate) {
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("종료일은 시작일과 같거나 이후여야 합니다.");
+        }
+
         Pageable pageable = PageRequest.of(page, size);
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
 
-        Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findSliceByUserId(loginUserInfo.getId(), pageable);
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+
+        Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findSliceByUserId(loginUserInfo.getId(), startDateTime, endDateTime, pageable);
 
         return new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", boardSlice);
     }

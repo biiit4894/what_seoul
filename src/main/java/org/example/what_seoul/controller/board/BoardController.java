@@ -6,9 +6,12 @@ import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.board.dto.*;
 import org.example.what_seoul.service.board.BoardService;
 import org.springframework.data.domain.Slice;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/board")
@@ -38,9 +41,11 @@ public class BoardController {
     @GetMapping("/my")
     public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getBoardsByUserId(
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByUserId(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByUserId(page, size, startDate, endDate));
     }
 
     @PutMapping("/{id}")
