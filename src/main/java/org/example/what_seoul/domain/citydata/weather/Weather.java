@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.Area;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
  * 날씨 현황
  */
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 public class Weather {
@@ -75,6 +78,7 @@ public class Weather {
     /**
      * 날씨 현황 데이터 저장 일시
      */
+    @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -92,7 +96,6 @@ public class Weather {
         this.pm10 = pm10;
         this.pcpMsg = pcpMsg;
         this.weatherUpdateTime = weatherUpdateTime;
-        this.createdAt = LocalDateTime.now();
         this.area = area;
     }
 }

@@ -3,11 +3,13 @@ package org.example.what_seoul.domain.citydata;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * 서울시 주요 116 장소 (핫스팟)
  */
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 public class Area {

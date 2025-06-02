@@ -1,10 +1,11 @@
 package org.example.what_seoul.domain.citydata.population;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.Area;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
  * 실시간 인구현황
  */
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 public class Population {
@@ -54,6 +56,7 @@ public class Population {
     /**
      * 실시간 인구 현황 데이터 저장 일시
      */
+    @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -73,7 +76,6 @@ public class Population {
         this.populationMin = populationMin;
         this.populationMax = populationMax;
         this.populationUpdateTime = populationUpdateTime;
-        this.createdAt = LocalDateTime.now();
         this.area = area;
     }
 }

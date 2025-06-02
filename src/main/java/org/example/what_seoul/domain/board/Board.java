@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.user.User;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
  * 문화행사 후기
  */
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 public class Board {
@@ -28,6 +31,7 @@ public class Board {
     /**
      * 후기 작성일시
      */
+    @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -53,7 +57,6 @@ public class Board {
 
     public Board(String content, User user, CultureEvent cultureEvent) {
         this.content = content;
-        this.createdAt = LocalDateTime.now();
         this.user = user;
         this.cultureEvent = cultureEvent;
     }

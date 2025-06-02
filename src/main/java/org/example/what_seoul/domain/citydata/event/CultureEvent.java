@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.domain.citydata.Area;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,6 +16,7 @@ import java.util.Objects;
  * 문화행사 현황
  */
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 @Slf4j
@@ -73,6 +76,7 @@ public class CultureEvent {
     /**
      * 문화행사 데이터 저장 일시
      */
+    @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -97,7 +101,6 @@ public class CultureEvent {
         this.thumbnail = thumbnail;
         this.url = url;
         this.isEnded = false;
-        this.createdAt = LocalDateTime.now();
         this.area = area;
     }
 
