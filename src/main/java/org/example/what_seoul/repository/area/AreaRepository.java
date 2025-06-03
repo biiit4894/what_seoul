@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface AreaRepository extends JpaRepository<Area, Long> {
+public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepository {
     Optional<List<Area>> findByAreaNameContaining(String keyword);
 
     @Query("""

@@ -9,6 +9,8 @@ import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
+import org.example.what_seoul.service.user.UserService;
+import org.example.what_seoul.service.user.dto.LoginUserInfoDTO;
 import org.example.what_seoul.util.LocationChecker;
 import org.example.what_seoul.util.PolygonParser;
 import org.locationtech.jts.geom.Polygon;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class AreaService {
     private final AreaRepository areaRepository;
     private final CultureEventRepository cultureEventRepository;
+    private final UserService userService;
     private final LocationChecker locationChecker;
 
     /**
@@ -157,6 +160,17 @@ public class AreaService {
                 "전체 장소 문화행사 조회 성공",
                 result
         );
+    }
+
+    /**
+     * 문화행사 후기를 작성한 장소들의 장소명 목록 조회 기능
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public CommonResponse<List<String>> getAreaNamesWithMyBoards() {
+        LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
+        List<String> areaNames = areaRepository.findAreaNamesByUserId(loginUserInfo.getId());
+        return new CommonResponse<>(true, "후기를 작성한 장소 이름 목록 조회 성공", areaNames);
     }
 
     /**
