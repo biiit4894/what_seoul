@@ -72,7 +72,7 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public CommonResponse<Slice<ResGetMyBoardDTO>> getBoardsByUserId(int page, int size, LocalDate startDate, LocalDate endDate, String sort) {
+    public CommonResponse<Slice<ResGetMyBoardDTO>> getMyBoards(int page, int size, LocalDate startDate, LocalDate endDate, String sort, ReqGetMyBoardDTO req) {
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
             throw new IllegalArgumentException("종료일은 시작일과 같거나 이후여야 합니다.");
         }
@@ -84,12 +84,14 @@ public class BoardService {
         LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
 
-        Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findSliceByUserId(
+        Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findMyBoardsSlice(
                 loginUserInfo.getId(),
                 startDateTime,
                 endDateTime,
+                req.getSelectedAreaNames(),
                 pageable,
                 direction
+
         );
 
         return new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", boardSlice);

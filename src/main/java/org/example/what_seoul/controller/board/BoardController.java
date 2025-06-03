@@ -38,15 +38,16 @@ public class BoardController {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardById(id));
     }
 
-    @GetMapping("/my")
-    public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getBoardsByUserId(
+    @PostMapping("/my")
+    public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getBoards(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(name = "sort", defaultValue = "desc") String sort
+            @RequestParam(name = "sort", defaultValue = "desc") String sort,
+            @RequestBody(required = false) ReqGetMyBoardDTO req
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardsByUserId(page, size, startDate, endDate, sort));
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.getMyBoards(page, size, startDate, endDate, sort, req));
     }
 
     @PutMapping("/{id}")

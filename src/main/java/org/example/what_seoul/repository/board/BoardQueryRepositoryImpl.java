@@ -26,15 +26,27 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<ResGetMyBoardDTO> findSliceByUserId(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable,  Sort.Direction direction) {
+    public Slice<ResGetMyBoardDTO> findMyBoardsSlice(
+            Long userId,
+            LocalDateTime startDateTime,
+            LocalDateTime endDateTime,
+            List<String> selectedAreaNames,
+            Pageable pageable,
+            Sort.Direction direction) {
 
         BooleanExpression dateCondition = null;
+        BooleanExpression areaCondition = null;
+
         if (startDateTime != null && endDateTime != null) {
             dateCondition = board.createdAt.between(startDateTime, endDateTime);
         } else if (startDateTime != null) {
             dateCondition = board.createdAt.goe(startDateTime);
         } else if (endDateTime != null) {
             dateCondition = board.createdAt.loe(endDateTime);
+        }
+
+        if (selectedAreaNames != null && !selectedAreaNames.isEmpty()) {
+            areaCondition = area.areaName.in(selectedAreaNames);
         }
 
         OrderSpecifier<?> orderSpecifier;
@@ -59,8 +71,8 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
                 .join(board.cultureEvent, cultureEvent)
                 .join(cultureEvent.area, area)
                 .where(board.user.id.eq(userId)
-                        .and(dateCondition != null ? dateCondition : Expressions.asBoolean(true).isTrue()))
-//                .orderBy(board.createdAt.desc())
+                        .and(dateCondition != null ? dateCondition : Expressions.asBoolean(true).isTrue())
+                        .and(areaCondition != null ? areaCondition : Expressions.asBoolean(true).isTrue()))
                 .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize() + 1)

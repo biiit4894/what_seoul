@@ -6,7 +6,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface BoardQueryRepository {
-    Slice<ResGetMyBoardDTO> findSliceByUserId(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, Pageable pageable, Sort.Direction direction);
+    Slice<ResGetMyBoardDTO> findMyBoardsSlice(Long userId, LocalDateTime startDateTime, LocalDateTime endDateTime, List<String> selectedAreaNames, Pageable pageable, Sort.Direction direction);
 }
