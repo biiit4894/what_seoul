@@ -132,19 +132,41 @@
                 </button>
             </div>
             <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
-                <div class="mb-3 d-flex justify-content-start align-items-center gap-2">
-                    <label for="startDate" class="mb-0"></label>
-                    <input type="date" id="startDate" class="form-control" style="max-width: 150px;">
-                    <span>&nbsp;~&nbsp;</span>
-                    <label for="endDate" class="mb-0"></label>
-                    <input type="date" id="endDate" class="form-control" style="max-width: 150px;">
-                    <button id="filterDateBtn" class="btn btn-primary btn-sm ml-2">조회</button>
+                <!-- 필터 바 -->
+                <div id="filterBar" class="mb-2">
+                    <!-- 날짜 필터 -->
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <label class="font-weight-bold mr-2" for="startDate" style="margin-bottom: 0;">기간 선택</label>
+                        <input type="date" id="startDate" class="form-control" style="max-width: 150px;">
+                        <span>&nbsp;~&nbsp;</span>
+                        <label for="endDate"></label>
+                        <input type="date" id="endDate" class="form-control" style="max-width: 150px;">
+                    </div>
+
+                    <!-- 장소 체크박스들 -->
+                    <div id="areaCheckboxContainer" class="d-flex align-items-start mb-2">
+                        <!-- JS로 체크박스들 동적으로 삽입 -->
+                    </div>
+
+                    <!-- 정렬 옵션 -->
+                    <div id="sortRatioContainer" class="mb-2">
+                        <label class="font-weight-bold mr-1" style="margin-bottom: 0;">정렬 기준 선택</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="sortOrder" id="sortDesc" value="desc" checked>
+                            <label class="form-check-label" for="sortDesc">최신순</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="sortOrder" id="sortAsc" value="asc">
+                            <label class="form-check-label" for="sortAsc">오래된순</label>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="sort-buttons" class="mb-3">
-                    <button id="sortToggleBtn" class="btn btn-sm btn-outline-primary">작성일자 ↓</button>
+                <!-- 조회 버튼 -->
+                <div class="mb-3" style="text-align: center;">
+                    <button id="getBoardListBtn" class="btn btn-outline-secondary btn-sm">조회</button>
                 </div>
-
+                
                 <div id="board-list"></div>
                 <div id="loading" class="text-center mt-3" style="display: none;">불러오는 중...</div>
             </div>

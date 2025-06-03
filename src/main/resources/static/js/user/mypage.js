@@ -66,8 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let reviewPage = 0;
     let reviewLoading = false;
     let reviewIsLast = false;
-    let sortDirection = 'desc';  // 기본 내림차순
-
 
     const boardList = document.getElementById("board-list");
     const boardModalBody = document.querySelector("#boardModal .modal-body");
@@ -75,36 +73,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const startDateInput = document.getElementById("startDate");
     const endDateInput = document.getElementById("endDate");
-    const filterDateBtn = document.getElementById("filterDateBtn");
 
-    // 토글 버튼 하나로 대체
-    const sortToggleBtn = document.getElementById("sortToggleBtn");
+    let areaNamesCache = null; // 유저가 후기를 작성한 장소명 캐싱용
+    const areaCheckboxContainer = document.getElementById("areaCheckboxContainer");
 
-    // 버튼 초기 텍스트 세팅 함수
-    function updateSortButton() {
-        if (sortDirection === 'asc') {
-            sortToggleBtn.innerHTML = `작성일자 ↑`;  // ▲ 또는 ↑ 아이콘 사용 가능
-        } else {
-            sortToggleBtn.innerHTML = `작성일자 ↓`;  // ▼ 또는 ↓ 아이콘 사용 가능
-        }
-    }
+    const getBoardListBtn = document.getElementById("getBoardListBtn");
 
-    // 날짜 선택 후 조회하는 버튼 클릭 이벤트
-    filterDateBtn.onclick = () => {
+    // 날짜, 장소, 작성일자 정렬 선택 후 조회하는 버튼 클릭 이벤트
+    getBoardListBtn.onclick = () => {
         reviewPage = 0;
         reviewIsLast = false;
         boardList.innerHTML = "";
-        loadMoreReviews();
-    };
-
-    // 토글 버튼 클릭 이벤트
-    sortToggleBtn.onclick = () => {
-        sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
-        reviewPage = 0;
-        reviewIsLast = false;
-        boardList.innerHTML = "";
-        updateSortButton();
-        loadMoreReviews();
+        loadCultureEventReviews();
     };
 
     // 모달이 열릴 때 초기화 및 첫 로딩
@@ -112,7 +92,8 @@ document.addEventListener("DOMContentLoaded", function () {
         reviewPage = 0;
         reviewIsLast = false;
         boardList.innerHTML = "";
-        loadMoreReviews();
+        loadAreaNamesReviewed(); // 모달이 열릴때 한번 만 로드
+        loadCultureEventReviews();
     });
 
     // 스크롤 끝에 도달하면 더 불러오기
@@ -120,15 +101,64 @@ document.addEventListener("DOMContentLoaded", function () {
         const threshold = 50;
         if (!reviewLoading &&
             boardModalBody.scrollTop + boardModalBody.clientHeight >= boardModalBody.scrollHeight - threshold) {
-            loadMoreReviews();
+            loadCultureEventReviews();
         }
     });
 
-    function loadMoreReviews() {
+    function loadAreaNamesReviewed() {
+        // 유저가 후기를 작성한 장소명 리스트 조회 (작성한 후기 조회 모달이 열린 후 한 번)
+        fetch('/api/area/reviewed')
+            .then(res => {
+                if(!res.ok) {
+                    throw new Error("후기를 작성한 장소명 리스트 조회 실패");
+                }
+                return res.json()
+            })
+            .then(data => {
+                areaNamesCache = data.data || [];
+
+                if (areaNamesCache.length === 0) {
+                    areaCheckboxContainer.innerHTML = "<p class='text-muted'>등록된 장소명이 없습니다.</p>";
+                    return;
+                }
+
+                // 초기화
+                areaCheckboxContainer.innerHTML = `
+                    <div class="font-weight-bold mr-2" style="white-space: nowrap;">장소 선택</div>
+                    <div id="area-checkbox-list" class="d-flex flex-wrap gap-2"></div>
+                `;
+
+                const checkboxListDiv = document.getElementById("area-checkbox-list");
+
+                areaNamesCache.forEach(area => {
+                    const id = `area-checkbox-${area.replace(/\s+/g, '-')}`;
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "form-check form-check-inline";
+
+                    wrapper.innerHTML = `
+                            <input class="form-check-input" type="checkbox" id="${id}" value="${area}">
+                            <label class="form-check-label" for="${id}">${area}</label>
+                    `;
+                    checkboxListDiv.appendChild(wrapper);
+                })
+
+            })
+            .catch(err => {
+                areaCheckboxContainer.innerHTML = `<p class="text-danger">장소명을 불러오는데 실패했습니다.</p>`;
+                console.error(err);
+            });
+    }
+
+    function loadCultureEventReviews() {
+
         if (reviewIsLast) return;
 
         reviewLoading = true;
         loadingIndicator.style.display = "block";
+
+        // 정렬 기준 라디오에서 현재 선택된 값 가져오기
+        const selectedSortRadio = document.querySelector('input[name="sortOrder"]:checked');
+        const sortDirection = selectedSortRadio ? selectedSortRadio.value : 'desc';
 
         let url = `/api/board/my?page=${reviewPage}&size=10&sort=${sortDirection}`;
 
@@ -143,7 +173,20 @@ document.addEventListener("DOMContentLoaded", function () {
             url += `&endDate=${endDateVal}`;
         }
 
-        fetch(url)
+        // 선택된 장소 체크박스 값 수집
+        const checkedAreas = Array.from(areaCheckboxContainer.querySelectorAll("input[type=checkbox]:checked"))
+            .map(cb => cb.value);
+
+        // POST용 body 객체 구성
+        const requestBody = {
+            selectedAreaNames: checkedAreas
+        };
+
+        fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody)
+        })
             .then(async response => {
                 if (!response.ok) {
                     const errorData = await response.json();
