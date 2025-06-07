@@ -5,20 +5,16 @@ import jakarta.persistence.EntityNotFoundException;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.config.WebSecurityTestConfig;
 import org.example.what_seoul.controller.board.dto.*;
-import org.example.what_seoul.exception.GlobalExceptionHandler;
 import org.example.what_seoul.service.board.BoardService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -26,8 +22,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,7 +33,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
 @WebMvcTest(BoardController.class)
 @ActiveProfiles("test")
@@ -148,6 +143,12 @@ public class BoardControllerTest {
         int page = 0;
         int size = 10;
 
+        String sort = "desc";
+        String startDate = "2025-06-01";
+        String endDate = "2025-06-02";
+
+        ReqGetMyBoardDTO req = new ReqGetMyBoardDTO(List.of("areaName1", "areaName2"));
+
         List<ResGetMyBoardDTO> boardList = List.of(
                 new ResGetMyBoardDTO(
                         1L,
@@ -164,12 +165,24 @@ public class BoardControllerTest {
         Slice<ResGetMyBoardDTO> boardSlice = new SliceImpl<>(boardList, PageRequest.of(page, size), false);
         CommonResponse<Slice<ResGetMyBoardDTO>> response = new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", boardSlice);
 
-        given(boardService.getBoardsByUserId(page, size)).willReturn(response);
+        given(boardService.getMyBoards(
+                eq(page),
+                eq(size),
+                eq(LocalDate.parse(startDate)),
+                eq(LocalDate.parse(endDate)),
+                eq(sort),
+                any(ReqGetMyBoardDTO.class)))
+                .willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/board/my")
+        mockMvc.perform(post("/api/board/my")
                         .param("page", String.valueOf(page))
-                        .param("size", String.valueOf(size)))
+                        .param("size", String.valueOf(size))
+                        .param("startDate", startDate)
+                        .param("endDate", endDate)
+                        .param("sort", sort)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -282,9 +295,9 @@ public class BoardControllerTest {
     }
 
     @Test
-    @DisplayName("[실패] 작성한 문화행사 후기 목록 조회 Controller - 인증 없이 후기 목록 요청 시 401 반환")
+    @DisplayName("[실패] 작성한 문화행사 후기 목록 조회 Controller - 인증 없이 후기 목록 요청 시 403 Access Denied 반환")
     void getBoardsByUserId_unauthorized() throws Exception {
-        mockMvc.perform(get("/api/board/my")
+        mockMvc.perform(post("/api/board/my")
                         .param("page", "0")
                         .param("size", "10"))
                 .andDo(print())
