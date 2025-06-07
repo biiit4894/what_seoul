@@ -84,11 +84,13 @@ public class BoardService {
         LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
 
+        List<String> selectedAreaNames = (req != null) ? req.getSelectedAreaNames() : null;
+
         Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findMyBoardsSlice(
                 loginUserInfo.getId(),
                 startDateTime,
                 endDateTime,
-                req.getSelectedAreaNames(),
+                selectedAreaNames,
                 pageable,
                 direction
 

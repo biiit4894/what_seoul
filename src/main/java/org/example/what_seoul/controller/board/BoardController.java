@@ -39,7 +39,7 @@ public class BoardController {
     }
 
     @PostMapping("/my")
-    public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getBoards(
+    public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getMyBoards(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
