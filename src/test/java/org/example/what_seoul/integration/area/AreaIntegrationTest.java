@@ -1,4 +1,4 @@
-package org.example.what_seoul.integration;
+package org.example.what_seoul.integration.area;
 
 import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.domain.citydata.Area;

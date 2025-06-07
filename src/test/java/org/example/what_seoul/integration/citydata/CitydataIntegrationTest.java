@@ -1,4 +1,4 @@
-package org.example;
+package org.example.what_seoul.integration.citydata;
 
 import jakarta.transaction.Transactional;
 import org.example.what_seoul.WhatSeoulApplication;
