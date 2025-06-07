@@ -8,8 +8,11 @@ import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
+import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
+import org.example.what_seoul.service.user.UserService;
+import org.example.what_seoul.service.user.dto.LoginUserInfoDTO;
 import org.example.what_seoul.util.LocationChecker;
 import org.example.what_seoul.util.PolygonParser;
 import org.junit.jupiter.api.DisplayName;
@@ -47,6 +50,9 @@ public class AreaServiceTest {
 
     @Mock
     private CultureEventRepository cultureEventRepository;
+
+    @Mock
+    private UserService userService;
 
     @Mock
     private LocationChecker locationChecker;
@@ -260,6 +266,32 @@ public class AreaServiceTest {
     }
 
     @Test
+    @DisplayName("[성공] 후기를 작성한 장소 이름 목록 조회 Service")
+    void getAreaNamesWithMyBoards() throws JsonProcessingException {
+        // Given
+        Long userId = 1L;
+        User user = new User("test", "encodedPassword", "test@example.com", "작성자");
+        ReflectionTestUtils.setField(user, "id", userId);
+
+        List<String> areaNames = List.of("areaName1", "areaName2", "areaName3");
+
+        given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(user));
+
+        given(areaRepository.findAreaNamesByUserId(userId)).willReturn(areaNames);
+
+        // When
+        CommonResponse<List<String>> response = areaService.getAreaNamesWithMyBoards();
+
+        // Then
+        assertTrue(response.isSuccess());
+        assertEquals("후기를 작성한 장소 이름 목록 조회 성공", response.getMessage());
+        assertTrue(response.getData().containsAll(areaNames));
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+        System.out.println(json);
+    }
+
+    @Test
     @DisplayName("[실패] 현위치 기반 장소 리스트 조회 Service")
     void getAreaListByCurrentLocation_failure() {
         // Given
@@ -351,7 +383,7 @@ public class AreaServiceTest {
     // 이게 정말 필요할까?
     @Test
     @DisplayName("[실패] 전체 장소 문화행사 조회 Service - Area와 문화행사 데이터가 없는 경우 ")
-    void getAllAreasWithCultureEvent_NoAreaAndCultureEventData() throws JsonProcessingException {
+    void getAllAreasWithCultureEvent_noAreaAndCultureEventData() throws JsonProcessingException {
         // Given
         when(areaRepository.findAll()).thenReturn(Collections.emptyList());
         when(cultureEventRepository.findAllWithArea()).thenReturn(Collections.emptyList());
@@ -393,5 +425,20 @@ public class AreaServiceTest {
             /// Then
             assertTrue(exception.getMessage().contains("Polygon 파싱 오류"));
         }
+    }
+
+    @Test
+    @DisplayName("[실패] 후기를 작성한 장소 이름 목록 조회 Service - 로그인한 사용자 정보가 없을 때")
+    void getAreaNamesWithMyBoards_userNotAuthenticated() {
+        // Given
+        given(userService.getLoginUserInfo()).willThrow(new IllegalArgumentException("로그인한 사용자 정보가 없습니다."));
+
+        // When & Then
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> areaService.getAreaNamesWithMyBoards()
+        );
+
+        assertEquals("로그인한 사용자 정보가 없습니다.", exception.getMessage());
     }
 }

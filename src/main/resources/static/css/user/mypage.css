@@ -1,0 +1,6 @@
+/* 기간, 장소, 정렬기준 선택 div */
+#filterBar {
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #ececec;
+}

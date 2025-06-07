@@ -31,11 +31,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -104,7 +106,6 @@ public class BoardServiceTest {
         ResCreateBoardDTO data = response.getData();
         assertEquals("test", data.getContent());
         assertEquals("testNickName", data.getAuthor());
-        assertNotNull(data.getCreatedAt());
         assertEquals("행사1", data.getEventName());
 
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
@@ -146,7 +147,7 @@ public class BoardServiceTest {
 
         Slice<Board> boardSlice = new SliceImpl<>(List.of(board1, board2), pageable, false);
 
-        given(boardRepository.findAllByCultureEventId(cultureEventId, pageable)).willReturn(boardSlice);
+        given(boardRepository.findSliceByCultureEventId(cultureEventId, pageable)).willReturn(boardSlice);
         given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(user.getId(), user.getUserId(), user.getEmail(), user.getNickName(), user.getRole(), user.getCreatedAt(), user.getUpdatedAt(), user.getDeletedAt()));
 
         // when
@@ -178,7 +179,7 @@ public class BoardServiceTest {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Slice<Board> emptySlice = new SliceImpl<>(Collections.emptyList(), pageable, false);
 
-        given(boardRepository.findAllByCultureEventId(cultureEventId, pageable)).willReturn(emptySlice);
+        given(boardRepository.findSliceByCultureEventId(cultureEventId, pageable)).willReturn(emptySlice);
         given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(1L, "test", "test@example.com", "작성자", RoleType.USER, LocalDateTime.now(), null, null));
 
         // when
@@ -231,6 +232,103 @@ public class BoardServiceTest {
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
         System.out.println(json);
     }
+
+    @DisplayName("[성공] 작성한 문화행사 후기 목록 조회 Service")
+    @Test
+    void getBoardsByUserId_success() throws JsonProcessingException {
+        // given
+        int page = 0;
+        int size = 10;
+        String sort = "desc";
+        LocalDate nowDate = LocalDate.of(2024, 6, 1);
+        LocalDate startDate = nowDate.minusDays(3);
+        LocalDate endDate = nowDate.plusDays(1);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+        Sort.Direction direction = Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size);
+
+        Long userId = 1L;
+
+        ReqGetMyBoardDTO req = new ReqGetMyBoardDTO(List.of("areaName1", "areaName2"));
+
+        given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(userId, "testUser", "testEmail", "testNickName", RoleType.USER, LocalDateTime.now(), null, null));
+
+        List<ResGetMyBoardDTO> content = List.of(
+                new ResGetMyBoardDTO(1L, "content", startDateTime, endDateTime,
+                        "event", "place", "url", "areaName1", false)
+        );
+        Slice<ResGetMyBoardDTO> slice = new SliceImpl<>(content, pageable, false);
+        given(boardRepository.findMyBoardsSlice(
+                eq(userId),
+                eq(startDateTime),
+                eq(endDateTime),
+                eq(req.getSelectedAreaNames()),
+                eq(pageable),
+                eq(direction))).willReturn(slice);
+
+        // when
+        CommonResponse<Slice<ResGetMyBoardDTO>> result = boardService.getMyBoards(page, size, startDate, endDate, sort, req);
+
+        // then
+        assertTrue(result.isSuccess());
+        assertEquals("작성한 문화행사 후기 목록 조회 성공", result.getMessage());
+        assertEquals(1, result.getData().getContent().size());
+        assertEquals("content", result.getData().getContent().get(0).getContent());
+        assertEquals("areaName1", result.getData().getContent().get(0).getAreaName());
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+        System.out.println(json);
+    }
+
+    @Test
+    @DisplayName("[성공] 작성한 문화행사 후기 목록 조회 Service - Request Body가 null인 경우")
+    void getBoardsByUserId_reqBodyIsNull_success() throws JsonProcessingException {
+        // given
+        int page = 0;
+        int size = 10;
+
+        String sort = "desc";
+        LocalDate nowDate = LocalDate.of(2024, 6, 1);
+        LocalDate startDate = nowDate.minusDays(3);
+        LocalDate endDate = nowDate.plusDays(1);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+        ReqGetMyBoardDTO req = null;
+
+        Long userId = 1L;
+        Pageable pageable = PageRequest.of(page, size);
+
+        given(userService.getLoginUserInfo()).willReturn(new LoginUserInfoDTO(userId, "testUser", "testEmail", "testNickName", RoleType.USER, LocalDateTime.now(), null, null));
+
+        Slice<ResGetMyBoardDTO> emptySlice = new SliceImpl<>(List.of(), pageable, false);
+
+        given(boardRepository.findMyBoardsSlice(
+                eq(userId),
+                eq(startDateTime),
+                eq(endDateTime),
+                isNull(),
+                eq(pageable),
+                eq(Sort.Direction.DESC))
+        ).willReturn(emptySlice);
+
+        // when
+        CommonResponse<Slice<ResGetMyBoardDTO>> result = boardService.getMyBoards(
+                page, size, startDate, endDate, sort, req
+        );
+
+        // then
+        assertTrue(result.isSuccess());
+        assertEquals("작성한 문화행사 후기 목록 조회 성공", result.getMessage());
+        assertNotNull(result.getData());
+        assertTrue(result.getData().isEmpty());
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+        System.out.println(json);
+    }
+
+
 
     @Test
     @DisplayName("[성공] 문화행사 후기 수정 Service")
@@ -329,6 +427,34 @@ public class BoardServiceTest {
         });
 
         assertEquals("문화행사 후기를 찾을 수 없습니다. 후기 id = 999", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 작성한 문화행사 후기 목록 조회 Service - 잘못된 페이지 파라미터 전달 시 IllegalArgumentException 발생")
+    void getBoardsByUserId_invalidPageParam() {
+        // given
+        int invalidPage = -1;
+        int size = 10;
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            boardService.getMyBoards(invalidPage, size, null, null, null, null);
+        });
+    }
+
+    @Test
+    @DisplayName("[실패] 작성한 문화행사 후기 목록 조회 Service - 종료일이 시작일보다 빠른 경우 IllegalArgumentException 발생")
+    void getMyBoards_endDateBeforeStartDate() {
+        // given
+        int page = 0;
+        int size = 10;
+        LocalDate startDate = LocalDate.of(2024, 6, 5);
+        LocalDate endDate = LocalDate.of(2024, 6, 1);
+
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            boardService.getMyBoards(page, size, startDate, endDate, "desc", new ReqGetMyBoardDTO(List.of("서울")));
+        });
     }
 
     @Test

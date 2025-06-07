@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
  * 인구 예측값 (향후 12시간에 대한 인구 예측 현황)
  */
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 public class PopulationForecast {
@@ -45,6 +48,7 @@ public class PopulationForecast {
     /**
      * 인구 예측값 저장 일시
      */
+    @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -57,7 +61,6 @@ public class PopulationForecast {
         this.forecastPopulationMin = forecastPopulationMin;
         this.forecastPopulationMax = forecastPopulationMax;
         this.forecastTime = forecastTime;
-        this.createdAt = LocalDateTime.now();
         this.population = population;
     }
 }

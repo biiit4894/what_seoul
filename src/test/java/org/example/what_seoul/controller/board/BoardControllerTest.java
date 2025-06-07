@@ -23,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class BoardControllerTest {
     }
 
     @DisplayName("[성공] 문화행사 후기 리스트 조회 Controller")
-    @WithMockUser(username = "test", roles = {"USER"})
+    @WithMockUser(username = "test", roles = {"ADMIN","USER"})
     @Test
     void getBoardsByCultureEventId() throws Exception {
         // given
@@ -132,6 +133,67 @@ public class BoardControllerTest {
                 .andExpect(jsonPath("$.data.eventName").value("test"))
                 .andExpect(jsonPath("$.data.editable").value(false)); // Java/Kotlin에서 boolean 필드명이 isXyz로 시작되면, Jackson(JSON 직렬화 라이브러리)은 is를 제외한 xyz로 직렬화한다.
 
+    }
+
+    @DisplayName("[성공] 작성한 문화행사 후기 리스트 조회 Controller")
+    @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
+    @Test
+    void getBoardsByUserId() throws Exception {
+        // given
+        int page = 0;
+        int size = 10;
+
+        String sort = "desc";
+        String startDate = "2025-06-01";
+        String endDate = "2025-06-02";
+
+        ReqGetMyBoardDTO req = new ReqGetMyBoardDTO(List.of("areaName1", "areaName2"));
+
+        List<ResGetMyBoardDTO> boardList = List.of(
+                new ResGetMyBoardDTO(
+                        1L,
+                        "test content",
+                        LocalDateTime.of(2024, 5, 1, 10, 0),
+                        LocalDateTime.of(2024, 5, 2, 11, 0),
+                        "test event name",
+                        "test event place",
+                        "https://testurl.com",
+                        "test area name",
+                        false
+                )
+        );
+        Slice<ResGetMyBoardDTO> boardSlice = new SliceImpl<>(boardList, PageRequest.of(page, size), false);
+        CommonResponse<Slice<ResGetMyBoardDTO>> response = new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", boardSlice);
+
+        given(boardService.getMyBoards(
+                eq(page),
+                eq(size),
+                eq(LocalDate.parse(startDate)),
+                eq(LocalDate.parse(endDate)),
+                eq(sort),
+                any(ReqGetMyBoardDTO.class)))
+                .willReturn(response);
+
+        // when & then
+        mockMvc.perform(post("/api/board/my")
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size))
+                        .param("startDate", startDate)
+                        .param("endDate", endDate)
+                        .param("sort", sort)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("작성한 문화행사 후기 목록 조회 성공"))
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content[0].id").value(1L))
+                .andExpect(jsonPath("$.data.content[0].content").value("test content"))
+                .andExpect(jsonPath("$.data.content[0].eventName").value("test event name"))
+                .andExpect(jsonPath("$.data.content[0].eventPlace").value("test event place"))
+                .andExpect(jsonPath("$.data.content[0].areaName").value("test area name"))
+                .andExpect(jsonPath("$.data.content[0].ended").value(false));
     }
 
     @Test
@@ -230,6 +292,16 @@ public class BoardControllerTest {
                         .param("size", "10"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("[실패] 작성한 문화행사 후기 목록 조회 Controller - 인증 없이 후기 목록 요청 시 403 Access Denied 반환")
+    void getBoardsByUserId_unauthorized() throws Exception {
+        mockMvc.perform(post("/api/board/my")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 
     @Test

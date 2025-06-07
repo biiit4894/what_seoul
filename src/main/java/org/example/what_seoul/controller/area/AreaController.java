@@ -46,5 +46,10 @@ public class AreaController {
         return ResponseEntity.status(HttpStatus.OK).body(areaService.getAllAreasWithCultureEvent());
     }
 
+    @GetMapping("/reviewed")
+    public ResponseEntity<CommonResponse<List<String>>> getAreaNamesWithMyBoards() {
+        return ResponseEntity.status(HttpStatus.OK).body(areaService.getAreaNamesWithMyBoards());
+    }
+
 
 }

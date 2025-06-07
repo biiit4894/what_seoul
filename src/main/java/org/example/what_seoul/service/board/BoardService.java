@@ -20,10 +20,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Service
@@ -51,8 +55,8 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public CommonResponse<Slice<ResGetBoardDTO>> getBoardsByCultureEventId(Long cultureEventId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Slice<Board> boardSlice = boardRepository.findAllByCultureEventId(cultureEventId, pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
+        Slice<Board> boardSlice = boardRepository.findSliceByCultureEventId(cultureEventId, pageable);
 
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
         Slice<ResGetBoardDTO> result = boardSlice.map(board -> ResGetBoardDTO.from(board, loginUserInfo));
@@ -65,6 +69,34 @@ public class BoardService {
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
         Board board = boardRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("문화행사 후기를 찾을 수 없습니다. 후기 id = " + id));
         return new CommonResponse<>(true, "문화행사 후기 조회 성공", ResGetBoardDTO.from(board, loginUserInfo));
+    }
+
+    @Transactional(readOnly = true)
+    public CommonResponse<Slice<ResGetMyBoardDTO>> getMyBoards(int page, int size, LocalDate startDate, LocalDate endDate, String sort, ReqGetMyBoardDTO req) {
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("종료일은 시작일과 같거나 이후여야 합니다.");
+        }
+
+        Direction direction = "asc".equalsIgnoreCase(sort) ? Direction.ASC : Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size);
+        LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
+
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+
+        List<String> selectedAreaNames = (req != null) ? req.getSelectedAreaNames() : null;
+
+        Slice<ResGetMyBoardDTO> boardSlice = boardRepository.findMyBoardsSlice(
+                loginUserInfo.getId(),
+                startDateTime,
+                endDateTime,
+                selectedAreaNames,
+                pageable,
+                direction
+
+        );
+
+        return new CommonResponse<>(true, "작성한 문화행사 후기 목록 조회 성공", boardSlice);
     }
 
     @Transactional

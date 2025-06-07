@@ -6,9 +6,12 @@ import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.board.dto.*;
 import org.example.what_seoul.service.board.BoardService;
 import org.springframework.data.domain.Slice;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/board")
@@ -33,6 +36,18 @@ public class BoardController {
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<ResGetBoardDTO>> getBoardById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(boardService.getBoardById(id));
+    }
+
+    @PostMapping("/my")
+    public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getMyBoards(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(name = "sort", defaultValue = "desc") String sort,
+            @RequestBody(required = false) ReqGetMyBoardDTO req
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.getMyBoards(page, size, startDate, endDate, sort, req));
     }
 
     @PutMapping("/{id}")

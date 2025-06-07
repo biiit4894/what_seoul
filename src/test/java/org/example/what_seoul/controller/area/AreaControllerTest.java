@@ -365,6 +365,28 @@ public class AreaControllerTest {
 
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
+    @DisplayName("[성공] 후기를 작성한 장소 이름 목록 조회 Controller")
+    void getAreaNamesWithMyBoards() throws Exception {
+        // Given
+        List<String> areaNames = List.of("areaName1", "areaName2");
+
+        CommonResponse<List<String>> response = new CommonResponse<>(true, "후기를 작성한 장소 이름 목록 조회 성공", areaNames);
+
+        given(areaService.getAreaNamesWithMyBoards()).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(get("/api/area/reviewed"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("후기를 작성한 장소 이름 목록 조회 성공"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0]").value("areaName1"))
+                .andExpect(jsonPath("$.data[1]").value("areaName2"));
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 존재하지 않는 URL 요청 시 404 Not Found 응답")
     void nonExistingAreaUrl() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/area/non-existing-endpoint"))
@@ -403,7 +425,7 @@ public class AreaControllerTest {
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 장소 검색 Controller - query 파라미터 미전달로 400 Bad Request 응답")
-    void getAreaListByKeywordBadRequest() throws Exception {
+    void getAreaListByKeyword_badRequest() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/area"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
@@ -412,7 +434,7 @@ public class AreaControllerTest {
 
     @Test
     @DisplayName("[실패] 장소 검색 Controller - 로그인 없이 호출 시 403 Access Denied 응답")
-    void getAreaListByKeywordUnauthorized() throws Exception {
+    void getAreaListByKeyword_unauthorized() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/area"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -421,7 +443,7 @@ public class AreaControllerTest {
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 장소 검색 Controller - 잘못된 HTTP 메서드로 요청 시 405 Method Not Allowed 응답")
-    void wrongHttpMethodForAreaListByKeyword() throws Exception {
+    void getAreaListByKeyword_wrongHttpMethod() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/area"))  // 잘못된 POST 요청
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -429,7 +451,7 @@ public class AreaControllerTest {
 
     @Test
     @DisplayName("[실패] 전체 장소 리스트 조회 Controller - 로그인 없이 호출 시 403 Access Denied 응답")
-    void getAreaListUnauthorized() throws Exception {
+    void getAreaList_unauthorized() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/area/all"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -438,7 +460,7 @@ public class AreaControllerTest {
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 전체 장소 리스트 조회 Controller - 잘못된 HTTP 메서드로 요청 시 405 Method Not Allowed 응답")
-    void wrongHttpMethodForAreaList() throws Exception {
+    void getAllAreaList_wrongHttpMethod() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/area/all"))  // 잘못된 POST 요청
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -446,7 +468,7 @@ public class AreaControllerTest {
 
     @Test
     @DisplayName("[실패] 전체 장소 혼잡도 조회 Controller - 로그인 없이 호출 시 403 Access Denied 응답")
-    void getAllAreaListWithCongestionLevelUnauthorized() throws Exception {
+    void getAllAreaListWithCongestionLevel_unauthorized() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/area/all/ppltn"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -455,7 +477,7 @@ public class AreaControllerTest {
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 전체 장소 혼잡도 조회 Controller - 잘못된 HTTP 메서드로 요청 시 405 Method Not Allowed 응답")
-    void wrongHttpMethodForAllAreaListWithCongestionLevel() throws Exception {
+    void getAllAreaListWithCongestionLevel_wrongHttpMethod() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/area/all/ppltn"))  // 잘못된 POST 요청
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -463,7 +485,7 @@ public class AreaControllerTest {
 
     @Test
     @DisplayName("[실패] 전체 장소 날씨 조회 Controller - 로그인 없이 호출 시 403 Access Denied 응답")
-    void getAllAreaListWithWeatherUnauthorized() throws Exception {
+    void getAllAreaListWithWeather_unauthorized() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/area/all/weather"))
                 .andDo(print())
                 .andExpect(status().isForbidden());
@@ -472,7 +494,7 @@ public class AreaControllerTest {
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
     @DisplayName("[실패] 전체 장소 날씨 조회 Controller - 잘못된 HTTP 메서드로 요청 시 405 Method Not Allowed 응답")
-    void wrongHttpMethodForAllAreaListWithWeather() throws Exception {
+    void getAllAreaListWithWeather_wrongHttpMethod() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/area/all/weather"))  // 잘못된 POST 요청
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
@@ -480,7 +502,7 @@ public class AreaControllerTest {
 
     @Test
     @WithMockUser(username = "test", roles = {"ADMIN", "USER"})
-    @DisplayName("[실패] 전체 장소 문화행사 조회 Controller - Polygon ")
+    @DisplayName("[실패] 전체 장소 문화행사 조회 Controller - 유효하지 않은 Polygon 데이터인 경우")
     void getAllAreasWithCultureEvent_polygonParsingError() throws Exception {
         // Given
         given(areaService.getAllAreasWithCultureEvent())
@@ -491,5 +513,14 @@ public class AreaControllerTest {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.context").value("Invalid polygon data for area: 서울시 강남구 장소명1"));
+    }
+
+    @Test
+    @DisplayName("[실패] 후기를 작성한 장소 이름 목록 조회 Controller - 로그인 없이 호출 시 403 Access Denied 응답")
+    void getAreaNamesWithMyBoards_unauthorized() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/area/reviewed"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 }
