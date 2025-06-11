@@ -118,7 +118,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 areaNamesCache = data.data || [];
 
                 if (areaNamesCache.length === 0) {
-                    areaCheckboxContainer.innerHTML = "<p class='text-muted'>등록된 장소명이 없습니다.</p>";
+                    areaCheckboxContainer.innerHTML = `
+                        <div class="font-weight-bold mr-2" style="white-space: nowrap; display: inline-block;">
+                            장소 선택
+                        </div>
+                        <div class="text-muted" style="display: inline-block;">
+                            등록된 장소명이 없습니다.
+                        </div>
+                    `;
                     return;
                 }
 

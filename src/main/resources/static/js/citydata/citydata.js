@@ -585,7 +585,7 @@ function fetchCultureEventData(id) {
         .then(response => response.json())
         .then(data => {
             console.log("Response: ", data);
-            cultureEventModal(data);
+            cultureEventModal(data, areaName);
         })
         .catch(error => console.error("Error: ", error));
 
