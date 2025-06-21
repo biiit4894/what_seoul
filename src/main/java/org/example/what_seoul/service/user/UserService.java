@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
 import org.example.what_seoul.controller.user.dto.*;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.CustomValidationException;
 import org.example.what_seoul.repository.user.UserRepository;
@@ -38,7 +39,7 @@ public class UserService {
     private final JavaMailSender javaMailSender;
 
     /**
-     * 회원 가입 기능
+     * 일반 회원 가입 기능
      * - request DTO 유효성 검증과 중복 값 검증을 함께 진행한다.
      * - 이를 위해 @Valid 애노테이션을 사용하는 대신, ValidatorFactory를 수동으로 생성한다.
      * @param req 회원 가입에 필요한 요청 데이터 DTO
@@ -90,7 +91,8 @@ public class UserService {
                 req.getUserId(),
                 encoder.encode(req.getPassword()),
                 req.getEmail(),
-                req.getNickName()
+                req.getNickName(),
+                RoleType.USER
         );
 
         userRepository.save(newUser);
