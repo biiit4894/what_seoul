@@ -42,8 +42,11 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      
-      - name: Build with Gradle
+
+      - name: Run tests (show logs)
+        run: ./gradlew test --stacktrace --info
+
+      - name: Build (full build after tests passed)
         run: ./gradlew build
 
       - name: Make zip file
