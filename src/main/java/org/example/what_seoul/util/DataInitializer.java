@@ -49,8 +49,8 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String[] args) throws IOException {
-        if (userRepository.count() == 0) {
-            userRepository.save(new User("admin", encoder.encode("admin1234!"), "admin@admin.com", "관리자", RoleType.ADMIN, LocalDateTime.now().minusDays(1)));
+//        if (userRepository.count() == 0) {
+//            userRepository.save(new User("admin", encoder.encode("admin1234!"), "admin@admin.com", "관리자", RoleType.ADMIN, LocalDateTime.now().minusDays(1)));
 
 //            // 테스트용 유저 100인 생성
 //            List<User> testUsers = new ArrayList<>();
@@ -68,7 +68,7 @@ public class DataInitializer implements CommandLineRunner {
 //            }
 //
 //            userRepository.saveAll(testUsers);
-        }
+//        }
 
         if (areaRepository.count() == 0) {
 //            // 서울시 116개 핫스팟 정보 저장
