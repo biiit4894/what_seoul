@@ -6,6 +6,7 @@ import org.example.what_seoul.config.WebSecurityTestWithH2Config;
 import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.board.BoardRepository;
@@ -84,7 +85,8 @@ public class UserCleanupSchedulerTest {
                 "test",
                 encodedPassword,
                 "test@test.com",
-                "testNickName"
+                "testNickName",
+                RoleType.USER
         );
         user.deactivate(); // 탈퇴 처리
         user.setDeletedAt(LocalDateTime.now().minusDays(30).minusSeconds(1)); // 탈퇴 시점에서 30일을 초과한 시간이 경과한 상태로 설정
@@ -110,7 +112,8 @@ public class UserCleanupSchedulerTest {
                 "test",
                 encodedPassword,
                 "test@test.com",
-                "testNickName"
+                "testNickName",
+                RoleType.USER
         );
         user.deactivate(); // 탈퇴 처리
         user.setDeletedAt(LocalDateTime.now().minusDays(10));

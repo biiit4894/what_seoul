@@ -3,6 +3,7 @@ package org.example.what_seoul.integration.area;
 import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.board.BoardRepository;
@@ -51,7 +52,7 @@ class AreaIntegrationTest {
         Area area2 = new Area("category", "A02", "강남", "POLYGON ((127.0 37.0, 127.1 37.1, 127.2 37.2, 127.0 37.0))");
         areaRepository.saveAll(List.of(area1, area2));
 
-        User user = new User("user1", "encodedPw", "user1@example.com", "닉네임1");
+        User user = new User("user1", "encodedPw", "user1@example.com", "닉네임1", RoleType.USER);
         userRepository.save(user);
 
         CultureEvent event1 = new CultureEvent("행사1", "2025-01-01~2025-12-31", "장소1", "127.01", "37.01", "img", "url", area1);

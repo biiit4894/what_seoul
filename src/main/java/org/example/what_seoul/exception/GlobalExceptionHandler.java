@@ -140,6 +140,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleUnauthorizedException(UnauthorizedException e) {
+        CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
+                "Unauthorized",
+                e.getMessage()
+        );
+        log.error("Unauthorized Exception: {}", e.getMessage(), e);
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<CommonErrorResponse<Object>> handleAccessDeniedException(AccessDeniedException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(

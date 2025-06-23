@@ -5,6 +5,7 @@ import org.example.what_seoul.controller.board.dto.ResGetMyBoardDTO;
 import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.board.BoardRepository;
@@ -53,7 +54,7 @@ class BoardIntegrationTest {
         Area area2 = new Area("category2", "areaCode2", "areaName2", "POLYGON ((127.0 37.0, 127.1 37.1, 127.2 37.2, 127.0 37.0))");
         areaRepository.saveAll(List.of(area1, area2));
 
-        User user = new User("testuser", "encodedPw", "test@example.com", "testNick");
+        User user = new User("testuser", "encodedPw", "test@example.com", "testNick", RoleType.USER);
         userRepository.save(user);
 
         CultureEvent event1 = new CultureEvent(

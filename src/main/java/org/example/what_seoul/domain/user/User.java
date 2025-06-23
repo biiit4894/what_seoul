@@ -57,12 +57,12 @@ public class User implements UserDetails {
         this.createdAt = createdAt;
     }
 
-    public User(String userId, String password, String email, String nickName) {
+    public User(String userId, String password, String email, String nickName, RoleType role) {
         this.userId = userId;
         this.password = password;
         this.email = email;
         this.nickName = nickName;
-        this.role = RoleType.USER;
+        this.role = role;
         this.createdAt = LocalDateTime.now();
     }
 

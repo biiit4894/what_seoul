@@ -69,7 +69,7 @@ public class BoardServiceTest {
     @DisplayName("[성공] 문화행사 후기 작성 Service")
     void createBoard() throws JsonProcessingException {
         // given
-        User user = new User("test", "encodedPassword", "test@example.com", "testNickName");
+        User user = new User("test", "encodedPassword", "test@example.com", "testNickName", RoleType.USER);
         Area area = new Area(
                 "POI050",
                 "천호역",
@@ -122,7 +122,7 @@ public class BoardServiceTest {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        User user = new User("test", "encodedPassword", "test@example.com", "작성자");
+        User user = new User("test", "encodedPassword", "test@example.com", "작성자", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", 1L); // 테스트 환경에서 id 값 설정하기
 
         Area area = new Area(
@@ -198,7 +198,7 @@ public class BoardServiceTest {
     @DisplayName("[성공] 문화행사 후기 조회 Service")
     void getBoardById() throws JsonProcessingException {
         // given
-        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자");
+        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", 10L);
 
         Area area = new Area("POI001", "강남역", "인구밀집지역", "POLYGON ((...))");
@@ -336,7 +336,7 @@ public class BoardServiceTest {
         // given
         ReqUpdateBoardDTO req = new ReqUpdateBoardDTO("update");
 
-        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자");
+        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", 10L);
 
         Area area = new Area("POI001", "강남역", "인구밀집지역", "POLYGON ((...))");
@@ -370,7 +370,7 @@ public class BoardServiceTest {
     @DisplayName("[성공] 문화행사 후기 삭제 Service")
     void deleteBoard() {
         // given
-        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자");
+        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", 10L);
 
         Area area = new Area("POI001", "강남역", "인구밀집지역", "POLYGON ((...))");
@@ -401,7 +401,7 @@ public class BoardServiceTest {
     void createBoard_eventNotFound() {
         // given
         ReqCreateBoardDTO req = new ReqCreateBoardDTO("후기 내용입니다.", 999L);
-        User user = new User("test", "encodedPassword", "test@example.com", "testNickName");
+        User user = new User("test", "encodedPassword", "test@example.com", "testNickName", RoleType.USER);
 
         given(userService.getAuthenticationPrincipal()).willReturn(user);
         given(cultureEventRepository.findById(999L)).willReturn(Optional.empty());
@@ -480,10 +480,10 @@ public class BoardServiceTest {
         Long id = 1L;
         ReqUpdateBoardDTO req = new ReqUpdateBoardDTO("update");
 
-        User currentUser = new User("current", "pw", "email", "nick");
+        User currentUser = new User("current", "pw", "email", "nick", RoleType.USER);
         ReflectionTestUtils.setField(currentUser, "id", 1L);
 
-        User boardOwner = new User("owner", "pw", "email2", "nick2");
+        User boardOwner = new User("owner", "pw", "email2", "nick2", RoleType.USER);
         ReflectionTestUtils.setField(boardOwner, "id", 2L);
 
         Board board = mock(Board.class);
@@ -505,7 +505,7 @@ public class BoardServiceTest {
         String content = "same content";
         ReqUpdateBoardDTO req = new ReqUpdateBoardDTO(content);
 
-        User user = new User("test", "pw", "email", "nick");
+        User user = new User("test", "pw", "email", "nick", RoleType.USER);
 
         Board board = mock(Board.class);
         given(boardRepository.findById(id)).willReturn(Optional.of(board));
@@ -546,7 +546,7 @@ public class BoardServiceTest {
         String overLengthContent = "a".repeat(301); // 301자
         ReqUpdateBoardDTO req = new ReqUpdateBoardDTO(overLengthContent);
 
-        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자");
+        User user = new User("testUser", "encodedPassword", "test@example.com", "작성자", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", 10L);
 
         Board board = mock(Board.class);
@@ -602,10 +602,10 @@ public class BoardServiceTest {
     void deleteBoard_accessDenied() {
         Long id = 1L;
 
-        User currentUser = new User("current", "pw", "email", "nick");
+        User currentUser = new User("current", "pw", "email", "nick", RoleType.USER);
         ReflectionTestUtils.setField(currentUser, "id", 1L);
 
-        User boardOwner = new User("owner", "pw", "email2", "nick2");
+        User boardOwner = new User("owner", "pw", "email2", "nick2", RoleType.USER);
         ReflectionTestUtils.setField(boardOwner, "id", 2L);
 
         Board board = mock(Board.class);
