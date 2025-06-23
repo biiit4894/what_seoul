@@ -8,6 +8,7 @@ import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
@@ -270,7 +271,7 @@ public class AreaServiceTest {
     void getAreaNamesWithMyBoards() throws JsonProcessingException {
         // Given
         Long userId = 1L;
-        User user = new User("test", "encodedPassword", "test@example.com", "작성자");
+        User user = new User("test", "encodedPassword", "test@example.com", "작성자", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", userId);
 
         List<String> areaNames = List.of("areaName1", "areaName2", "areaName3");

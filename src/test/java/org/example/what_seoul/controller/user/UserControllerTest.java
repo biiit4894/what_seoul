@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.config.WebSecurityTestConfig;
 import org.example.what_seoul.controller.user.dto.*;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.service.user.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -60,7 +61,7 @@ class UserControllerTest {
     void signup() throws Exception {
         // Given
         ReqCreateUserDTO req = new ReqCreateUserDTO("test", "password123!", "test@example.com", "test" );
-        User user = new User("test", "password123!", "test@example.com", "test");
+        User user = new User("test", "password123!", "test@example.com", "test", RoleType.USER);
         ResCreateUserDTO res = ResCreateUserDTO.from(user);
         CommonResponse<ResCreateUserDTO> commonResponse = new CommonResponse<>(true, "회원 가입 성공", res);
 
@@ -81,8 +82,8 @@ class UserControllerTest {
     @DisplayName("[성공] 회원정보 리스트 조회 Controller")
     void getUserList() throws Exception {
         // Given - 회원 목록 Mock 데이터 생성
-        User user1 = new User("test1", "test1234!", "test1@test1.com", "nickname1");
-        User user2 = new User("test2", "test1234!", "test2@test2.com", "nickname2");
+        User user1 = new User("test1", "test1234!", "test1@test1.com", "nickname1", RoleType.USER);
+        User user2 = new User("test2", "test1234!", "test2@test2.com", "nickname2", RoleType.USER);
 
         List<ResGetUserDetailSummaryDTO> userList = List.of(
                 ResGetUserDetailSummaryDTO.from(user1),
@@ -127,7 +128,7 @@ class UserControllerTest {
 
         // Given - 조회할 유저 Mock 데이터 설정
         Long id = 1L;
-        User user = new User("test", "test1234!", "test@test.com", "testNickName");
+        User user = new User("test", "test1234!", "test@test.com", "testNickName", RoleType.USER);
         ResGetUserDetailDTO res = ResGetUserDetailDTO.from(user);
         CommonResponse<ResGetUserDetailDTO> commonResponse = new CommonResponse<>(true, "회원 정보 상세 조회 성공", res);
 
@@ -151,7 +152,7 @@ class UserControllerTest {
         ReqUpdateUserInfoDTO req = new ReqUpdateUserInfoDTO("password123!", "newPassword123!", "newemail@test.com", "newNickname");
 
         // Given - 응답 DTO 준비
-        User updatedUser = new User("test", "newPassword123!", "newemail@test.com", "newNickname");
+        User updatedUser = new User("test", "newPassword123!", "newemail@test.com", "newNickname", RoleType.USER);
         ResUpdateUserDTO res = ResUpdateUserDTO.from(updatedUser);
         CommonResponse<ResUpdateUserDTO> commonResponse = new CommonResponse<>(true, "회원 정보 수정 성공", res);
 
@@ -173,7 +174,7 @@ class UserControllerTest {
     @DisplayName("[성공] 회원탈퇴 Controller")
     void withdrawUser() throws Exception {
         // Given - 탈퇴한 유저 Mock 데이터 생성
-        User withdrawnUser = new User("test", "newPassword123!", "newemail@test.com", "newNickname");
+        User withdrawnUser = new User("test", "newPassword123!", "newemail@test.com", "newNickname", RoleType.USER);
         withdrawnUser.deactivate(); // 탈퇴 처리
         ResWithdrawUserDTO res = ResWithdrawUserDTO.from(withdrawnUser);
         CommonResponse<ResWithdrawUserDTO> commonResponse = new CommonResponse<>(true, "회원 탈퇴 성공", res);

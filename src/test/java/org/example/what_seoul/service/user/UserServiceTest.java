@@ -10,6 +10,7 @@ import jakarta.validation.ConstraintViolation;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
 import org.example.what_seoul.controller.user.dto.*;
+import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.CustomValidationException;
 import org.example.what_seoul.repository.user.UserRepository;
@@ -94,7 +95,7 @@ public class UserServiceTest {
         when(encoder.encode("test1234!")).thenReturn("encodedPassword");
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        User savedUser = new User("test", "test1234!", "test@test.com", "testNickName");
+        User savedUser = new User("test", "test1234!", "test@test.com", "testNickName", RoleType.USER);
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         // When
@@ -128,8 +129,8 @@ public class UserServiceTest {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         List<User> userList = List.of(
-                new User("user1", "password1", "user1@test.com", "nick1"),
-                new User("user2", "password2", "user2@test.com", "nick2")
+                new User("user1", "password1", "user1@test.com", "nick1", RoleType.USER),
+                new User("user2", "password2", "user2@test.com", "nick2", RoleType.USER)
         );
 
         Page<User> usersPage = new PageImpl<>(userList, pageable, userList.size());
@@ -158,7 +159,7 @@ public class UserServiceTest {
     void getUserDetailById() throws JsonProcessingException {
         // Given
         Long id = 1L;
-        User user = new User("test", "encodedPassword", "test@example.com", "testNickName");
+        User user = new User("test", "encodedPassword", "test@example.com", "testNickName", RoleType.USER);
 
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
 
@@ -181,7 +182,7 @@ public class UserServiceTest {
     void updateUserInfo() throws JsonProcessingException {
         // Given
         Long id = 1L;
-        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick");
+        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", id); // 테스트 환경에서 id 값 설정하기
 
         // SecurityContextHolder에 인증 정보 세팅
@@ -216,7 +217,7 @@ public class UserServiceTest {
     void withdrawUser() throws JsonProcessingException {
         // Given
         Long id = 1L;
-        User user = new User("testUser", encoder.encode("password"), "user@example.com", "nickname");
+        User user = new User("testUser", encoder.encode("password"), "user@example.com", "nickname", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", id); // 테스트 환경에서 id 값 설정하기
 
         // SecurityContextHolder에 인증 정보 세팅
@@ -243,7 +244,7 @@ public class UserServiceTest {
     @DisplayName("[성공] 아이디 찾기 Service")
     void findUserIdByEmail() {
         // given
-        User user = new User("user1", "password1", "user1@test.com", "nick1");
+        User user = new User("user1", "password1", "user1@test.com", "nick1", RoleType.USER);
         when(userRepository.findByEmail("user1@test.com")).thenReturn(Optional.of(user));
 
         // when
@@ -260,7 +261,7 @@ public class UserServiceTest {
     @DisplayName("[성공] 비밀번호 찾기(비밀번호 초기화) Service")
     void resetPassword() {
         // given
-        User user = new User("user1", "password1", "user1@test.com", "nick1");
+        User user = new User("user1", "password1", "user1@test.com", "nick1", RoleType.USER);
         when(userRepository.findByEmail("user1@test.com")).thenReturn(Optional.of(user));
         when(encoder.encode(any())).thenReturn("encodedTempPw");
 
@@ -375,7 +376,7 @@ public class UserServiceTest {
     void updateUserInfo_NothingToUpdate() {
         // Given
         Long userId = 1L;
-        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick");
+        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", userId);
 
         // SecurityContextHolder에 인증 정보 세팅
@@ -402,7 +403,7 @@ public class UserServiceTest {
     void withdrawUser_AlreadyWithdrawn() {
         // Given
         Long userId = 1L;
-        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick");
+        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", userId);
         user.deactivate();  // 이미 탈퇴 처리된 상태
 
@@ -457,7 +458,7 @@ public class UserServiceTest {
     void findUserIdByEmail_mailSendFail() {
         // given
         String email = "test@test.com";
-        User user = new User("test", "password123", email, "닉네임");
+        User user = new User("test", "password123", email, "닉네임", RoleType.USER);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         doThrow(new MailSendException("SMTP 오류")).when(javaMailSender).send(any(SimpleMailMessage.class));
 
@@ -487,7 +488,7 @@ public class UserServiceTest {
         String email = "test@test.com";
 
         // given
-        User user = new User("test", "oldPassword", email, "nick1");
+        User user = new User("test", "oldPassword", email, "nick1", RoleType.USER);
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(encoder.encode(any())).thenReturn("encodedTempPw");
         doThrow(new MailSendException("SMTP 오류")).when(javaMailSender).send(any(SimpleMailMessage.class));
