@@ -25,6 +25,18 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: make application.yml for prod
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+          echo "${{ secrets.DEV }}" > ./src/main/resources/application-dev.yml
+
+      - name: make application.yml for test
+        run: |
+          mkdir -p ./src/test/resources
+          echo "${{ secrets.TEST }}" > ./src/test/resources/application-test.yml
+          echo "${{ secrets.TEST_H2 }}" > ./src/test/resources/application-test-h2.yml
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
