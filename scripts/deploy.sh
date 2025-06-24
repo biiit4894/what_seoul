@@ -33,8 +33,7 @@ fi
 
 DEPLOY_JAR="$DEPLOY_PATH$JAR_NAME"
 echo "## deploy JAR file" >> "$LOG_FILE"
-echo "" >> "$LOG_FILE"
-
+export SPRING_PROFILES_ACTIVE=dev
 nohup java -jar "$DEPLOY_JAR" >> /home/ec2-user/spring-deploy.log 2> /home/ec2-user/action/spring-deploy_err.log &
 
 sleep 2
