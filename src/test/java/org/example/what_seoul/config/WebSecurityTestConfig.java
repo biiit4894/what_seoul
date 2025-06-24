@@ -32,7 +32,7 @@ public class WebSecurityTestConfig {
         return http.build();
     }
 
-    @Bean
+    @Bean(name = "bCryptPasswordEncoderForTest")
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
