@@ -12,6 +12,7 @@ env:
   AWS_REGION: ap-northeast-2
   CODEDEPLOY_NAME: whatseoul-github-actions
   CODEDEPLOY_GROUP: whatseoul-github-actions-group
+  SPRING_PROFILES_ACTIVE: dev
 
 jobs:
   build:
