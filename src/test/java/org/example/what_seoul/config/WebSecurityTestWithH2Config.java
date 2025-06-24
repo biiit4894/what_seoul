@@ -38,7 +38,7 @@ public class WebSecurityTestWithH2Config {
         return http.build();
     }
 
-    @Bean(name = "bCryptPasswordEncoderForTestWithH2Config")
+    @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
