@@ -13,6 +13,9 @@ java {
 	}
 }
 
+jar {
+	enabled = false
+}
 def querydslVersion = '5.1.0'
 
 configurations {
