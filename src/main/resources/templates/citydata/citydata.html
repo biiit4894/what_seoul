@@ -49,6 +49,9 @@
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
                 <a class="nav-link text-light font-weight-light" href="/mypage">마이페이지</a>
             </li>
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo.role.toString() == 'ADMIN'}">
+                <a class="nav-link text-secondary font-weight-light" href="/settings">Settings</a>
+            </li>
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}" style="margin-left: 1rem;">
                 <span class="navbar-text text-white font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>

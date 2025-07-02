@@ -23,6 +23,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(req));
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<CommonResponse<ResUserLoginDTO>> login(@RequestBody ReqUserLoginDTO req, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.login(req, response));
+    }
+
     @GetMapping("/list")
     public ResponseEntity<CommonResponse<Page<ResGetUserDetailSummaryDTO>>> getUserList(
             @RequestParam(name = "page", defaultValue = "0") int page,

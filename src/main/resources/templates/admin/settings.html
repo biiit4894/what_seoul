@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +7,12 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" typeof="text/css" th:href="@{/css/index.css}"/>
     <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
-    <script src="/js/user/findId.js"></script>
+    <script th:src="@{/js/common/common.js}"></script>
+    <script th:src="@{/js/admin/signup.js}"></script>
+
 </head>
 <body>
 <!-- Navigation Bar -->
@@ -20,6 +24,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
+            <!-- 로그인 회원 -->
             <li class="nav-item">
                 <a class="nav-link text-secondary font-weight-light" href="/citydata">지금 서울은?</a>
             </li>
@@ -36,6 +41,7 @@
                 <span class="navbar-text text-secondary font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
+            <!-- 비로그인 회원 -->
             <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
                 <a class="nav-link text-secondary font-weight-light" href="/login">로그인</a>
             </li>
@@ -46,42 +52,20 @@
     </div>
 </nav>
 
-<!-- 아이디 찾기 Section -->
-<section class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <div class="card">
-                <div class="card-header bg-dark text-white text-center">
-                    아이디 찾기
-                </div>
-                <div class="card-body">
-                    <p class="text-muted text-center mb-4">
-                        회원가입 시 입력하신 <strong>이메일 주소</strong>로 아이디를 전송해드립니다.
-                    </p>
-                    <form id="findIdForm">
-                        <div class="form-group">
-                            <label for="email">가입한 이메일 주소</label>
-                            <input class="form-control" type="email" id="email" name="email" placeholder="email@example.com" required>
-                        </div>
-                        <div class="text-center mt-3">
-                            <div id="loadingSpinner" class="d-none">
-                                <img src="/media/loading.gif" alt="로딩 중" width="30">
-                                <p class="text-muted mt-2">처리 중입니다...</p>
-                            </div>
-                        </div>
-                        <div class="alert alert-success d-none" id="successMessage">이메일로 아이디를 전송했습니다.<br><small>이메일을 찾기 어려운 경우 스팸메일함을 확인해주세요.</small></div>
-                        <div class="alert alert-danger d-none" id="errorMessage">아이디 찾기에 실패했습니다.</div>
-                        <button type="submit" class="btn btn-primary btn-block">이메일 전송</button>
-                        <div class="text-center mt-3">
-                            <small><a href="/login">로그인 화면으로 돌아가기</a></small>
-                        </div>
-                    </form>
 
-                </div>
-            </div>
-        </div>
+<section class="container mt-5">
+    <h2>계정 관리</h2>
+    <hr class="mb-4" style="border-color: #ddd;"/>
+
+    <div class="mb-4 d-flex gap-2">
+        <a href="/new-admin" class="btn btn-primary">관리자 계정 생성</a>
+        <!-- 앞으로 추가할 버튼들 -->
+        <!-- <a href="/some-other" class="btn btn-secondary">다른 버튼</a> -->
     </div>
+
 </section>
+
+
 
 <!-- Bootstrap JS, Popper.js, jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

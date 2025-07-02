@@ -1,5 +1,6 @@
 package org.example.what_seoul.controller.admin;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.admin.dto.ReqAdminLoginDTO;
@@ -19,14 +20,14 @@ public class AdminController {
 
     @PostMapping("/signup")
     public ResponseEntity<CommonResponse<ResCreateAdminDTO>> signup(
-            @RequestHeader("Authorization") String token,
+            @CookieValue("accessToken") String accessToken,
             @RequestBody ReqCreateAdminDTO req
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createAdminUser(token, req));
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.createAdminUser(accessToken, req));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<CommonResponse<ResAdminLoginDTO>> login(@RequestBody ReqAdminLoginDTO req) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.login(req));
+    public ResponseEntity<CommonResponse<ResAdminLoginDTO>> login(@RequestBody ReqAdminLoginDTO req, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.login(req, response));
     }
 }
