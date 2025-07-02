@@ -14,13 +14,24 @@ import java.util.Objects;
 @Slf4j
 public class IndexViewController {
     private final UserService userService;
+
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
 
-        if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser")) {
+        if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser") && userService.getLoginUserInfo() != null) {
             model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
         }
         return "index";
+    }
+
+    @GetMapping("/access-denied")
+    public String accessDenied(Model model) {
+        model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
+
+        if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser") && userService.getLoginUserInfo() != null) {
+            model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
+        }
+        return "access-denied";
     }
 }

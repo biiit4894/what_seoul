@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResReissueAccessTokenDTO {
-    private String accessToken;
+    private long accessTokenExpiration;
 }

@@ -147,7 +147,7 @@ public class UserService {
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(true) // HTTPS 환경에서만 전송
                 .path("/")
                 .maxAge(jwtTokenProvider.getRefreshTokenExpirationMs() / 1000)
                 .sameSite("Strict")
