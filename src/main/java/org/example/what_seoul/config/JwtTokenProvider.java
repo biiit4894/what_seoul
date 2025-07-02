@@ -29,6 +29,24 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
+    public Long getAccessTokenExpirationMs() {
+        return ACCESS_EXPIRATION_MS;
+    }
+
+    public Long getRefreshTokenExpirationMs() {
+        return REFRESH_EXPIRATION_MS;
+    }
+
+    public long getAccessTokenExpirationTime(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSecretKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getExpiration().getTime(); // or getTime() for millis
+    }
+
+
     public String generateAccessToken(String adminId, String role) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + ACCESS_EXPIRATION_MS);
@@ -61,7 +79,6 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
 
-        log.info("token: {}", token);
         try {
             Jwts.parserBuilder()
                     .setSigningKey(getSecretKey())
