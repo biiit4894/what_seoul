@@ -23,6 +23,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
+            <!-- 로그인 회원 -->
             <li class="nav-item">
                 <a class="nav-link text-secondary font-weight-light" href="/citydata">지금 서울은?</a>
             </li>
@@ -32,10 +33,14 @@
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
                 <a class="nav-link text-secondary font-weight-light" href="/mypage">마이페이지</a>
             </li>
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo.role.toString() == 'ADMIN'}">
+                <a class="nav-link text-secondary font-weight-light" href="/settings">Settings</a>
+            </li>
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}" style="margin-left: 1rem;">
                 <span class="navbar-text text-secondary font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
+            <!-- 비로그인 회원 -->
             <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
                 <a class="nav-link text-secondary font-weight-light" href="/login">로그인</a>
             </li>
