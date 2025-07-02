@@ -63,7 +63,7 @@ public class AdminService {
 
         Map<String, List<String>> errors = new HashMap<>();
 
-        // 1. Request DTO 유효성 검증
+        // 3. Request DTO 유효성 검증
         Set<ConstraintViolation<ReqCreateAdminDTO>> violations = customValidator.validate(req);
 
         for (ConstraintViolation<ReqCreateAdminDTO> violation : violations) {
@@ -71,7 +71,7 @@ public class AdminService {
                     .add(violation.getMessage());
         }
 
-        // 2. 중복 값 검증
+        // 4. 중복 값 검증
         if (userRepository.findByUserId(req.getUserId()).isPresent()) {
             if (errors.containsKey("userId")) {
                 errors.get("userId").add("이미 사용 중인 아이디입니다.");
@@ -96,7 +96,7 @@ public class AdminService {
             }
         }
 
-        // 3. 1)유효성 검증 및 2)중복 검증에서 발생한 모든 에러를 포함하여 예외를 던진다.
+        // 5. 3)유효성 검증 및 4)중복 검증에서 발생한 모든 에러를 포함하여 예외를 던진다.
         if (!errors.isEmpty()) {
             throw new CustomValidationException(errors);
         }
