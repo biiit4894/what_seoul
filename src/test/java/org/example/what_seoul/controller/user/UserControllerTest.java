@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.what_seoul.common.dto.CommonResponse;
+import org.example.what_seoul.config.JwtTokenProvider;
 import org.example.what_seoul.config.WebSecurityTestConfig;
 import org.example.what_seoul.controller.user.dto.*;
 import org.example.what_seoul.domain.user.RoleType;
@@ -36,12 +37,11 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
 @ActiveProfiles("test")
-@Import(WebSecurityTestConfig.class)  // 테스트를 위한 custom security configuration
+@Import({JwtTokenProvider.class, WebSecurityTestConfig.class})
 class UserControllerTest {
 
     @Autowired
@@ -73,6 +73,25 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andDo(print())
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.userId").value("test"));
+    }
+
+    @Test
+    @DisplayName("[성공] 일반 유저 로그인 Controller")
+    void login() throws Exception {
+        ReqUserLoginDTO req = new ReqUserLoginDTO("test", "test");
+        ResUserLoginDTO res = new ResUserLoginDTO("test", System.currentTimeMillis() + 600000); // 10분 뒤 토큰 만료로 임의 설정
+        CommonResponse<ResUserLoginDTO> commonResponse = new CommonResponse<>(true, "회원 로그인 성공", res);
+
+        given(userService.login(any(ReqUserLoginDTO.class), any(HttpServletResponse.class)))
+                .willReturn(commonResponse);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(req)))
+                .andDo(print())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.userId").value("test"));
     }

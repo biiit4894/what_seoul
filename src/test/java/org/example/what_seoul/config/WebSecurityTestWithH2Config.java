@@ -25,13 +25,20 @@ public class WebSecurityTestWithH2Config {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 // 누구나 접근 가능
-                .requestMatchers("/", "/login", "/signup", "/api/user/signup", "/api/user/find/id", "/api/user/find/pw").permitAll()
+                .requestMatchers(
+                        "/api/user/login", "/api/user/signup", "/api/user/find/id", "/api/user/find/pw",
+                        "/api/admin/login",
+                        "/api/auth/access/reissue"
+                ).permitAll()
                 // ADMIN만 접근 가능
-                .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN") // 회원 목록 조회 기능
+                .requestMatchers(HttpMethod.POST, "/api/admin/signup").hasRole("ADMIN") // 관리자 계정 생성 기능
                 // 로그인 시 접근 가능
                 .requestMatchers("/api/user/**").authenticated()
                 .requestMatchers("/api/area/**").authenticated()
                 .requestMatchers("/api/citydata/**").authenticated()
+                .requestMatchers("/api/board/**").authenticated()
+                .requestMatchers("/api/auth/logout").authenticated()
                 .anyRequest().denyAll()
         ).csrf(auth -> auth.disable());
 
