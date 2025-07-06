@@ -23,6 +23,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class CitydataParser {
+    private final PcpMsgHistoryService pcpMsgHistoryService;
+
     /**
      * XML 문서에서 인구 데이터를 파싱하여 Population 객체 생성
      * @param document
@@ -163,7 +165,7 @@ public class CitydataParser {
             String pcpMsg = weatherData.getOrDefault(XmlElementNames.PCP_MSG, "No Tag");
 
             // 히스토리 저장
-//            pcpMsgHistoryService.saveIfNotExists(pcpMsg);
+            pcpMsgHistoryService.saveIfNotExists(pcpMsg);
 
             // Map에서 주어진 key(XmlElementNames)에 해당하는 값을 가져오고, 만약 해당 key가 없다면 "No Tag"를 기본값으로 반환
             return new Weather(
