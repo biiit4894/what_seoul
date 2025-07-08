@@ -12,7 +12,7 @@
 - DB : MySQL, Spring Data JPA
 - 빌드 및 테스트 : Gradle, JUnit
 - 템플릿 엔진 : Thymeleaf (+ HTML/CSS, Javascript)
-- 배포 환경 : AWS RDS/EC2(예정), Github Actions(예정)
+- Cloud & CI/CD: AWS RDS/EC2/CodeDeploy, Github Actions, Nginx
 
 ## 브랜치 전략
 - main : 실제 서비스 운영 환경에 사용하기 위한 브랜치
