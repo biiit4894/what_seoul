@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
+import org.example.what_seoul.config.JwtTokenProvider;
 import org.example.what_seoul.controller.user.dto.*;
 import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
@@ -15,6 +16,9 @@ import org.example.what_seoul.exception.CustomValidationException;
 import org.example.what_seoul.repository.user.UserRepository;
 import org.example.what_seoul.service.user.dto.LoginUserInfoDTO;
 import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -27,16 +31,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
     private final CustomValidator customValidator;
     private final JavaMailSender javaMailSender;
+    private final RedisTemplate<String, String> redisTemplate;
 
     /**
      * 일반 회원 가입 기능
@@ -101,6 +108,58 @@ public class UserService {
                 true,
                 "회원 가입 성공",
                 ResCreateUserDTO.from(newUser)
+        );
+    }
+
+    /**
+     * 일반 유저 로그인 기능
+     * @param req
+     * @return
+     */
+    public CommonResponse<ResUserLoginDTO> login(ReqUserLoginDTO req, HttpServletResponse response) {
+        User user = userRepository.findByUserId(req.getUserId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if (!user.getRole().equals(RoleType.USER)) {
+            throw new IllegalArgumentException("일반 회원 계정이 아닙니다.");
+        }
+
+        if (!encoder.matches(req.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("잘못된 비밀번호입니다.");
+        }
+
+        String accessToken = jwtTokenProvider.generateAccessToken(user.getUserId(), RoleType.USER.name());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getUserId(), RoleType.USER.name());
+
+        redisTemplate.opsForValue().set(
+                "RT:" + user.getUserId(),
+                refreshToken,
+                jwtTokenProvider.getRefreshTokenExpirationMs(),
+                TimeUnit.MILLISECONDS
+        );
+
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true) // HTTPS 환경에서만 전송
+                .path("/")
+                .maxAge(jwtTokenProvider.getAccessTokenExpirationMs() / 1000)
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true) // HTTPS 환경에서만 전송
+                .path("/")
+                .maxAge(jwtTokenProvider.getRefreshTokenExpirationMs() / 1000)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return new CommonResponse<>(
+                true,
+                "회원 로그인 성공",
+                new ResUserLoginDTO(user.getUserId(), jwtTokenProvider.getAccessTokenExpirationTime(accessToken))
         );
     }
 

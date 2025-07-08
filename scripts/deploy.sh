@@ -34,7 +34,7 @@ fi
 DEPLOY_JAR="$DEPLOY_PATH$JAR_NAME"
 echo "## deploy JAR file" >> "$LOG_FILE"
 export SPRING_PROFILES_ACTIVE=dev
-nohup java -jar "$DEPLOY_JAR" >> /home/ec2-user/spring-deploy.log 2> /home/ec2-user/action/spring-deploy_err.log &
+nohup java -jar "$DEPLOY_JAR" --spring.profiles.active=dev >> /home/ec2-user/action/spring-deploy.log 2> /home/ec2-user/action/spring-deploy_err.log &
 
 sleep 2
 
@@ -47,3 +47,28 @@ else
 fi
 
 echo "" >> "$LOG_FILE"
+
+echo "## 디스크 사용량 확인" >> "$LOG_FILE"
+DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//') # 루트 디렉토리 사용률 (%)
+if [ "$DISK_USAGE" -ge 85 ]; then
+  echo "[WARN] 디스크 사용량이 ${DISK_USAGE}% 입니다. 오래된 로그를 정리합니다." >> "$LOG_FILE"
+
+  LOG_DIR="/home/ec2-user/action/logs"
+  MAX_SIZE_MB=100
+
+  for FILE in "$LOG_DIR"/*.log; do
+    if [ -f "$FILE" ]; then
+      SIZE_MB=$(du -m "$FILE" | cut -f1)
+      if [ "$SIZE_MB" -ge "$MAX_SIZE_MB" ]; then
+        echo "  > $FILE (크기: ${SIZE_MB}MB) - 앞 절반 삭제" >> "$LOG_FILE"
+        TEMP_FILE="${FILE}.tmp"
+        LINE_COUNT=$(wc -l < "$FILE")
+        TAIL_START=$((LINE_COUNT / 2))
+        tail -n "$TAIL_START" "$FILE" > "$TEMP_FILE" && mv "$TEMP_FILE" "$FILE"
+      fi
+    fi
+  done
+else
+  echo "디스크 사용량 ${DISK_USAGE}%, 로그 정리는 필요하지 않음" >> "$LOG_FILE"
+fi
+
