@@ -39,4 +39,14 @@ public class AdminViewController {
 
         return "/admin/new-admin";
     }
+
+    @GetMapping("/upload-area")
+    public String showUploadPage(Model model) {
+        model.addAttribute("authPrincipal", userService.getAuthenticationPrincipal());
+
+        if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser") && userService.getLoginUserInfo() != null) {
+            model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
+        }
+        return "/admin/upload-area";
+    }
 }
