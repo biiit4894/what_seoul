@@ -25,8 +25,6 @@ import java.util.Map;
 public class CitydataParser {
     private final PcpMsgHistoryService pcpMsgHistoryService;
 
-    private static final String NO_TAG = "정보가 없습니다.";
-
     /**
      * XML 문서에서 인구 데이터를 파싱하여 Population 객체 생성
      * @param document
@@ -37,11 +35,11 @@ public class CitydataParser {
         try {
             NodeList populationNodeList = document.getElementsByTagName(XmlElementNames.LIVE_PPLTN_STTS.getXmlElementName());
 
-            String congestionLevel = NO_TAG;
-            String congestionMessage = NO_TAG;
-            String minPopulation = NO_TAG;
-            String maxPopulation = NO_TAG;
-            String populationUpdateTime = NO_TAG;
+            String congestionLevel = "No Tag";
+            String congestionMessage = "No Tag";
+            String minPopulation = "No Tag";
+            String maxPopulation = "No Tag";
+            String populationUpdateTime = "No Tag";
 
             if (populationNodeList != null && populationNodeList.getLength() > 0) {
                 Node populationParentNode = populationNodeList.item(1);
@@ -89,10 +87,10 @@ public class CitydataParser {
             List<PopulationForecast> forecastList = new ArrayList<>();
             NodeList nodeList = document.getElementsByTagName(XmlElementNames.FCST_PPLTN.getXmlElementName());
 
-            String forecastCongestionLevel = NO_TAG;
-            String forecastPpltnMin = NO_TAG;
-            String forecastPpltnMax = NO_TAG;
-            String forecasePplTime = NO_TAG;
+            String forecastCongestionLevel = "No Tag";
+            String forecastPpltnMin = "No Tag";
+            String forecastPpltnMax = "No Tag";
+            String forecasePplTime = "No Tag";
 
             if (nodeList == null || nodeList.getLength() == 0) {
                 log.warn("No population forecast data found for area: {}", population.getArea().getAreaName());
@@ -171,15 +169,15 @@ public class CitydataParser {
 
             // Map에서 주어진 key(XmlElementNames)에 해당하는 값을 가져오고, 만약 해당 key가 없다면 "No Tag"를 기본값으로 반환
             return new Weather(
-                    weatherData.getOrDefault(XmlElementNames.TEMP, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.MAX_TEMP, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.MIN_TEMP, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.PM25_INDEX, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.PM25, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.PM10_INDEX, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.PM10, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.PCP_MSG, NO_TAG),
-                    weatherData.getOrDefault(XmlElementNames.WEATHER_TIME, NO_TAG),
+                    weatherData.getOrDefault(XmlElementNames.TEMP, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.MAX_TEMP, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.MIN_TEMP, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.PM25_INDEX, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.PM25, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.PM10_INDEX, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.PM10, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.PCP_MSG, "No Tag"),
+                    weatherData.getOrDefault(XmlElementNames.WEATHER_TIME, "No Tag"),
                     area
             );
         } catch (Exception e) {
@@ -199,13 +197,13 @@ public class CitydataParser {
         try {
             List<CultureEvent> cultureEventList = new ArrayList<>();
             NodeList cultureEventNodeList = document.getElementsByTagName(XmlElementNames.EVENT_STTS.getXmlElementName());
-            String eventNm = NO_TAG;
-            String eventPeriod = NO_TAG;
-            String eventPlace = NO_TAG;
-            String eventX = NO_TAG;
-            String eventY = NO_TAG;
-            String thumbnail = NO_TAG;
-            String url = NO_TAG;
+            String eventNm = "No Tag";
+            String eventPeriod = "No Tag";
+            String eventPlace = "No Tag";
+            String eventX = "No Tag";
+            String eventY = "No Tag";
+            String thumbnail = "No Tag";
+            String url = "No Tag";
 
             if (cultureEventNodeList != null && cultureEventNodeList.getLength() != 0) {
                 for (int i = 1; i < cultureEventNodeList.getLength(); i++) {
