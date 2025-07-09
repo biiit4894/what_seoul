@@ -1,6 +1,8 @@
 package org.example.what_seoul.service.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
@@ -8,15 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
 import org.example.what_seoul.config.JwtTokenProvider;
-import org.example.what_seoul.controller.admin.dto.ReqAdminLoginDTO;
-import org.example.what_seoul.controller.admin.dto.ReqCreateAdminDTO;
-import org.example.what_seoul.controller.admin.dto.ResAdminLoginDTO;
-import org.example.what_seoul.controller.admin.dto.ResCreateAdminDTO;
+import org.example.what_seoul.controller.admin.dto.*;
 import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.CustomValidationException;
 import org.example.what_seoul.exception.UnauthorizedException;
+import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.user.UserRepository;
+import org.example.what_seoul.util.GeoJsonParser;
+import org.locationtech.jts.io.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -24,7 +27,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +43,16 @@ public class AdminService {
     private final CustomValidator customValidator;
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Value("${file.storage.shp-temp-path}")
+    private String shpTempPath;
+
+    @Value("${file.storage.geojson-temp-path}")
+    private String geojsonTempPath;
+
+    @Value("${python.script-path}")
+    private String pythonScriptPath;
+
+    private final GeoJsonParser geoJsonParser;
 
     /**
      * 관리자 계정 생성 기능
@@ -174,4 +189,53 @@ public class AdminService {
     }
 
 
+    @Transactional
+    public CommonResponse<ResUploadAreaDTO> processShapeFile(MultipartFile multipartFile) {
+        try {
+            // 1. 임시 디렉토리 생성
+            File shpDir = new File(shpTempPath);
+            if (!shpDir.exists()) {
+                shpDir.mkdirs();
+            }
+
+            File geojsonDir = new File(geojsonTempPath);
+            if (!geojsonDir.exists()) {
+                geojsonDir.mkdirs();
+            }
+
+            // 2. shapefile 저장 (.shp 외에 .dbf, .shx도 필요할 수 있으니 zip으로 받아도 OK)
+            File savedShp = new File(shpDir, "uploaded.shp");
+            multipartFile.transferTo(savedShp);
+            log.info("Shapefile saved at :{}", savedShp.getAbsolutePath());
+
+            // 3. Python 스크립트 실행 (geopandas를 이용해 .shp -> geojson 변환)
+            ProcessBuilder pb = new ProcessBuilder("python3", pythonScriptPath);
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                reader.lines().forEach(log::info);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new RuntimeException("Python 스크립트 실행 실패 (exit code: " + exitCode + ")");
+            }
+
+            // 4. GeoJSON 파일 읽고 파싱
+            File geoJsonFile = new File(geojsonTempPath, "converted.geojson");
+            if (!geoJsonFile.exists()) {
+                throw new FileNotFoundException("변환된 GeoJSON 파일이 존재하지 않습니다.");
+            }
+
+            ResUploadAreaDTO res = geoJsonParser.extractAreasFromGeoJsonAndSave(geoJsonFile);
+            return new CommonResponse<>(true, "장소 정보 업로드 성공", res);
+
+        } catch (InterruptedException | IOException | ParseException e) {
+            log.error("지역 업로드 중 예외 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("지역 업로드 중 오류가 발생했습니다.", e);
+        }
+    }
 }

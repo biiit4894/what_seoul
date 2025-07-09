@@ -10,6 +10,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepository {
+    boolean existsByAreaName(String areaName);
+
+    boolean existsByPolygonWkt(String polygonWkt);
+
+    Optional<Area> findByAreaName(String areaName);
+
+
     Optional<List<Area>> findByAreaNameContaining(String keyword);
 
     @Query("""

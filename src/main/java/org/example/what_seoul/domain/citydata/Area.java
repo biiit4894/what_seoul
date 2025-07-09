@@ -3,7 +3,10 @@ package org.example.what_seoul.domain.citydata;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 /**
  * 서울시 주요 116 장소 (핫스팟)
@@ -45,6 +48,19 @@ public class Area {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String polygonWkt;
 
+    /**
+     * 서울시 주요 장소 정보 저장 일시
+     */
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column
+    private LocalDateTime updatedAt;
+
+    @Column
+    private LocalDateTime deletedAt;
+
     public Area(String category, String areaCode, String areaName, String polygonWkt) {
         this.category = category;
         this.areaCode = areaCode;
@@ -52,4 +68,21 @@ public class Area {
         this.polygonWkt = polygonWkt;
     }
 
+    public Area(String category, String areaCode, String areaName) {
+        this.category = category;
+        this.areaCode = areaCode;
+        this.areaName = areaName;
+    }
+
+    public void setPolygonWkt(String polygonWkt) {
+        this.polygonWkt = polygonWkt;
+    }
+
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setDeletedAt() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
