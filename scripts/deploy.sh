@@ -29,6 +29,9 @@ else
   echo "## kill -15 $CURRENT_PID" >> "$LOG_FILE"
   kill -15 "$CURRENT_PID"
   sleep 5
+
+  APP_STOP_TIME=$(date +%s)  # 애플리케이션 종료 시각 기록 (초 단위 timestamp)
+  echo "## 애플리케이션 종료 완료 시각: $(date -d "@$APP_STOP_TIME")" >> "$LOG_FILE"
 fi
 
 DEPLOY_JAR="$DEPLOY_PATH$JAR_NAME"
@@ -38,7 +41,7 @@ nohup java -Xms256m -Xmx512m -jar "$DEPLOY_JAR" --spring.profiles.active=dev >> 
 
 # 애플리케이션 기동 후 헬스체크 대기
 HEALTH_CHECK_URL="http://127.0.0.1:8089/actuator/health"
-MAX_RETRIES=10
+MAX_RETRIES=20
 RETRY_INTERVAL=1
 RETRY_COUNT=0
 SUCCESS=false
@@ -48,7 +51,15 @@ echo "## 애플리케이션 헬스 체크 시작" >> "$LOG_FILE"
 while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
   if curl -s "$HEALTH_CHECK_URL" | grep -q '"status":"UP"'; then
     NEW_PID=$(pgrep -f "$JAR_NAME")
+    END_TIME=$(date +%s)  # 헬스체크 성공 시각 기록
     log_success "----> 애플리케이션 실행 성공 (PID: $NEW_PID)"
+    echo "## 애플리케이션 기동 완료 시각: $(date -d "@$END_TIME")" >> "$LOG_FILE"
+
+    if [ -n "$APP_STOP_TIME" ]; then
+      DOWNTIME=$((END_TIME - APP_STOP_TIME))
+      echo "[INFO] 추정 다운타임: 약 ${DOWNTIME}초" >> "$LOG_FILE"
+    fi
+
     SUCCESS=true
     break
   else
