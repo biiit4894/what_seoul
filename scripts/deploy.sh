@@ -20,7 +20,7 @@ echo "## copy build file" >> "$LOG_FILE"
 DEPLOY_PATH=/home/ec2-user/action/
 cp "$BUILD_JAR" "$DEPLOY_PATH"
 
-echo "## current pid" >> "$LOG_FILE"
+echo "## find current pid" >> "$LOG_FILE"
 CURRENT_PID=$(pgrep -f "$JAR_NAME")
 
 if [ -z "$CURRENT_PID" ]; then
@@ -36,15 +36,33 @@ echo "## deploy JAR file" >> "$LOG_FILE"
 export SPRING_PROFILES_ACTIVE=dev
 nohup java -Xms256m -Xmx512m -jar "$DEPLOY_JAR" --spring.profiles.active=dev >> /home/ec2-user/action/spring-deploy.log 2> /home/ec2-user/action/spring-deploy_err.log &
 
-sleep 2
+# 애플리케이션 기동 후 헬스체크 대기
+HEALTH_CHECK_URL="http://127.0.0.1:8089/actuator/health"
+MAX_RETRIES=10
+RETRY_INTERVAL=1
+RETRY_COUNT=0
+SUCCESS=false
 
-NEW_PID=$(pgrep -f "$JAR_NAME")
-if [ -z "$NEW_PID" ]; then
-  log_fail "----> 애플리케이션 실행 실패"
+echo "## 애플리케이션 헬스 체크 시작" >> "$LOG_FILE"
+
+while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
+  if curl -s "$HEALTH_CHECK_URL" | grep -q '"status":"UP"'; then
+    NEW_PID=$(pgrep -f "$JAR_NAME")
+    log_success "----> 애플리케이션 실행 성공 (PID: $NEW_PID)"
+    SUCCESS=true
+    break
+  else
+    echo "## 헬스 체크 대기 중... (${RETRY_COUNT}s)" >> "$LOG_FILE"
+    sleep "$RETRY_INTERVAL"
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+  fi
+done
+
+if [ "$SUCCESS" = false ]; then
+  log_fail "----> 애플리케이션 헬스 체크 실패 (최대 ${MAX_RETRIES}s 대기)"
   exit 1
-else
-  log_success "----> 애플리케이션 실행 성공 (PID: $NEW_PID)"
 fi
+
 
 echo "" >> "$LOG_FILE"
 

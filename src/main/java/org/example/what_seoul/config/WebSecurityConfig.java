@@ -49,7 +49,8 @@ public class WebSecurityConfig {
                                 "/", "/login", "/signup", "/findId", "/findPw",
                                 "/api/user/login", "/api/user/signup", "/api/user/find/id", "/api/user/find/pw",
                                 "/api/admin/login",
-                                "/api/auth/access/reissue"
+                                "/api/auth/access/reissue",
+                                "/actuator/health"
                         ).permitAll()
                         // ADMIN만 접근 가능
                         .requestMatchers(HttpMethod.GET, "/settings").hasRole("ADMIN") // 서비스 관리 및 설정 페이지
