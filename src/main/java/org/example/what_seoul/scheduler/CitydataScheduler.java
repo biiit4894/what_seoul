@@ -12,7 +12,6 @@ import org.example.what_seoul.exception.CitydataSchedulerException;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.service.citydata.CitydataParser;
 import org.example.what_seoul.service.citydata.CitydataService;
-//import org.example.what_seoul.service.citydata.PcpMsgHistoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -38,8 +37,6 @@ public class CitydataScheduler {
     private final CitydataService citydataService;
     private final CitydataParser citydataParser;
     private final AreaRepository areaRepository;
-
-//    private final PcpMsgHistoryService pcpMsgHistoryService;
 
     @Value("${seoul.open.api.url}")
     private String url;
