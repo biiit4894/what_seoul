@@ -41,7 +41,7 @@ nohup java -Xms256m -Xmx512m -jar "$DEPLOY_JAR" --spring.profiles.active=dev >> 
 
 # 애플리케이션 기동 후 헬스체크 대기
 HEALTH_CHECK_URL="http://127.0.0.1:8089/actuator/health"
-MAX_RETRIES=20
+MAX_RETRIES=25
 RETRY_INTERVAL=1
 RETRY_COUNT=0
 SUCCESS=false
