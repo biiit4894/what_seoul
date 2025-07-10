@@ -54,8 +54,11 @@ while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
   if curl -s "$HEALTH_CHECK_URL" | grep -q '"status":"UP"'; then
     NEW_PID=$(pgrep -f "$JAR_NAME")
     END_TIME=$(date +%s)  # 헬스체크 성공 시각 기록
+    STARTUP_TIME=$((END_TIME - APP_STOP_TIME))  # 앱 기동 시간 계산
+
     log_success "----> 애플리케이션 실행 성공 (PID: $NEW_PID)"
     echo "## 애플리케이션 기동 완료 시각: $(date -d "@$END_TIME")" >> "$LOG_FILE"
+    echo "[INFO] 앱 기동 시간: ${STARTUP_TIME}초" >> "$LOG_FILE"
 
     if [ -n "$APP_STOP_TIME" ]; then
       DOWNTIME=$((END_TIME - APP_STOP_TIME))
