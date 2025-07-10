@@ -45,6 +45,8 @@ MAX_RETRIES=20
 RETRY_INTERVAL=1
 RETRY_COUNT=0
 SUCCESS=false
+CHECK_DISK=false
+
 
 echo "## 애플리케이션 헬스 체크 시작" >> "$LOG_FILE"
 
@@ -71,9 +73,10 @@ done
 
 if [ "$SUCCESS" = false ]; then
   log_fail "----> 애플리케이션 헬스 체크 실패 (최대 ${MAX_RETRIES}s 대기)"
-  exit 1
+  CHECK_DISK=true # 디스크 확인은 진행, 나중에 exit 1
+else
+  CHECK_DISK=false
 fi
-
 
 echo "" >> "$LOG_FILE"
 
@@ -99,5 +102,9 @@ if [ "$DISK_USAGE" -ge 85 ]; then
   done
 else
   echo "디스크 사용량 ${DISK_USAGE}%, 로그 정리는 필요하지 않음" >> "$LOG_FILE"
+fi
+
+if [ "$CHECK_DISK" = true ]; then
+  exit 1
 fi
 
