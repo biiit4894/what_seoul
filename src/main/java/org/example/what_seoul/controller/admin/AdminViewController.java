@@ -26,7 +26,7 @@ public class AdminViewController {
             model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
         }
 
-        return "/admin/settings";
+        return "admin/settings";
     }
 
     @GetMapping("/new-admin")
@@ -37,7 +37,7 @@ public class AdminViewController {
             model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
         }
 
-        return "/admin/new-admin";
+        return "admin/new-admin";
     }
 
     @GetMapping("/upload-area")
@@ -47,6 +47,6 @@ public class AdminViewController {
         if (!Objects.equals(model.getAttribute("authPrincipal"), "anonymousUser") && userService.getLoginUserInfo() != null) {
             model.addAttribute("loginUserInfo", userService.getLoginUserInfo());
         }
-        return "/admin/upload-area";
+        return "admin/upload-area";
     }
 }
