@@ -25,11 +25,11 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     // 행 추가
-    function createTableRow(area) {
+    function createTableRow(area, index) {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td><input type="checkbox" class="row-checkbox" value="${area.id}"></td> 
-            <td>${area.id}</td>
+            <td>${index}</td>
             <td>${area.category}</td>
             <td>${area.areaCode}</td>
             <td>${area.areaName}</td>
@@ -66,8 +66,9 @@ window.addEventListener("DOMContentLoaded", () => {
             const slice = data.data;
             const areas = slice.content;
 
-            areas.forEach(area => {
-                const row = createTableRow(area);
+            areas.forEach((area, i) => {
+                const rowNumber = currentPage * pageSize + i + 1; // 행별 인덱스(1부터 시작)
+                const row = createTableRow(area, rowNumber);
                 tableBody.appendChild(row);
             });
 
