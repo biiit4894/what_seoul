@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.admin.dto.*;
 import org.example.what_seoul.service.admin.AdminService;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,15 @@ public class AdminController {
     @PostMapping("/login")
     public ResponseEntity<CommonResponse<ResAdminLoginDTO>> login(@RequestBody ReqAdminLoginDTO req, HttpServletResponse response) {
         return ResponseEntity.status(HttpStatus.OK).body(adminService.login(req, response));
+    }
+
+    @PostMapping("/area/list")
+    public ResponseEntity<CommonResponse<Slice<ResGetAreaListDTO>>> getAreaList(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestBody(required = false) ReqGetAreaListDTO req
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.getAreaList(page, size, req));
     }
 
     @PostMapping("/area")

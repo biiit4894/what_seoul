@@ -1,8 +1,6 @@
 package org.example.what_seoul.service.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +18,9 @@ import org.example.what_seoul.repository.user.UserRepository;
 import org.example.what_seoul.util.GeoJsonParser;
 import org.locationtech.jts.io.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class AdminService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final AreaRepository areaRepository;
     private final BCryptPasswordEncoder encoder;
     private final CustomValidator customValidator;
     private final RedisTemplate<String, String> redisTemplate;
@@ -188,7 +190,32 @@ public class AdminService {
         );
     }
 
+    /**
+     * 서울시 주요 장소 목록 조회 기능
+     * @param page
+     * @param size
+     * @param req
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public CommonResponse<Slice<ResGetAreaListDTO>> getAreaList(int page, int size, ReqGetAreaListDTO req) {
+        Pageable pageable = PageRequest.of(page, size);
 
+        String areaName = (req != null) ? req.getAreaName() : null;
+
+        Slice<ResGetAreaListDTO> result = areaRepository.findAreasSlice(
+                areaName,
+                pageable
+        );
+
+        return new CommonResponse<>(true, "서울시 주요 장소 목록 조회 성공", result);
+    }
+
+    /**
+     * 업로드된 .shp 파일 처리
+     * @param multipartFile
+     * @return
+     */
     @Transactional
     public CommonResponse<ResUploadAreaDTO> processShapeFile(MultipartFile multipartFile) {
         try {
