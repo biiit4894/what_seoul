@@ -55,10 +55,13 @@ public class WebSecurityConfig {
                         // ADMIN만 접근 가능
                         .requestMatchers(HttpMethod.GET, "/settings").hasRole("ADMIN") // 서비스 관리 및 설정 페이지
                         .requestMatchers(HttpMethod.GET, "/new-admin").hasRole("ADMIN") // 관리자 계정 생성 페이지
-                        .requestMatchers(HttpMethod.GET, "/upload-area").hasRole("ADMIN") // 관리자 계정 생성 페이지
+                        .requestMatchers(HttpMethod.GET, "/upload-area").hasRole("ADMIN") // 서울시 주요 장소 등록 페이지
+                        .requestMatchers(HttpMethod.GET, "/areas").hasRole("ADMIN") // 서울시 주요 장소 목록 조회 페이지
                         .requestMatchers(HttpMethod.GET, "/api/user/list").hasRole("ADMIN") // 회원 목록 조회 기능
                         .requestMatchers(HttpMethod.POST, "/api/admin/signup").hasRole("ADMIN") // 관리자 계정 생성 기능
+                        .requestMatchers(HttpMethod.POST, "/api/admin/area/list").hasRole("ADMIN") // 장소 정보 목록 조회 기능
                         .requestMatchers(HttpMethod.POST, "/api/admin/area").hasRole("ADMIN") // 장소 정보 업로드 기능
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/area").hasRole("ADMIN") // 장소 정보 삭제 기능
                         // 로그인 시 접근 가능
                         .requestMatchers("/citydata/**").authenticated()
                         .requestMatchers("/mypage").authenticated()

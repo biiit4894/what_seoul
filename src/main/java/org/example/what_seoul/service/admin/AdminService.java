@@ -1,6 +1,7 @@
 package org.example.what_seoul.service.admin;
 
 import io.jsonwebtoken.Claims;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
 import org.example.what_seoul.config.JwtTokenProvider;
 import org.example.what_seoul.controller.admin.dto.*;
+import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.exception.CustomValidationException;
@@ -209,6 +211,24 @@ public class AdminService {
         );
 
         return new CommonResponse<>(true, "서울시 주요 장소 목록 조회 성공", result);
+    }
+
+    @Transactional
+    public CommonResponse<List<ResDeleteAreaDTO>> deleteArea(List<Long> ids) {
+        List<Area> areas = areaRepository.findAllById(ids);
+
+        if (areas.isEmpty()) {
+            throw new EntityNotFoundException("삭제할 장소 정보를 찾을 수 없습니다.");
+        }
+
+        List<ResDeleteAreaDTO> deletedAreas = new ArrayList<>();
+
+        for (Area area : areas) {
+            area.setDeletedAt();
+            deletedAreas.add(ResDeleteAreaDTO.from(area));
+        }
+
+        return new CommonResponse<>(true, "서울시 주요 장소 정보 삭제 처리 성공", deletedAreas);
     }
 
     /**

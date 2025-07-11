@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -42,5 +44,10 @@ public class AdminController {
     @PostMapping("/area")
     public ResponseEntity<CommonResponse<ResUploadAreaDTO>> uploadArea(@RequestParam("file") MultipartFile multipartFile) {
         return ResponseEntity.status(HttpStatus.CREATED).body(adminService.processShapeFile(multipartFile));
+    }
+
+    @DeleteMapping("/area")
+    public ResponseEntity<CommonResponse<List<ResDeleteAreaDTO>>> deleteAreas(@RequestBody List<Long> ids) {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.deleteArea(ids));
     }
 }
