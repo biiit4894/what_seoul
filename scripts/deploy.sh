@@ -40,6 +40,7 @@ if [ -n "$IDLE_PID" ]; then
   sleep 1
 else
   echo "[INFO] IDLE 포트 $IDLE_PORT 사용 중 아님 - 문제 없음" >> "$LOG_FILE"
+fi
 
 nohup java -Xms256m -Xmx512m -jar "$DEPLOY_JAR" --spring.profiles.active=dev --server.port=$IDLE_PORT >> "/home/ec2-user/action/spring-deploy_$IDLE_PORT.log" 2>&1 &
 # 표준 출력 로그 기록(해당 포트의 애플리케이션 로그) / 표준 에러 로그 기록
