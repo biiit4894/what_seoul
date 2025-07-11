@@ -42,7 +42,7 @@ public class CitydataScheduler {
     private String url;
 
     @Value("${citydata-scheduler.enabled}")
-    private Boolean citydataSchedulerEnabled;
+    private Boolean schedulerEnabled;
 
     /**
      * 인구 현황(+인구 예측값) 데이터, 날씨 현황 데이터, 문화행사 데이터 를 갱신한다.
@@ -51,7 +51,7 @@ public class CitydataScheduler {
      */
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void call() {
-        if (citydataSchedulerEnabled) {
+        if (schedulerEnabled) {
             LocalDateTime beforeTime = LocalDateTime.now(); // 작업 수행 시작 시간
             int hour = beforeTime.getHour();
 
