@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,6 @@
     <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
     <script th:src="@{/js/common/common.js}"></script>
     <script th:src="@{/js/admin/areas.js}"></script>
-    <script th:src="@{/js/admin/deleteAreas.js}"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
 <!-- Navigation Bar -->
@@ -57,14 +56,19 @@
 <section class="flex-grow-1 container mt-5">
     <h2 class="mb-5">서울시 주요 장소 정보 목록</h2>
 
-    <div>
-        <button id="delete-selected-button" class="btn btn-danger">선택 삭제</button>
-    </div>
+    <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap">
+        <!-- .shp 업로드, 선택 삭제 -->
+        <div class="d-flex">
+            <button class="btn btn-success mr-2" data-toggle="modal" data-target="#uploadModal">.shp 파일 업로드</button>
+            <button id="delete-selected-button" class="btn btn-danger">선택 삭제</button>
+        </div>
 
-    <div class="mb-4 d-flex justify-content-end align-items-center">
-        <label for="areaName-input"></label>
-        <input type="text" id="areaName-input" class="form-control w-auto" placeholder="장소명 검색(ex. 강남)" style="max-width: 300px;">
-        <button id="search-button" class="btn btn-primary ml-2">검색</button>
+        <!-- 장소명 검색 -->
+        <div class="d-flex align-items-center mt-2 mt-md-0">
+            <label for="areaName-input" class="sr-only">장소명 검색</label>
+            <input type="text" id="areaName-input" class="form-control w-auto" placeholder="장소명 검색(ex. 강남)" style="max-width: 300px;">
+            <button id="search-button" class="btn btn-primary ml-2">검색</button>
+        </div>
     </div>
 
 
@@ -98,6 +102,35 @@
     <!-- 무한 스크롤 감지용 앵커 -->
     <div id="scroll-anchor" style="height: 1px;"></div>
 </section>
+
+<!-- 서울시 주요 장소 .shp 파일 업로드 모달 -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form class="modal-content" id="uploadForm" enctype="multipart/form-data">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">장소 데이터 업로드</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    서울시 실시간 도시데이터 API의 변경된 .shp 파일을 업로드해주세요.<br>
+                    이를 바탕으로 기존 장소의 정보를 수정하고, 새롭게 추가된 장소 정보를 저장합니다.
+                </p>
+
+                <div class="form-group mt-3">
+                    <label for="shpFile" class="d-block">Shapefile (.shp):</label>
+                    <input type="file" id="shpFile" name="multipartFile" accept=".shp" required class="form-control-file"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">업로드</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Footer -->
 <footer class="bg-light text-center text-muted py-3 mt-5">

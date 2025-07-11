@@ -126,6 +126,54 @@ window.addEventListener("DOMContentLoaded", () => {
     // 최초 1회 로딩
     loadAreas();
 
+    // 서울시 주요 장소 .shp 파일 업로드 처리 이벤트 리스너
+    const uploadForm = document.getElementById("uploadForm");
+    if (uploadForm) {
+        uploadForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById("shpFile");
+            if (!fileInput.files.length) {
+                alert("파일을 선택해주세요.");
+                return;
+            }
+
+            const confirmed = confirm("선택한 .shp 파일을 업로드하시겠습니까?");
+            if (!confirmed) {
+                return; // 업로드 중단
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            try {
+                const response = await fetch("/api/admin/area", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    alert(`업로드 완료\n\n총 항목: ${res.data.totalCount}\n저장됨: ${res.data.savedCount}\n중복 스킵: ${res.data.skippedCount}`);
+
+                    // 모달 닫기
+                    $('#uploadModal').modal('hide');
+
+                    // 테이블 리셋 및 재로딩
+                    currentPage = 0;
+                    isAreaLast = false;
+                    tableBody.innerHTML = "";
+                    loadAreas();
+                } else {
+                    alert(`업로드 실패\nstatus: ${response.status}`);
+                }
+            } catch (err) {
+                console.error("업로드 중 에러 발생:", err);
+                alert("파일 업로드 중 문제가 발생했습니다.");
+            }
+        });
+    }
+
     // 전체 선택 체크박스
     const selectAllCheckbox = document.getElementById("select-all-checkbox");
     selectAllCheckbox.addEventListener("change", () => {

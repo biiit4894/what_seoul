@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,16 +14,17 @@
     <script th:src="@{/js/admin/signup.js}"></script>
 
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg custom-navbar">
+<nav class="navbar navbar-expand-lg custom-navbar sticky-top">
     <a class="navbar-brand font-weight-bold text-dark" href="/">What Seoul</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
+        <span class="menu-text">☰</span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav ml-auto"> <!-- ml-auto 추가로 오른쪽 정렬 -->
             <!-- 로그인 회원 -->
             <li class="nav-item">
                 <a class="nav-link text-secondary font-weight-light" href="/citydata">지금 서울은?</a>
@@ -37,7 +38,7 @@
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo.role.toString() == 'ADMIN'}">
                 <a class="nav-link text-secondary font-weight-light" href="/settings">Settings</a>
             </li>
-            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}" style="margin-left: 1rem;">
+            <li class="nav-item ml-lg-3 ml-0" th:if="${authPrincipal != 'anonymousUser'}">
                 <span class="navbar-text text-secondary font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
@@ -52,30 +53,33 @@
     </div>
 </nav>
 
-
-<section class="container mt-5">
+<section class="flex-grow-1 container mt-5">
     <h2>계정 관리</h2>
     <hr class="mb-4" style="border-color: #ddd;"/>
-    <div class="mb-5 d-flex gap-2">
-        <a href="/new-admin" class="btn btn-primary">관리자 계정 생성</a>
+    <div class="mb-5 d-flex">
+        <a href="/new-admin" class="btn btn-primary mr-2">관리자 계정 생성</a>
         <!-- 앞으로 추가할 버튼들 -->
     </div>
 
     <h2>서울시 주요 장소 정보 관리</h2>
     <hr class="mb-4" style="border-color: #ddd;"/>
-    <div class="mb-4 d-flex gap-2">
-        <a href="/upload-area" class="btn btn-primary">서울시 주요 장소 정보 업로드</a>
-        <!-- 앞으로 추가할 버튼들 -->
+    <div class="mb-4 d-flex">
+        <a href="/areas" class="btn btn-primary mr-2">서울시 주요 장소 정보 목록 조회</a>
     </div>
 
 
 </section>
 
-
+<!-- Footer -->
+<footer class="bg-light text-center text-muted py-3 mt-5">
+    <div class="container">
+        <small>&copy; 2025 WhatSeoul. All rights reserved.</small>
+    </div>
+</footer>
 
 <!-- Bootstrap JS, Popper.js, jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
