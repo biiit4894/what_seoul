@@ -12,6 +12,7 @@
     <link rel="stylesheet" typeof="text/css" th:href="@{/css/common/common.css}"/>
     <script th:src="@{/js/common/common.js}"></script>
     <script th:src="@{/js/admin/areas.js}"></script>
+    <script th:src="@{/js/admin/deleteAreas.js}"></script>
 </head>
 <body class="d-flex flex-column min-vh-100">
 <!-- Navigation Bar -->
@@ -56,6 +57,10 @@
 <section class="flex-grow-1 container mt-5">
     <h2 class="mb-5">서울시 주요 장소 정보 목록</h2>
 
+    <div>
+        <button id="delete-selected-button" class="btn btn-danger">선택 삭제</button>
+    </div>
+
     <div class="mb-4 d-flex justify-content-end align-items-center">
         <label for="areaName-input"></label>
         <input type="text" id="areaName-input" class="form-control w-auto" placeholder="장소명 검색(ex. 강남)" style="max-width: 300px;">
@@ -68,6 +73,7 @@
         <table class="table table-bordered table-hover text-center" id="area-table">
             <thead class="thead-light">
             <tr>
+                <th><input type="checkbox" id="select-all-checkbox" /></th> <!-- 전체 선택용 -->
                 <th>ID</th>
                 <th>카테고리</th>
                 <th>장소코드</th>

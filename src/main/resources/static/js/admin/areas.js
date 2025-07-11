@@ -28,6 +28,7 @@ window.addEventListener("DOMContentLoaded", () => {
     function createTableRow(area) {
         const row = document.createElement("tr");
         row.innerHTML = `
+            <td><input type="checkbox" class="row-checkbox" value="${area.id}"></td> 
             <td>${area.id}</td>
             <td>${area.category}</td>
             <td>${area.areaCode}</td>
@@ -123,4 +124,46 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // 최초 1회 로딩
     loadAreas();
+
+    // 전체 선택 체크박스
+    const selectAllCheckbox = document.getElementById("select-all-checkbox");
+    selectAllCheckbox.addEventListener("change", () => {
+        const rowCheckboxes = document.querySelectorAll(".row-checkbox");
+        rowCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+    });
+
+    // 선택 삭제 버튼
+    const deleteSelectedButton = document.getElementById("delete-selected-button");
+    deleteSelectedButton.addEventListener("click", async () => {
+        const checkedBoxes = Array.from(document.querySelectorAll(".row-checkbox:checked"));
+        if (checkedBoxes.length === 0) {
+            alert("삭제할 장소를 선택해주세요.");
+            return;
+        }
+
+        const ids = checkedBoxes.map(cb => parseInt(cb.value));
+        if (!confirm(`정말 ${ids.length}개의 장소를 삭제하시겠습니까?`)) return;
+
+        try {
+            const response = await fetch("/api/admin/area", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(ids)
+            });
+
+            if (!response.ok) throw new Error("삭제 실패");
+
+            alert("삭제가 완료되었습니다.");
+            // 테이블 갱신
+            currentPage = 0;
+            isAreaLast = false;
+            tableBody.innerHTML = "";
+            loadAreas();
+        } catch (e) {
+            console.error("삭제 에러:", e);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    });
 });
