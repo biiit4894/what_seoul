@@ -1,10 +1,9 @@
 #!/bin/bash
 
-LOG_FILE=/home/ec2-user/action/spring-deploy.log
+LOG_FILE=/home/ec2-user/action/spring-deploy.log # 전체 배포 흐름 기록
 BUILD_JAR=$(ls /home/ec2-user/action/build/libs/*.jar)
 JAR_NAME=$(basename "$BUILD_JAR")
 DEPLOY_PATH=/home/ec2-user/action/
-
 UPSTREAM_CONF="/etc/nginx/conf.d/upstream.conf"
 
 # 1. 현재 nginx가 사용하는 포트 감지 (포트 스위칭 방식)
@@ -33,7 +32,17 @@ DEPLOY_JAR="$DEPLOY_PATH$JAR_NAME"
 echo "## deploy JAR file to port $IDLE_PORT" >> "$LOG_FILE"
 export SPRING_PROFILES_ACTIVE=dev
 
+# IDLE 포트가 점유 중이면 강제 종료
+IDLE_PID=$(lsof -ti tcp:$IDLE_PORT)
+if [ -n "$IDLE_PID" ]; then
+  echo "[WARN] IDLE 포트 $IDLE_PORT 점유 중 - 강제 종료 시도 (PID: $IDLE_PID)" >> "$LOG_FILE"
+  kill -9 $IDLE_PID
+  sleep 1
+else
+  echo "[INFO] IDLE 포트 $IDLE_PORT 사용 중 아님 - 문제 없음" >> "$LOG_FILE"
+
 nohup java -Xms256m -Xmx512m -jar "$DEPLOY_JAR" --spring.profiles.active=dev --server.port=$IDLE_PORT >> "/home/ec2-user/action/spring-deploy_$IDLE_PORT.log" 2>&1 &
+# 표준 출력 로그 기록(해당 포트의 애플리케이션 로그) / 표준 에러 로그 기록
 
 # 2. 새 포트로 헬스체크
 HEALTH_CHECK_URL="http://127.0.0.1:$IDLE_PORT/actuator/health"
@@ -86,13 +95,21 @@ EOF
 
   # 4. 기존 포트 앱 종료
   echo "## 기존 애플리케이션 종료 (PORT: $CURRENT_PORT)" >> "$LOG_FILE"
-  OLD_PID=$(pgrep -f "server.port=$CURRENT_PORT")
-  if [ -n "$OLD_PID" ]; then
-    kill -15 "$OLD_PID"
-    echo "kill -15 $OLD_PID 완료" >> "$LOG_FILE"
-  else
-    echo "기존 앱 프로세스 찾지 못함 (이미 종료되었을 수 있음)" >> "$LOG_FILE"
-  fi
+    OLD_PID=$(pgrep -f "server.port=$CURRENT_PORT")
+    if [ -n "$OLD_PID" ]; then
+      kill -15 "$OLD_PID"
+      sleep 5
+      if ps -p $OLD_PID > /dev/null; then
+        # 여전히 살아 있으면 강제 종료
+        echo "[WARN] 기존 애플리케이션 PID $OLD_PID 종료 실패 - 강제 종료 시도" >> "$LOG_FILE"
+        kill -9 "$OLD_PID"
+        echo "kill -9 $OLD_PID 완료" >> "$LOG_FILE"
+      else
+        echo "kill -15 $OLD_PID 완료" >> "$LOG_FILE"
+      fi
+    else
+      echo "기존 앱 프로세스 찾지 못함 (이미 종료되었을 가능성 있음)" >> "$LOG_FILE"
+    fi
 fi
 
 # 5. 디스크 사용량 확인
