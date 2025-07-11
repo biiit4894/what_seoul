@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResUploadAreaDTO {
-    private int totalCount;      // 전체 feature 수
+    private int totalCount;      // 전체 feature 수 (geoJson 파일에 있는 전체 Area 수)
     private int savedCount;      // 실제 저장된 Area 수
-    private int skippedCount;    // 중복 등으로 스킵된 수
+    private int updatedCount;    // 수정된 Area 수
+    private int skippedCount;    // 중복되어 스킵한 Area 수
 }

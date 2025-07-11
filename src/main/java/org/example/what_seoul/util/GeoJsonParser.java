@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +37,8 @@ public class GeoJsonParser {
 
         List<Area> areasToSave = new ArrayList<>();
         int total = 0;
+        int inserted = 0;
+        int updated = 0;
         int skipped = 0;
 
         for (JsonNode feature : root.get("features")) {
@@ -46,26 +49,51 @@ public class GeoJsonParser {
             String category = feature.get("properties").get("category").asText();
 
             String geometry = objectMapper.writeValueAsString(feature.get("geometry"));
-
             String wkt = convertGeometryToWkt(geometry);
 
-            if (areaRepository.existsByAreaName(name)) {
-                skipped++;
+            Optional<Area> existingArea = areaRepository.findByAreaCode(code);
 
-                // TODO: 그냥 스킵이 아니라 .. updatedAt / deletedAt ???
-                continue;
+            if (existingArea.isPresent()) {
+                Area area = existingArea.get();
+                boolean needsUpdate = false;
 
+                if (!area.getAreaName().equals(name)) {
+                    area.setAreaName(name);
+                    needsUpdate = true;
+                }
+
+                if (!area.getCategory().equals(category)) {
+                    area.setCategory(category);
+                    needsUpdate = true;
+                }
+
+                if (!area.getPolygonWkt().equals(wkt)) {
+                    area.setPolygonWkt(wkt);
+                    needsUpdate = true;
+
+                }
+
+                if (needsUpdate) {
+                    area.setUpdatedAt();
+                    updated++;
+                } else {
+                    skipped++;
+                }
+            } else {
+                Area newArea = new Area(category, code, name, wkt);
+                areasToSave.add(newArea);
+                inserted++;
             }
 
-            Area area = new Area(category, code, name);
-            area.setPolygonWkt(wkt);
-            areasToSave.add(area);
         }
 
-        areaRepository.saveAll(areasToSave);
-        log.info("GeoJSON에서 {}개 지역 저장 완료", areasToSave.size());
+        if (!areasToSave.isEmpty()) {
+            areaRepository.saveAll(areasToSave);
+        }
 
-        return new ResUploadAreaDTO(total, areasToSave.size(), skipped);
+        log.info("GeoJSON 처리 결과: total={}, inserted={}, updated={}, skipped={}", total, inserted, updated, skipped);
+
+        return new ResUploadAreaDTO(total, inserted, skipped, updated);
     }
 
     // geometry 피쳐의 값을 wkt 형식으로 변환
@@ -81,7 +109,7 @@ public class GeoJsonParser {
             return writer.write(geometry);
         } catch (ParseException | JsonProcessingException e) {
             log.error("WKT 파싱 오류: {}", e.getMessage());
-            throw new RuntimeException(" " , e);
+            throw new RuntimeException("WKT 파싱 오류" , e);
         }
     }
 }

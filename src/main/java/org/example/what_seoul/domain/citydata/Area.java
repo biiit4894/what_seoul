@@ -74,6 +74,14 @@ public class Area {
         this.areaName = areaName;
     }
 
+    public void setAreaName(String areaName) {
+        this.areaName = areaName;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public void setPolygonWkt(String polygonWkt) {
         this.polygonWkt = polygonWkt;
     }

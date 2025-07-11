@@ -14,6 +14,8 @@ public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepo
 
     boolean existsByPolygonWkt(String polygonWkt);
 
+    Optional<Area> findByAreaCode(String areaCode);
+
     Optional<Area> findByAreaName(String areaName);
 
 
