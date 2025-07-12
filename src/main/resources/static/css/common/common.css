@@ -14,10 +14,7 @@ body {
 }
 
 .navbar-nav {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
+    white-space: nowrap; /* 줄바꿈 방지 */
 }
 
 .nav-item {
@@ -28,7 +25,13 @@ body {
     visibility: hidden; /* 요소를 보이지 않게 유지 */
 }
 
+.navbar-toggler:focus {
+    outline: none;
+    box-shadow: none;
+}
+
 .custom-navbar {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* 아래쪽 그림자 */
+    background-color: white; /* 토글 버튼 눌렀을 때를 고려*/
 }
 

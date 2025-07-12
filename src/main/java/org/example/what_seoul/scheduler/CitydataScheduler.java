@@ -12,7 +12,6 @@ import org.example.what_seoul.exception.CitydataSchedulerException;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.service.citydata.CitydataParser;
 import org.example.what_seoul.service.citydata.CitydataService;
-//import org.example.what_seoul.service.citydata.PcpMsgHistoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -39,11 +38,11 @@ public class CitydataScheduler {
     private final CitydataParser citydataParser;
     private final AreaRepository areaRepository;
 
-//    private final PcpMsgHistoryService pcpMsgHistoryService;
-
     @Value("${seoul.open.api.url}")
     private String url;
 
+    @Value("${citydata-scheduler.enabled}")
+    private Boolean schedulerEnabled;
 
     /**
      * 인구 현황(+인구 예측값) 데이터, 날씨 현황 데이터, 문화행사 데이터 를 갱신한다.
@@ -52,52 +51,53 @@ public class CitydataScheduler {
      */
     @Scheduled(fixedRate = 5 * 60 * 1000)
     public void call() {
-        LocalDateTime beforeTime = LocalDateTime.now(); // 작업 수행 시작 시간
-        int hour = beforeTime.getHour();
+        if (schedulerEnabled) {
+            LocalDateTime beforeTime = LocalDateTime.now(); // 작업 수행 시작 시간
+            int hour = beforeTime.getHour();
 
-        boolean isUpdateCultureEventHour = (hour % 6) == 0; // 문화행사 데이터를 저장하는 시간인지 여부
+            boolean isUpdateCultureEventHour = (hour % 6) == 0; // 문화행사 데이터를 저장하는 시간인지 여부
 
-        // 서울시내 핫스팟 장소 116곳 조회
-        List<Area> areas = areaRepository.findAll();
+            // 서울시내 핫스팟 장소 116곳 조회
+            List<Area> areas = areaRepository.findAll();
 
-        List<CompletableFuture<CityData>> allFutures = areas.stream()
-                .map(area -> fetchCityData(area, isUpdateCultureEventHour))
-                .toList();
-
-        List<Population> populationList = allFutures.stream()
-                .map(CompletableFuture::join)
-                .map(CityData::getPopulation)
-                .collect(Collectors.toList());
-
-        List<PopulationForecast> populationForecastList = allFutures.stream()
-                .map(CompletableFuture::join)
-                .flatMap(cityData -> cityData.getPopulationForecast().stream())
-                .collect(Collectors.toList());
-
-        List<Weather> weatherList = allFutures.stream()
-                .map(CompletableFuture::join)
-                .map(CityData::getWeather)
-                .collect(Collectors.toList());
-
-
-        // 기존 데이터 삭제 후 새 데이터 저장
-        citydataService.updatePopulationAndWeatherData(populationList, populationForecastList, weatherList);
-
-        if (isUpdateCultureEventHour) { // 매일 00시, 06시, 12시, 18시에만 진행
-            List<CultureEvent> fetchedEvents = allFutures.stream()
-                    .map(CompletableFuture::join)
-                    .flatMap(cityData -> cityData.getCultureEvent().stream())
+            List<CompletableFuture<CityData>> allFutures = areas.stream()
+                    .map(area -> fetchCityData(area, isUpdateCultureEventHour))
                     .toList();
-            citydataService.updateOrInsertCultureEventData(fetchedEvents);
+
+            List<Population> populationList = allFutures.stream()
+                    .map(CompletableFuture::join)
+                    .map(CityData::getPopulation)
+                    .collect(Collectors.toList());
+
+            List<PopulationForecast> populationForecastList = allFutures.stream()
+                    .map(CompletableFuture::join)
+                    .flatMap(cityData -> cityData.getPopulationForecast().stream())
+                    .collect(Collectors.toList());
+
+            List<Weather> weatherList = allFutures.stream()
+                    .map(CompletableFuture::join)
+                    .map(CityData::getWeather)
+                    .collect(Collectors.toList());
+
+
+            // 기존 데이터 삭제 후 새 데이터 저장
+            citydataService.updatePopulationAndWeatherData(populationList, populationForecastList, weatherList);
+
+            if (isUpdateCultureEventHour) { // 매일 00시, 06시, 12시, 18시에만 진행
+                List<CultureEvent> fetchedEvents = allFutures.stream()
+                        .map(CompletableFuture::join)
+                        .flatMap(cityData -> cityData.getCultureEvent().stream())
+                        .toList();
+                citydataService.updateOrInsertCultureEventData(fetchedEvents);
+            }
+
+            LocalDateTime afterTime = LocalDateTime.now();
+            log.info("호출 시작 시간 = {}", beforeTime);
+            log.info("호출 종료 시간 = {}", afterTime);
+
+            long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
+            log.info("소요 시간 = {}초", totalTime);
         }
-
-        LocalDateTime afterTime = LocalDateTime.now();
-        log.info("호출 시작 시간 = {}", beforeTime);
-        log.info("호출 종료 시간 = {}", afterTime);
-
-        long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
-        log.info("소요 시간 = {}초", totalTime);
-
     }
 
 

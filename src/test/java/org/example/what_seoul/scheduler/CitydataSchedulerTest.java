@@ -54,8 +54,6 @@ public class CitydataSchedulerTest {
     private WeatherRepository weatherRepository;
     @Mock
     private CultureEventRepository cultureEventRepository;
-//    @Mock
-//    private PcpMsgHistoryService pcpMsgHistoryService;
 
     @InjectMocks
     private CitydataScheduler citydataScheduler;
@@ -64,16 +62,19 @@ public class CitydataSchedulerTest {
 
     @BeforeEach
     void setup() {
+        ReflectionTestUtils.setField(citydataScheduler, "schedulerEnabled", true);
         schedulerSpy = Mockito.spy(new CitydataScheduler(
                 citydataService,
                 citydataParser,
                 areaRepository
         ));
+        ReflectionTestUtils.setField(schedulerSpy, "schedulerEnabled", true);
     }
 
     @Test
     @DisplayName("[성공] CitydataScheduler - 도시데이터 저장")
     void call() {
+
         // Given
         Area area = new Area(
                 "인구밀집지역",
