@@ -36,7 +36,7 @@ export SPRING_PROFILES_ACTIVE=dev
 IDLE_PID=$(lsof -ti tcp:$IDLE_PORT)
 if [ -n "$IDLE_PID" ]; then
   echo "[WARN] IDLE 포트 $IDLE_PORT 점유 중 - 강제 종료 시도 (PID: $IDLE_PID)" >> "$LOG_FILE"
-  kill -9 $IDLE_PID
+  sudo kill -9 $IDLE_PID
   sleep 1
 else
   echo "[INFO] IDLE 포트 $IDLE_PORT 사용 중 아님 - 문제 없음" >> "$LOG_FILE"
@@ -68,7 +68,7 @@ while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
     SUCCESS=true
     break
   else
-    echo "## 헬스 체크 대기 중... (${RETRY_COUNT}s)" >> "$LOG_FILE"
+    echo "## 헬스 체크 대기 중... ($((RETRY_COUNT * RETRY_INTERVAL))s)" >> "$LOG_FILE"
     sleep "$RETRY_INTERVAL"
     RETRY_COUNT=$((RETRY_COUNT + 1))
   fi
@@ -83,7 +83,7 @@ if [ "$SUCCESS" = false ]; then
 else
   # 3.Nginx 포트 스위칭
   echo "## Nginx upstream.conf 변경: $IDLE_PORT" >> "$LOG_FILE"
-  cat > "$UPSTREAM_CONF" <<EOF
+  sudo tee "$UPSTREAM_CONF" > /dev/null <<EOF
 proxy_pass http://127.0.0.1:$IDLE_PORT;
 proxy_set_header Host \$host;
 proxy_set_header X-Real-IP \$remote_addr;
@@ -91,19 +91,19 @@ proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 proxy_set_header X-Forwarded-Proto \$scheme;
 EOF
 
-  nginx -s reload
+  sudo nginx -s reload
   log_success "Nginx 포트 스위칭 완료 (이제 $IDLE_PORT를 바라봄)"
 
   # 4. 기존 포트 앱 종료
   echo "## 기존 애플리케이션 종료 (PORT: $CURRENT_PORT)" >> "$LOG_FILE"
     OLD_PID=$(pgrep -f "server.port=$CURRENT_PORT")
     if [ -n "$OLD_PID" ]; then
-      kill -15 "$OLD_PID"
+      sudo kill -15 "$OLD_PID"
       sleep 5
       if ps -p $OLD_PID > /dev/null; then
         # 여전히 살아 있으면 강제 종료
         echo "[WARN] 기존 애플리케이션 PID $OLD_PID 종료 실패 - 강제 종료 시도" >> "$LOG_FILE"
-        kill -9 "$OLD_PID"
+        sudo kill -9 "$OLD_PID"
         echo "kill -9 $OLD_PID 완료" >> "$LOG_FILE"
       else
         echo "kill -15 $OLD_PID 완료" >> "$LOG_FILE"
