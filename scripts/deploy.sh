@@ -47,8 +47,8 @@ nohup java -jar "$DEPLOY_JAR" --spring.profiles.active=dev --server.port=$IDLE_P
 
 # 2. 새 포트로 헬스체크
 HEALTH_CHECK_URL="http://127.0.0.1:$IDLE_PORT/actuator/health"
-MAX_RETRIES=25
-RETRY_INTERVAL=1
+MAX_RETRIES=20
+RETRY_INTERVAL=2
 RETRY_COUNT=0
 SUCCESS=false
 CHECK_DISK=false
