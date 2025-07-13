@@ -225,6 +225,7 @@ public class AdminService {
 
         for (Area area : areas) {
             area.setDeletedAt();
+            log.warn("[삭제 처리] areaName='{}' areaCode='{}'", area.getAreaName(), area.getAreaCode());
             deletedAreas.add(ResDeleteAreaDTO.from(area));
         }
 
