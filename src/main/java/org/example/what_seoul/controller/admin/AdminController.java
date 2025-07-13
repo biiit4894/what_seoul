@@ -43,7 +43,7 @@ public class AdminController {
 
     @PostMapping("/area")
     public ResponseEntity<CommonResponse<ResUploadAreaDTO>> uploadArea(@RequestParam("file") MultipartFile multipartFile) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.processShapeFile(multipartFile));
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminService.processAreaFile(multipartFile));
     }
 
     @DeleteMapping("/area")

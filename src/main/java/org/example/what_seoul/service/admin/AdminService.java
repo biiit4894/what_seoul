@@ -1,5 +1,8 @@
 package org.example.what_seoul.service.admin;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import io.jsonwebtoken.Claims;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,6 +38,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +52,9 @@ public class AdminService {
     private final CustomValidator customValidator;
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String s3BucketName;
+
     @Value("${file.storage.shp-temp-path}")
     private String shpTempPath;
 
@@ -57,6 +65,8 @@ public class AdminService {
     private String pythonScriptPath;
 
     private final GeoJsonParser geoJsonParser;
+
+    private final AmazonS3 amazonS3Client;
 
     /**
      * 관리자 계정 생성 기능
@@ -233,57 +243,98 @@ public class AdminService {
     }
 
     /**
-     * 업로드된 .shp 파일 처리
+     * 업로드된 압축 파일 처리
      * @param multipartFile
      * @return
      */
     @Transactional
-    public CommonResponse<ResUploadAreaDTO> processShapeFile(MultipartFile multipartFile) {
+    public CommonResponse<ResUploadAreaDTO> processAreaFile(MultipartFile multipartFile) {
+
         try {
-            // 1. 임시 디렉토리 생성
-            File shpDir = new File(shpTempPath);
-            if (!shpDir.exists()) {
-                shpDir.mkdirs();
-            }
+            String uuid = UUID.randomUUID().toString();
+            String s3Key = "admin/shapefiles/" + uuid + ".zip";
 
-            File geojsonDir = new File(geojsonTempPath);
-            if (!geojsonDir.exists()) {
-                geojsonDir.mkdirs();
-            }
+            // 1. S3에 파일 업로드
+            File tempZip = File.createTempFile("shapefile-", ".zip");
+            multipartFile.transferTo(tempZip);
+            amazonS3Client.putObject(new PutObjectRequest(s3BucketName, s3Key, tempZip));
+            log.warn("파일이 S3에 업로드되었습니다: s3://{}/{}", s3BucketName, s3Key);
 
-            // 2. shapefile 저장 (.shp 외에 .dbf, .shx도 필요할 수 있으니 zip으로 받아도 OK)
-            File savedShp = new File(shpDir, "uploaded.shp");
-            multipartFile.transferTo(savedShp);
-            log.info("Shapefile saved at :{}", savedShp.getAbsolutePath());
+            // 2. S3에서 EC2로 다운로드
+            File downloadDir = new File("/tmp/admin/shapefiles/" + uuid);
+            downloadDir.mkdirs();
+            File localZip = new File(downloadDir, "uploaded.zip");
+            amazonS3Client.getObject(new GetObjectRequest(s3BucketName, s3Key), localZip);
+            log.warn("S3에서 파일 다운로드 완료: {}", localZip.getAbsolutePath());
 
-            // 3. Python 스크립트 실행 (geopandas를 이용해 .shp -> geojson 변환)
-            ProcessBuilder pb = new ProcessBuilder("python3", pythonScriptPath);
+            // 3. 압축 해제
+            unzipFile(localZip, downloadDir);
+            log.warn("압축 해제 완료: {}", downloadDir.getAbsolutePath());
+
+            // 4. Python 스크립트 실행
+            File geojsonOutputDir = new File("/tmp/admin/geojson/" + uuid);
+            geojsonOutputDir.mkdirs();
+
+            ProcessBuilder pb = new ProcessBuilder("python3", pythonScriptPath,
+                    downloadDir.getAbsolutePath(), geojsonOutputDir.getAbsolutePath());
             pb.redirectErrorStream(true);
+
             Process process = pb.start();
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 reader.lines().forEach(log::warn);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new RuntimeException("Python 스크립트 실행 실패 (exit code: " + exitCode + ")");
+                throw new RuntimeException("Python 변환 스크립트 실패 (exitCode=" + exitCode + ")");
             }
 
-            // 4. GeoJSON 파일 읽고 파싱
-            File geoJsonFile = new File(geojsonTempPath, "converted.geojson");
-            if (!geoJsonFile.exists()) {
-                throw new FileNotFoundException("변환된 GeoJSON 파일이 존재하지 않습니다.");
-            }
+            // 5. GeoJSON 파싱
+            File geoJsonFile = new File(geojsonOutputDir, "converted.geojson");
+            if (!geoJsonFile.exists()) throw new FileNotFoundException("변환된 GeoJSON 파일이 존재하지 않음");
 
             ResUploadAreaDTO res = geoJsonParser.extractAreasFromGeoJsonAndSave(geoJsonFile);
-            return new CommonResponse<>(true, "장소 정보 업로드 성공", res);
 
-        } catch (InterruptedException | IOException | ParseException e) {
-            log.error("지역 업로드 중 예외 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("지역 업로드 중 오류가 발생했습니다.", e);
+            // 6. 임시 파일 삭제
+            deleteTmpFilesAndDirs(downloadDir);
+            deleteTmpFilesAndDirs(geojsonOutputDir);
+            tempZip.delete();
+
+            return new CommonResponse<>(true, "서울시 주요 장소 정보 업로드 성공", res);
+        } catch (IOException | InterruptedException | ParseException e) {
+            log.warn("서울시 주요 장소 정보 업로드 중 예외 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("서울시 주요 장소 정보 업로드 중 오류가 발생했습니다.", e);
+        }
+
+    }
+
+
+    public void unzipFile(File zipFile, File destDir) throws IOException {
+        byte[] buffer = new byte[1024];
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry zipEntry;
+            while ((zipEntry = zis.getNextEntry()) != null) {
+                File newFile = new File(destDir, zipEntry.getName());
+                new File(newFile.getParent()).mkdirs();
+                try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                }
+            }
         }
     }
+
+    public void deleteTmpFilesAndDirs(File file) {
+        if (file.isDirectory()) {
+            for (File child : Objects.requireNonNull(file.listFiles())) {
+                deleteTmpFilesAndDirs(child);
+            }
+        }
+        file.delete();
+    }
+
+
 }

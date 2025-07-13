@@ -132,13 +132,13 @@ window.addEventListener("DOMContentLoaded", () => {
         uploadForm.addEventListener("submit", async function (e) {
             e.preventDefault();
 
-            const fileInput = document.getElementById("shpFile");
+            const fileInput = document.getElementById("zipFile");
             if (!fileInput.files.length) {
                 alert("파일을 선택해주세요.");
                 return;
             }
 
-            const confirmed = confirm("선택한 .shp 파일을 업로드하시겠습니까?");
+            const confirmed = confirm("선택한 파일을 업로드하시겠습니까?");
             if (!confirmed) {
                 return; // 업로드 중단
             }
