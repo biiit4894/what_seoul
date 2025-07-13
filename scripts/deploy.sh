@@ -4,10 +4,10 @@ LOG_FILE=/home/ec2-user/action/spring-deploy.log # 전체 배포 흐름 기록
 BUILD_JAR=$(ls /home/ec2-user/action/build/libs/*.jar)
 JAR_NAME=$(basename "$BUILD_JAR")
 DEPLOY_PATH=/home/ec2-user/action/
-UPSTREAM_CONF="/etc/nginx/conf.d/upstream.conf"
+SERVICE_URL_FILE="/etc/nginx/conf.d/service-url.inc"
 
 # 1. 현재 nginx가 사용하는 포트 감지 (포트 스위칭 방식)
-CURRENT_PORT=$(grep -oP '(?<=proxy_pass http://127.0.0.1:)\d+' "$UPSTREAM_CONF")
+CURRENT_PORT=$(grep -oP '(?<=set \$service_url http://127.0.0.1:)\d+' "$SERVICE_URL_FILE")if [ "$CURRENT_PORT" = "8081" ]; then
 if [ "$CURRENT_PORT" = "8081" ]; then
   IDLE_PORT=8082
 else
@@ -62,7 +62,7 @@ while [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; do
     END_TIME=$(date +%s) # 헬스체크 성공 시각 기록
 
     log_success "---> 새 애플리케이션 실행 성공 (PID: $NEW_PID, PORT: $IDLE_PORT)"
-    echo "## [INFO] 애플리케이션 실행 완료 시각: $(date -d "@$END_TIME")" >> "$LOG_FILE"
+    echo "[INFO] 애플리케이션 실행 완료 시각: $(date -d "@$END_TIME")" >> "$LOG_FILE"
     STARTUP_TIME=$((END_TIME - APP_START_TIME))
     echo "[INFO] 애플리케이션 실행 소요 시간: ${STARTUP_TIME}초" >> "$LOG_FILE"
     SUCCESS=true
@@ -82,15 +82,8 @@ if [ "$SUCCESS" = false ]; then
   CHECK_DISK=true
 else
   # 3.Nginx 포트 스위칭
-  echo "## Nginx upstream.conf 변경: $IDLE_PORT" >> "$LOG_FILE"
-  sudo tee "$UPSTREAM_CONF" > /dev/null <<EOF
-proxy_pass http://127.0.0.1:$IDLE_PORT;
-proxy_set_header Host \$host;
-proxy_set_header X-Real-IP \$remote_addr;
-proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto \$scheme;
-EOF
-
+  echo "## Nginx 서비스 포트 변경: $IDLE_PORT" >> "$LOG_FILE"
+  echo "set \$service_url http://127.0.0.1:$IDLE_PORT;" | sudo tee "$SERVICE_URL_FILE" > /dev/null
   sudo nginx -s reload
   log_success "Nginx 포트 스위칭 완료 (이제 $IDLE_PORT를 바라봄)"
 
