@@ -262,7 +262,7 @@ public class AdminService {
             Process process = pb.start();
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                reader.lines().forEach(log::info);
+                reader.lines().forEach(log::warn);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
