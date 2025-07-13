@@ -7,7 +7,7 @@ DEPLOY_PATH=/home/ec2-user/action/
 SERVICE_URL_FILE="/etc/nginx/conf.d/service-url.inc"
 
 # 1. 현재 nginx가 사용하는 포트 감지 (포트 스위칭 방식)
-CURRENT_PORT=$(grep -oP '(?<=set \$service_url http://127.0.0.1:)\d+' "$SERVICE_URL_FILE")if [ "$CURRENT_PORT" = "8081" ]; then
+CURRENT_PORT=$(grep -oP '(?<=set \$service_url http://127.0.0.1:)\d+' "$SERVICE_URL_FILE")
 if [ "$CURRENT_PORT" = "8081" ]; then
   IDLE_PORT=8082
 else
