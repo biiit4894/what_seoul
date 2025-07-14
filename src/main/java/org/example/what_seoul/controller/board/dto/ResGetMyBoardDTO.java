@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.what_seoul.domain.board.Board;
 
 import java.time.LocalDateTime;
 
@@ -22,5 +21,7 @@ public class ResGetMyBoardDTO {
     private String eventPlace;
     private String url;
     private String areaName;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime areaDeletedAt;
     private boolean isEnded;
 }

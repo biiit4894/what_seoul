@@ -236,8 +236,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 ${item.eventName}
                             </a>
                         </h6>
-                        <small class="text-muted">장소: ${item.eventPlace} (${item.areaName})</small>
-
+                        <small class="text-muted">장소: ${item.eventPlace} (${item.areaName}) ${item.areaDeletedAt ? `<span style="color: #6cb2eb;"> - 삭제처리된 장소입니다.</span>` : ''}</small>
                         <p id="${contentId}" class="mt-2 review-content"
                            style="white-space: pre-line; word-break: break-word; overflow-wrap: break-word;">
                            ${item.content}

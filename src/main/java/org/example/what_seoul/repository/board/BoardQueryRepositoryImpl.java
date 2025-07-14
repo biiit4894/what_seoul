@@ -67,6 +67,7 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
                         cultureEvent.eventPlace,
                         cultureEvent.url,
                         area.areaName,
+                        area.deletedAt,
                         cultureEvent.isEnded))
                 .from(board)
                 .join(board.cultureEvent, cultureEvent)

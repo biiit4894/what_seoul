@@ -257,7 +257,7 @@ public class BoardServiceTest {
 
         List<ResGetMyBoardDTO> content = List.of(
                 new ResGetMyBoardDTO(1L, "content", startDateTime, endDateTime,
-                        "event", "place", "url", "areaName1", false)
+                        "event", "place", "url", "areaName1", null, false)
         );
         Slice<ResGetMyBoardDTO> slice = new SliceImpl<>(content, pageable, false);
         given(boardRepository.findMyBoardsSlice(
