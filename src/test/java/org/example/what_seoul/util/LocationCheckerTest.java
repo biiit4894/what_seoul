@@ -32,7 +32,7 @@ public class LocationCheckerTest {
         String polygonWkt = "POLYGON((127.0 37.0, 127.1 37.0, 127.1 37.1, 127.0 37.1, 127.0 37.0))";
         Area area = new Area(null, null, "test", polygonWkt);
 
-        when(areaRepository.findAll()).thenReturn(List.of(area));
+        when(areaRepository.findByDeletedAtIsNull()).thenReturn(List.of(area));
 
         // When
         List<AreaDTO> result = locationChecker.findLocations(37.05, 127.05);
@@ -56,7 +56,7 @@ public class LocationCheckerTest {
         Area area3 = new Area(null, null, "area3", polygon3);
         Area area4 = new Area(null, null, "area4", polygon4);
 
-        when(areaRepository.findAll()).thenReturn(List.of(area1, area2, area3, area4));
+        when(areaRepository.findByDeletedAtIsNull()).thenReturn(List.of(area1, area2, area3, area4));
 
         // 사용자 위치가 어떤 폴리곤에도 포함되지 않음
         double userLat = 36.0;
@@ -78,7 +78,7 @@ public class LocationCheckerTest {
         String invalidWkt = "INVALID_WKT";
         Area area = new Area(null, null, "invalidArea", invalidWkt);
 
-        when(areaRepository.findAll()).thenReturn(List.of(area));
+        when(areaRepository.findByDeletedAtIsNull()).thenReturn(List.of(area));
 
         // When & Then
         assertThatThrownBy(() -> locationChecker.findLocations(37.0, 127.0))

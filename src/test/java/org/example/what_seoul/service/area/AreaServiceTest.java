@@ -100,7 +100,7 @@ public class AreaServiceTest {
                 new Area(null, null, "서울식물원·마곡나루역", "POLYGON((1 1,1 2,2 2,2 1,1 1))")
         );
 
-        given(areaRepository.findByAreaNameContaining(anyString()))
+        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString()))
                 .willReturn(Optional.of(areaList));
 
         // When
@@ -124,7 +124,7 @@ public class AreaServiceTest {
                 new Area(null, null, "B", "POLYGON((1 1,1 2,2 2,2 1,1 1))")
         );
 
-        given(areaRepository.findAll()).willReturn(areaList);
+        given(areaRepository.findByDeletedAtIsNull()).willReturn(areaList);
 
         // When
         CommonResponse<List<AreaDTO>> response = areaService.getAllAreaList();
@@ -312,7 +312,7 @@ public class AreaServiceTest {
         // Given
         String query = "존재하지 않는 장소명";
 
-        given(areaRepository.findByAreaNameContaining(anyString()))
+        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString()))
                 .willReturn(Optional.empty());
 
         // When & Then
@@ -329,7 +329,7 @@ public class AreaServiceTest {
                 new Area(null, null, "A", "INVALID_WKT")
         );
 
-        given(areaRepository.findByAreaNameContaining(anyString())).willReturn(Optional.of(areaList));
+        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString())).willReturn(Optional.of(areaList));
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAreaListByKeyword(query));
@@ -344,7 +344,7 @@ public class AreaServiceTest {
                 new Area(null, null, "A", "INVALID_WKT")
         );
 
-        given(areaRepository.findAll()).willReturn(areaList);
+        given(areaRepository.findByDeletedAtIsNull()).willReturn(areaList);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAllAreaList());

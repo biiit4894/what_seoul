@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
+import org.example.what_seoul.controller.admin.dto.ResDeleteAreaDTO;
 import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.domain.citydata.Area;
 import org.example.what_seoul.domain.citydata.event.CultureEvent;
@@ -60,7 +61,7 @@ public class AreaService {
     @Transactional(readOnly = true)
     public CommonResponse<ResGetAreaListByKeywordDTO> getAreaListByKeyword(String query) {
         try {
-            List<Area> areaList = areaRepository.findByAreaNameContaining(query.trim()).orElseThrow(() -> new EntityNotFoundException("장소 검색에 실패했습니다."));
+            List<Area> areaList = areaRepository.findByAreaNameContainingAndDeletedAtIsNull(query.trim()).orElseThrow(() -> new EntityNotFoundException("장소 검색에 실패했습니다."));
 
             List<AreaDTO> areaDTOList = convertAreaDtoAreaDTOList(areaList);
 
@@ -77,11 +78,12 @@ public class AreaService {
 
     /**
      * 전체 장소 리스트 조회 기능
+     * - 삭제 처리되지 않은 유효한 서울시 주요 장소 리스트만을 조회한다
      * @return
      */
     @Transactional(readOnly = true)
     public CommonResponse<List<AreaDTO>> getAllAreaList() {
-        List<Area> areaList = areaRepository.findAll();
+        List<Area> areaList = areaRepository.findByDeletedAtIsNull();
         List<AreaDTO> areaDTOList = convertAreaDtoAreaDTOList(areaList);
 
         return new CommonResponse<>(
@@ -188,6 +190,4 @@ public class AreaService {
 
         return areaDTOList;
     }
-
-
 }

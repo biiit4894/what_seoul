@@ -32,7 +32,8 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
             LocalDateTime endDateTime,
             List<String> selectedAreaNames,
             Pageable pageable,
-            Sort.Direction direction) {
+            Sort.Direction direction)
+    {
 
         BooleanExpression dateCondition = null;
         BooleanExpression areaCondition = null;
@@ -66,6 +67,7 @@ public class BoardQueryRepositoryImpl implements BoardQueryRepository {
                         cultureEvent.eventPlace,
                         cultureEvent.url,
                         area.areaName,
+                        area.deletedAt,
                         cultureEvent.isEnded))
                 .from(board)
                 .join(board.cultureEvent, cultureEvent)
