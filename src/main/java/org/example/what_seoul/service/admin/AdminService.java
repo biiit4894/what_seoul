@@ -249,19 +249,22 @@ public class AdminService {
      */
     @Transactional
     public CommonResponse<ResUploadAreaDTO> processAreaFile(MultipartFile multipartFile) {
+        String uuid = UUID.randomUUID().toString();
+        String s3Key = "admin/shapefiles/" + uuid + ".zip";
+
+        File tempZip = null;
+        File downloadDir = null;
+        File geojsonOutputDir = null;
 
         try {
-            String uuid = UUID.randomUUID().toString();
-            String s3Key = "admin/shapefiles/" + uuid + ".zip";
-
             // 1. S3에 파일 업로드
-            File tempZip = File.createTempFile("shapefile-", ".zip");
+            tempZip = File.createTempFile("shapefile-", ".zip");
             multipartFile.transferTo(tempZip);
             amazonS3Client.putObject(new PutObjectRequest(s3BucketName, s3Key, tempZip));
             log.warn("파일이 S3에 업로드되었습니다: s3://{}/{}", s3BucketName, s3Key);
 
             // 2. S3에서 EC2로 다운로드
-            File downloadDir = new File("/tmp/admin/shapefiles/" + uuid);
+            downloadDir = new File("/tmp/admin/shapefiles/" + uuid);
             downloadDir.mkdirs();
             File localZip = new File(downloadDir, "uploaded.zip");
             amazonS3Client.getObject(new GetObjectRequest(s3BucketName, s3Key), localZip);
@@ -272,7 +275,7 @@ public class AdminService {
             log.warn("압축 해제 완료: {}", downloadDir.getAbsolutePath());
 
             // 4. Python 스크립트 실행
-            File geojsonOutputDir = new File("/tmp/admin/geojson/" + uuid);
+            geojsonOutputDir = new File("/tmp/admin/geojson/" + uuid);
             geojsonOutputDir.mkdirs();
 
             ProcessBuilder pb = new ProcessBuilder("python3", pythonScriptPath,
@@ -296,17 +299,22 @@ public class AdminService {
 
             ResUploadAreaDTO res = geoJsonParser.extractAreasFromGeoJsonAndSave(geoJsonFile);
 
-            // 6. 임시 파일 삭제
-            deleteTmpFilesAndDirs(downloadDir);
-            deleteTmpFilesAndDirs(geojsonOutputDir);
-            tempZip.delete();
-
             return new CommonResponse<>(true, "서울시 주요 장소 정보 업로드 성공", res);
         } catch (IOException | InterruptedException | ParseException e) {
             log.warn("서울시 주요 장소 정보 업로드 중 예외 발생: {}", e.getMessage(), e);
             throw new RuntimeException("서울시 주요 장소 정보 업로드 중 오류가 발생했습니다.", e);
+        } finally {
+            if (downloadDir != null) {
+                deleteTmpFilesAndDirs(downloadDir);
+            }
+            if (geojsonOutputDir != null) {
+                deleteTmpFilesAndDirs(geojsonOutputDir);
+            }
+            if (tempZip != null && tempZip.exists()) {
+                boolean deleted = tempZip.delete();
+                log.warn("임시 zip 파일 삭제 - 경로: {}, 성공여부: {}", tempZip.getAbsolutePath(), deleted ? "성공" : "실패");
+            }
         }
-
     }
 
 
@@ -333,7 +341,8 @@ public class AdminService {
                 deleteTmpFilesAndDirs(child);
             }
         }
-        file.delete();
+        boolean deleted = file.delete();
+        log.warn("임시 파일/디렉토리 삭제 - 경로: {}, 성공여부: {}", file.getAbsolutePath(), deleted ? "성공" : "실패");
     }
 
 
