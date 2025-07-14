@@ -10,16 +10,18 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepository {
-    boolean existsByAreaName(String areaName);
+    boolean existsByAreaNameAndDeletedAtIsNull(String areaName);
 
-    boolean existsByPolygonWkt(String polygonWkt);
+    boolean existsByPolygonWktAndDeletedAtIsNull(String polygonWkt);
 
-    Optional<Area> findByAreaCode(String areaCode);
+    Optional<Area> findByAreaCodeAndDeletedAtIsNull(String areaCode);
 
-    Optional<Area> findByAreaName(String areaName);
+    Optional<Area> findByAreaNameAndDeletedAtIsNull(String areaName);
 
 
-    Optional<List<Area>> findByAreaNameContaining(String keyword);
+    Optional<List<Area>> findByAreaNameContainingAndDeletedAtIsNull(String keyword);
+
+    List<Area> findByDeletedAtIsNull();
 
     @Query("""
         SELECT new org.example.what_seoul.controller.area.dto.AreaWithCongestionLevelDTO(
@@ -31,6 +33,7 @@ public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepo
     )
     FROM Population p
     JOIN p.area a
+    WHERE a.deletedAt IS NULL
 """)
     List<AreaWithCongestionLevelDTO> findAllAreasWithCongestionLevel();
 
@@ -46,6 +49,7 @@ public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepo
     )
     FROM Weather w
     JOIN w.area a
+    WHERE a.deletedAt IS NULL
 """)
     List<AreaWithWeatherDTO> findAllAreasWithWeather();
 }

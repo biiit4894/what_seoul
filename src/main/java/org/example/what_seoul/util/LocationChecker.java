@@ -58,7 +58,7 @@ public class LocationChecker {
      */
     public List<AreaDTO> findLocations(double lat, double lon) {
 
-        List<Area> areaList = areaRepository.findAll();
+        List<Area> areaList = areaRepository.findByDeletedAtIsNull();
         List<AreaDTO> nearestPlaces = new ArrayList<>();
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
 

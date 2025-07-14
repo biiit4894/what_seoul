@@ -72,7 +72,7 @@ public class GeoJsonParser {
             String geometry = objectMapper.writeValueAsString(feature.get(GEOMETRY));
             String wkt = convertGeometryToWkt(geometry);
 
-            Optional<Area> existingArea = areaRepository.findByAreaCode(code);
+            Optional<Area> existingArea = areaRepository.findByAreaCodeAndDeletedAtIsNull(code);
 
             if (existingArea.isPresent()) {
                 Area area = existingArea.get();

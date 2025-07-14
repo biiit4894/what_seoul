@@ -7,13 +7,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.what_seoul.domain.user.RoleType;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import org.example.what_seoul.domain.citydata.Area;
-import org.example.what_seoul.domain.user.User;
 import org.example.what_seoul.repository.area.AreaRepository;
 import org.example.what_seoul.repository.user.UserRepository;
 import org.locationtech.jts.geom.Geometry;
@@ -30,7 +28,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -107,7 +104,7 @@ public class DataInitializer implements CommandLineRunner {
                     String areaName = areaNmCell.getStringCellValue();
 
                     // DB에 이미 존재하는 장소명인 경우 건너뜀
-                    if (areaRepository.existsByAreaName(areaName)) {
+                    if (areaRepository.existsByAreaNameAndDeletedAtIsNull(areaName)) {
                         log.info("skipping saving area :{}", areaName);
                         continue;
                     }
@@ -157,7 +154,7 @@ public class DataInitializer implements CommandLineRunner {
                     String polygonWkt = wktWriter.write(geometry);
 
                     // 기존에 Area가 DB에 있는지 확인
-                    Optional<Area> existingArea = areaRepository.findByAreaName(areaName);
+                    Optional<Area> existingArea = areaRepository.findByAreaNameAndDeletedAtIsNull(areaName);
                     if (existingArea.isPresent()) {
                         Area area = existingArea.get();
                         // polygonWkt가 빈 문자열이거나 null인 경우에만 업데이트
