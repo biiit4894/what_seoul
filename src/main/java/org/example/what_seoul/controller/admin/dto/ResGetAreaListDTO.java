@@ -1,4 +1,4 @@
-package org.example.what_seoul.controller.board.dto;
+package org.example.what_seoul.controller.admin.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -10,18 +10,15 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResGetMyBoardDTO {
+public class ResGetAreaListDTO {
     private Long id;
-    private String content;
+    private String category;
+    private String areaCode;
+    private String areaName;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
-    private String eventName;
-    private String eventPlace;
-    private String url;
-    private String areaName;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime areaDeletedAt;
-    private boolean isEnded;
+    private LocalDateTime deletedAt;
 }

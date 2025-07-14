@@ -71,6 +71,17 @@ public class BoardService {
         return new CommonResponse<>(true, "문화행사 후기 조회 성공", ResGetBoardDTO.from(board, loginUserInfo));
     }
 
+    /**
+     * 작성한 문화행사 후기 목록 조회 기능
+     * - 전체 장소에 대해 작성한 문화행사 후기를 Slice 형태로 조회한다
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @param startDate 조회할 작성 기간의 시작 지점
+     * @param endDate 조회할 작성 기간의 종료 지점
+     * @param sort asc/desc 작성일자 오름차순/내림차순 정렬 기준
+     * @param req 작성한 후기를 조회하고자 하는 장소들 (선택)
+     * @return
+     */
     @Transactional(readOnly = true)
     public CommonResponse<Slice<ResGetMyBoardDTO>> getMyBoards(int page, int size, LocalDate startDate, LocalDate endDate, String sort, ReqGetMyBoardDTO req) {
         if (startDate != null && endDate != null && endDate.isBefore(startDate)) {

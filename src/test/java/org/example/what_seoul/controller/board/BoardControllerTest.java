@@ -159,6 +159,7 @@ public class BoardControllerTest {
                         "test event place",
                         "https://testurl.com",
                         "test area name",
+                        null,
                         false
                 )
         );
