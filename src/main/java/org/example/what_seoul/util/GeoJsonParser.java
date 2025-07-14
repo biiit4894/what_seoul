@@ -28,10 +28,18 @@ public class GeoJsonParser {
     private final ObjectMapper objectMapper;
     private final AreaRepository areaRepository;
 
+    private static final String FEATURES = "features";
+    private static final String PROPERTIES = "properties";
+    private static final String GEOMETRY = "geometry";
+    private static final String AREA_NM = "AREA_NM";
+    private static final String AREA_CD = "AREA_CD";
+    private static final String CATEGORY = "CATEGORY";
+
+
     public ResUploadAreaDTO extractAreasFromGeoJsonAndSave(File geojsonFile) throws IOException, ParseException {
         JsonNode root = objectMapper.readTree(geojsonFile);
 
-        if (!root.has("features")) {
+        if (!root.has(FEATURES)) {
             throw new IllegalArgumentException("잘못된 GeoJSON 형식입니다.");
         }
 
@@ -41,14 +49,27 @@ public class GeoJsonParser {
         int updated = 0;
         int skipped = 0;
 
-        for (JsonNode feature : root.get("features")) {
+        for (JsonNode feature : root.get(FEATURES)) {
             total++;
 
-            String name = feature.get("properties").get("areaName").asText();
-            String code = feature.get("properties").get("areaCode").asText();
-            String category = feature.get("properties").get("category").asText();
+            JsonNode properties = feature.get(PROPERTIES);
+            if (properties == null || properties.get(AREA_NM) == null) {
+                throw new IllegalArgumentException("GeoJSON 항목에 AREA_NM 필드가 없습니다.");
+            }
 
-            String geometry = objectMapper.writeValueAsString(feature.get("geometry"));
+            if (properties.get(AREA_CD) == null) {
+                throw new IllegalArgumentException("GeoJSON 항목에 AREA_CD 필드가 없습니다.");
+            }
+
+            if (properties.get(CATEGORY) == null) {
+                throw new IllegalArgumentException("GeoJSON 항목에 CATEGORY 필드가 없습니다.");
+            }
+
+            String name = feature.get(PROPERTIES).get(AREA_NM).asText();
+            String code = feature.get(PROPERTIES).get(AREA_CD).asText();
+            String category = feature.get(PROPERTIES).get(CATEGORY).asText();
+
+            String geometry = objectMapper.writeValueAsString(feature.get(GEOMETRY));
             String wkt = convertGeometryToWkt(geometry);
 
             Optional<Area> existingArea = areaRepository.findByAreaCode(code);
