@@ -35,6 +35,7 @@ function getAllAreasWithCongestionLevel() {
 
     fetch('/api/area/all/ppltn', {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -45,7 +46,6 @@ function getAllAreasWithCongestionLevel() {
 
             clearCustomLabels();
             clearPolygons();
-            // TODO: 전체 장소 폴리곤 또는 마커 표기 + 혼잡도 마커로 표기
             showAllPolygons(areas, { useCongestionLevel: true });
             createLegendOverlay(map); // 지도에 혼잡도 범례 표시
 
@@ -64,6 +64,7 @@ function getAllAreasWithWeather() {
 
     fetch(`/api/area/all/weather`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -90,6 +91,7 @@ function getAllAreasWithCultureEvent() {
 
     fetch(`/api/area/all/event`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }

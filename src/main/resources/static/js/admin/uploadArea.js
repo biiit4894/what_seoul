@@ -8,6 +8,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         const response = await fetch('/api/admin/area', {
             method: 'POST',
+            credentials: 'include',
             body: formData
         });
 

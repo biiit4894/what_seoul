@@ -140,38 +140,6 @@ function isAutoRefreshExpired() {
 }
 
 
-// 인증이 필요한 모든 API 요청에 사용할 수 있는 공통 함수 (미완)
-async function fetchWithAuth(url, options = {}) {
-    // 항상 credentials 포함
-    const opts = {
-        ...options,
-        credentials: "include"
-    };
-
-    let response = await fetch(url, opts);
-
-    if (response.status === 401) {
-        // 액세스토큰 만료 -> 리프레시 토큰으로 갱신 시도
-        const reissueRes = await fetch("/api/auth/access/reissue", {
-            method: "POST",
-            credentials: "include"
-        });
-
-        console.log(reissueRes);
-        if (reissueRes.ok) {
-            // 재발급 성공 -> 원래 요청 다시 시도
-            return fetch(url, opts);
-        } else {
-            // 재발급 실패 -> 로그인 페이지로 이동
-            alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-            window.location.href = "/login";
-            return Promise.reject("세션 만료");
-        }
-    }
-
-    return response;
-}
-
 function logout() {
     if (confirm("로그아웃 하시겠습니까?")) {
 
