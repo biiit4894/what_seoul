@@ -43,7 +43,7 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getExpiration().getTime(); // or getTime() for millis
+        return claims.getExpiration().getTime();
     }
 
 
