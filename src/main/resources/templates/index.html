@@ -13,16 +13,18 @@
     <script th:src="@{/js/common/common.js}"></script>
 
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg custom-navbar">
+<nav class="navbar navbar-expand-lg custom-navbar sticky-top">
     <a class="navbar-brand font-weight-bold text-dark" href="/">What Seoul</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
+        <span class="menu-text">☰</span>
+
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav ml-auto"> <!-- ml-auto 추가로 오른쪽 정렬 -->
             <!-- 로그인 회원 -->
             <li class="nav-item">
                 <a class="nav-link text-secondary font-weight-light" href="/citydata">지금 서울은?</a>
@@ -36,7 +38,7 @@
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo.role.toString() == 'ADMIN'}">
                 <a class="nav-link text-secondary font-weight-light" href="/settings">Settings</a>
             </li>
-            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}" style="margin-left: 1rem;">
+            <li class="nav-item ml-lg-3 ml-0" th:if="${authPrincipal != 'anonymousUser'}">
                 <span class="navbar-text text-secondary font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
@@ -50,6 +52,16 @@
         </ul>
     </div>
 </nav>
+
+<section class="flex-grow-1 container mt-5">
+</section>
+
+<!-- Footer -->
+<footer class="bg-light text-center text-muted py-3 mt-5">
+    <div class="container">
+        <small>&copy; 2025 WhatSeoul. All rights reserved.</small>
+    </div>
+</footer>
 
 <!-- Bootstrap JS, Popper.js, jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
