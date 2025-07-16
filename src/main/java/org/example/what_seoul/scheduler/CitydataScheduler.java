@@ -57,8 +57,8 @@ public class CitydataScheduler {
 
             boolean isUpdateCultureEventHour = (hour % 6) == 0; // 문화행사 데이터를 저장하는 시간인지 여부
 
-            // 서울시내 핫스팟 장소 116곳 조회
-            List<Area> areas = areaRepository.findAll();
+            // 서울시내 핫스팟 장소 전체 조회 (삭제 처리되지 않은 장소 전체)
+            List<Area> areas = areaRepository.findByDeletedAtIsNull();
 
             List<CompletableFuture<CityData>> allFutures = areas.stream()
                     .map(area -> fetchCityData(area, isUpdateCultureEventHour))
