@@ -35,7 +35,7 @@
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
                 <a class="nav-link text-secondary font-weight-light" href="/mypage">마이페이지</a>
             </li>
-            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo.role.toString() == 'ADMIN'}">
+            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo != null and loginUserInfo.role.toString() == 'ADMIN'}">
                 <a class="nav-link text-secondary font-weight-light" href="/settings">Settings</a>
             </li>
             <li class="nav-item ml-lg-3 ml-0" th:if="${authPrincipal != 'anonymousUser'}">
@@ -54,7 +54,79 @@
 </nav>
 
 <section class="flex-grow-1 container mt-5">
+    <!-- 히어로 섹션 -->
+    <div class="jumbotron bg-white text-center">
+        <h1 class="display-4 font-weight-bold">지금, 서울을 한눈에</h1>
+        <p class="lead text-muted">서울시 주요 데이터와 문화행사를 한 곳에서 확인하세요</p>
+        <div th:style="${authPrincipal != 'anonymousUser'} ? 'display:none;' : ''">
+            <a class="btn btn-primary btn-lg mt-3" href="/signup" role="button">지금 시작하기</a>
+        </div>
+    </div>
+
+    <!-- 왓서울 소개 -->
+    <div class="row text-center my-5">
+        <div class="col">
+            <h2 class="font-weight-bold mb-4">WhatSeoul은?</h2>
+            <p class="text-muted">서울시의 실시간 데이터와 다양한 문화행사 정보를 제공하는 도시 정보 플랫폼입니다.<br>
+                서울시 주요 장소의 실시간 정보를 한눈에 확인하세요.</p>
+        </div>
+    </div>
+
+    <!-- 주요 기능 요약 -->
+    <div class="row text-center my-5">
+        <div class="col-md-4 mb-4">
+            <h4>📊 실시간 인구 현황</h4>
+            <p class="text-muted">서울시 주요 장소의 실시간 혼잡도 및 예측 혼잡도를 확인해보세요.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <h4>🌤️ 실시간 날씨 정보</h4>
+            <p class="text-muted">장소별 현재 날씨를 한눈에 확인할 수 있어요.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <h4>🎉 서울 문화행사</h4>
+            <p class="text-muted">지금 서울에서 어떤 문화행사가 열리고 있는지 확인해보세요.</p>
+        </div>
+    </div>
+
+    <!-- CTA (비로그인 사용자에게만 노출) -->
+    <div class="text-center my-5" th:style="${authPrincipal != 'anonymousUser'} ? 'display:none;' : ''">
+        <a class="btn btn-outline-primary btn-lg" href="/signup">회원가입</a>
+        <a class="btn btn-link text-muted ml-3" href="/login">이미 계정이 있나요?</a>
+    </div>
+
+    <!-- 서비스 소개 섹션 -->
+    <section class="feature-section d-flex flex-column justify-content-center align-items-center text-center">
+        <img src="/media/population.png" alt="인구 현황" class="feature-image mb-5">
+        <h2 class="font-weight-bold mb-3">📊 실시간 인구 현황</h2>
+        <p class="text-muted">서울시 주요 장소의 실시간 혼잡도와 향후 12시간의 예측 혼잡도를 확인해보세요.</p>
+    </section>
+
+    <section class="feature-section d-flex flex-column justify-content-center align-items-center text-center">
+        <img src="/media/weather.png" alt="날씨 정보" class="feature-image mb-5">
+        <h2 class="font-weight-bold mb-3">🌤️ 실시간 날씨 정보</h2>
+        <p class="text-muted">장소별 현재 기온, 강수 및 미세먼지 관련 정보를 한눈에 확인할 수 있어요.</p>
+    </section>
+
+    <section class="feature-section d-flex flex-column justify-content-center align-items-center text-center">
+        <img src="/media/cultureEvent.png" alt="문화 행사" class="feature-image mb-5">
+        <h2 class="font-weight-bold mb-3">🎉 서울 문화행사</h2>
+        <p class="text-muted">지금 서울에서 어떤 문화행사가 열리고 있는지 확인해보세요.</p>
+    </section>
+
+    <section class="feature-section d-flex flex-column justify-content-center align-items-center text-center">
+        <img src="/media/board.png" alt="후기 작성" class="feature-image mb-5">
+        <h2 class="font-weight-bold mb-3">📝 후기 작성</h2>
+        <p class="text-muted">문화 행사 후기를 남겨보세요. 다른 유저가 작성한 후기도 조회할 수 있어요.</p>
+    </section>
+
+    <section class="feature-section d-flex flex-column justify-content-center align-items-center text-center">
+        <img src="/media/myBoards.png" alt="마이페이지" class="feature-image mb-5">
+        <h2 class="font-weight-bold mb-3">📁 마이페이지</h2>
+        <p class="text-muted">내가 남긴 후기를 한곳에서 확인하고 관리할 수 있어요.</p>
+    </section>
+
 </section>
+
 
 <!-- Footer -->
 <footer class="bg-light text-center text-muted py-3 mt-5">
