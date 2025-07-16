@@ -160,7 +160,7 @@ public class CitydataServiceTest {
         );
 
         // When
-        when(cultureEventRepository.findAllByAreaId(areaId)).thenReturn(Optional.of(cultureEventList));
+        when(cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId)).thenReturn(Optional.of(cultureEventList));
         CommonResponse<List<ResGetCultureEventDataDTO>> response = citydataService.findCultureEventDataByAreaId(areaId);
 
         // Then
@@ -421,7 +421,7 @@ public class CitydataServiceTest {
     void findCultureEventDataByAreaId_NotFound() {
         Long areaId = 99L;
 
-        when(cultureEventRepository.findAllByAreaId(areaId)).thenReturn(Optional.empty());
+        when(cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> citydataService.findCultureEventDataByAreaId(areaId));
@@ -434,7 +434,7 @@ public class CitydataServiceTest {
     void findCultureEventDataByAreaId_DatabaseException() {
         Long areaId = 1L;
 
-        when(cultureEventRepository.findAllByAreaId(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
+        when(cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
 
         DatabaseException ex = assertThrows(DatabaseException.class,
                 () -> citydataService.findCultureEventDataByAreaId(areaId));
