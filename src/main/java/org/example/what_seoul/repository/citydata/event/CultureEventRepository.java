@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CultureEventRepository extends JpaRepository<CultureEvent, Long> {
-    Optional<List<CultureEvent>> findAllByAreaId(Long areaId);
+    Optional<List<CultureEvent>> findAllByAreaIdIsOrderByIsEndedAsc(Long areaId);
 
     @Query("""
         SELECT e 
         FROM CultureEvent e 
         JOIN FETCH e.area
+        ORDER BY e.isEnded ASC
     """)
     List<CultureEvent> findAllWithArea();
 

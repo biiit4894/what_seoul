@@ -40,6 +40,7 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
     }
 
     const timeUntilExpiry = expirationTime - now;
+    // const refreshTime = timeUntilExpiry - 30000; // 테스트용(30초 전)
     // const refreshTime = timeUntilExpiry - 60000; // 테스트용(1분 전)
     const refreshTime = timeUntilExpiry - 300000; // 실서비스용(5분 전)
 
