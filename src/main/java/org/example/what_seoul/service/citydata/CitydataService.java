@@ -93,9 +93,9 @@ public class CitydataService {
      */
     @Transactional
     public void updatePopulationAndWeatherData(List<Population> populationList, List<PopulationForecast> populationForecastList, List<Weather> weatherList) {
-        populationForecastRepository.deleteAllInBatch();
-        populationRepository.deleteAllInBatch();
-        weatherRepository.deleteAllInBatch();
+//        populationForecastRepository.deleteAllInBatch();
+//        populationRepository.deleteAllInBatch();
+//        weatherRepository.deleteAllInBatch();
 
         populationRepository.saveAll(populationList);
         populationForecastRepository.saveAll(populationForecastList);

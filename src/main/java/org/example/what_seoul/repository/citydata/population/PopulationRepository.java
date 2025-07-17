@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface PopulationRepository extends JpaRepository<Population, Long> {
     Optional<Population> findByAreaId(Long areaId);
+
+    Optional<Population> findTopByAreaIdOrderByCreatedAtDesc(Long areaId);
 }
