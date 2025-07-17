@@ -55,6 +55,7 @@ public class AreaService {
 
     /**
      * 장소 검색 기능
+     * - 삭제 처리되지 않은 유효한 서울시 주요 장소에 한하여 검색한다
      * @param query
      * @return
      */
@@ -95,6 +96,7 @@ public class AreaService {
 
     /**
      * 전체 장소 혼잡도 조회 기능
+     * - 삭제 처리되지 않은 전체 장소에 한해 조회한다.
      * @return
      */
     @Transactional(readOnly = true)
@@ -117,6 +119,7 @@ public class AreaService {
 
     /**
      * 전체 장소 날씨 조회 기능
+     * - 삭제 처리되지 않은 전체 장소에 한해 조회한다.
      * @return
      */
     @Transactional(readOnly = true)
@@ -139,11 +142,12 @@ public class AreaService {
 
     /**
      * 전체 장소 문화행사 조회 기능
+     * - 삭제 처리되지 않은 전체 장소에 한해 조회한다.
      * @return
      */
     @Transactional(readOnly = true)
     public CommonResponse<List<ResGetAreaWithCultureEventDTO>> getAllAreasWithCultureEvent() {
-        List<Area> allAreas = areaRepository.findAll();
+        List<Area> allAreas = areaRepository.findByDeletedAtIsNull();
         List<CultureEvent> allCultureEvents = cultureEventRepository.findAllWithArea();
 
         Map<Long, List<CultureEvent>> eventMap = allCultureEvents.stream()

@@ -81,7 +81,7 @@ public class CitydataServiceTest {
         );
 
         // When
-        when(populationRepository.findByAreaId(areaId)).thenReturn(Optional.of(population));
+        when(populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.of(population));
         CommonResponse<ResGetPopulationDataDTO> response = citydataService.findPopulationDataByAreaId(areaId);
 
         // Then
@@ -115,7 +115,7 @@ public class CitydataServiceTest {
         );
 
         // When
-        when(weatherRepository.findByAreaId(areaId)).thenReturn(Optional.of(weather));
+        when(weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.of(weather));
         CommonResponse<ResGetWeatherDataDTO> response = citydataService.findWeatherDataByAreaId(areaId);
 
         // Then
@@ -193,9 +193,9 @@ public class CitydataServiceTest {
         citydataService.updatePopulationAndWeatherData(populationList, forecastList, weatherList);
 
         // then
-        verify(populationForecastRepository, times(1)).deleteAllInBatch();
-        verify(populationRepository, times(1)).deleteAllInBatch();
-        verify(weatherRepository, times(1)).deleteAllInBatch();
+//        verify(populationForecastRepository, times(1)).deleteAllInBatch();
+//        verify(populationRepository, times(1)).deleteAllInBatch();
+//        verify(weatherRepository, times(1)).deleteAllInBatch();
 
         verify(populationRepository, times(1)).saveAll(populationList);
         verify(populationForecastRepository, times(1)).saveAll(forecastList);
@@ -365,7 +365,7 @@ public class CitydataServiceTest {
         Long areaId = 99L;
 
         // When
-        when(populationRepository.findByAreaId(areaId)).thenReturn(Optional.empty());
+        when(populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.empty());
 
         // Then
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
@@ -381,7 +381,7 @@ public class CitydataServiceTest {
         Long areaId = 1L;
 
         // When
-        when(populationRepository.findByAreaId(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
+        when(populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
 
         // Then
         DatabaseException ex = assertThrows(DatabaseException.class,
@@ -395,7 +395,7 @@ public class CitydataServiceTest {
     void findWeatherDataByAreaId_NotFound() {
         Long areaId = 99L;
 
-        when(weatherRepository.findByAreaId(areaId)).thenReturn(Optional.empty());
+        when(weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> citydataService.findWeatherDataByAreaId(areaId));
@@ -408,7 +408,7 @@ public class CitydataServiceTest {
     void findWeatherDataByAreaId_DatabaseException() {
         Long areaId = 1L;
 
-        when(weatherRepository.findByAreaId(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
+        when(weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
 
         DatabaseException ex = assertThrows(DatabaseException.class,
                 () -> citydataService.findWeatherDataByAreaId(areaId));
