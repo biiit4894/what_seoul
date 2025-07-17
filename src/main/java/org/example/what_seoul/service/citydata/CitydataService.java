@@ -1,6 +1,9 @@
 package org.example.what_seoul.service.citydata;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
@@ -35,6 +38,9 @@ public class CitydataService {
     private final WeatherRepository weatherRepository;
     private final CultureEventRepository cultureEventRepository;
     private final BoardRepository boardRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public CommonResponse<ResGetPopulationDataDTO> findPopulationDataByAreaId(Long areaId) {
@@ -146,6 +152,86 @@ public class CitydataService {
         cultureEventRepository.saveAll(updatedEvents); // 정보가 갱신된(updateFrom된) 행사들만 변경사항을 DB에 반영
 
     }
+
+    /**
+     * 각 area별 population 데이터 중에서
+     * 최신 5개의 population만 유지하는 상황에서 그 외 population과 연결된 forecast 데이터를 삭제한다.
+     *
+     * population 삭제 전에 forecast 데이터를 먼저 삭제한다.
+     */
+    @Transactional
+    public void deleteOldPopulationForecastData() {
+        String sql = """
+                       DELETE pf
+                         FROM population_forecast pf
+                         LEFT JOIN (
+                             SELECT id
+                             FROM (
+                                 SELECT id,
+                                        ROW_NUMBER() OVER (PARTITION BY area_id ORDER BY created_at DESC) AS rn
+                                 FROM population
+                             ) ranked
+                             WHERE rn <= 5
+                         ) keep ON pf.population_id = keep.id
+                         WHERE keep.id IS NULL;
+                         
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+    }
+
+    /**
+     * 각 area별 population 데이터 중에서
+     * forecast와 연결되지 않고, 최신 5개에도 포함되지 않은 population만 삭제한다.
+     *
+     * (외래 키 제약 조건으로 인해 forecast가 남아 있는 population은 삭제할 수 없음)
+     */
+    @Transactional
+    public void deleteOldPopulationData() {
+        String sql = """
+                DELETE p
+                 FROM population p
+                 LEFT JOIN population_forecast pf ON pf.population_id = p.id
+                 LEFT JOIN (
+                     SELECT id
+                     FROM (
+                         SELECT id,
+                                ROW_NUMBER() OVER (PARTITION BY area_id ORDER BY created_at DESC) AS rn
+                         FROM population
+                     ) ranked
+                     WHERE rn <= 5
+                 ) keep ON p.id = keep.id
+                 WHERE pf.id IS NULL AND keep.id IS NULL;
+                          
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+    }
+
+    /**
+     * 각 area별 weather 데이터 중에서
+     * 최신 5개의 데이터를 제외한 나머지를 모두 삭제한다.
+     */
+    @Transactional
+    public void deleteOldWeatherData() {
+        String sql = """
+                        DELETE FROM weather
+                        WHERE id IN (
+                            SELECT id FROM (
+                                SELECT id,
+                                    ROW_NUMBER() OVER (PARTITION BY area_id ORDER BY created_at DESC) AS rn
+                                FROM weather
+                            ) AS sub
+                            WHERE rn > 5
+                        )
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+    }
+
 
     /**
      * 리뷰가 없는 만료된 문화행사를 삭제하는 메소드.
