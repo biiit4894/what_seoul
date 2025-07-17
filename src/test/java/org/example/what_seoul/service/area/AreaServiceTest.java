@@ -227,7 +227,7 @@ public class AreaServiceTest {
         List<Area> areas = List.of(area1, area2);
         List<CultureEvent> cultureEventList = List.of(cultureEvent1, cultureEvent2, cultureEvent3);
 
-        when(areaRepository.findAll()).thenReturn(areas);
+        when(areaRepository.findByDeletedAtIsNull()).thenReturn(areas);
         when(cultureEventRepository.findAllWithArea()).thenReturn(cultureEventList);
 
         // Polygon Stub
@@ -386,7 +386,7 @@ public class AreaServiceTest {
     @DisplayName("[실패] 전체 장소 문화행사 조회 Service - Area와 문화행사 데이터가 없는 경우 ")
     void getAllAreasWithCultureEvent_noAreaAndCultureEventData() throws JsonProcessingException {
         // Given
-        when(areaRepository.findAll()).thenReturn(Collections.emptyList());
+        when(areaRepository.findByDeletedAtIsNull()).thenReturn(Collections.emptyList());
         when(cultureEventRepository.findAllWithArea()).thenReturn(Collections.emptyList());
 
         // When
@@ -413,7 +413,7 @@ public class AreaServiceTest {
         List<Area> areaList = List.of(area1, area2);
         List<CultureEvent> cultureEventList = List.of();
 
-        when(areaRepository.findAll()).thenReturn(areaList);
+        when(areaRepository.findByDeletedAtIsNull()).thenReturn(areaList);
         when(cultureEventRepository.findAllWithArea()).thenReturn(cultureEventList);
 
         // Polygon Stub 실패
