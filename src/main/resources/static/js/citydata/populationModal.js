@@ -52,11 +52,51 @@ function populationModal(data) {
     canvas.width = 400;
     canvas.height = 300;
 
+    // canvas를 감싸는 wrapper div 생성 (오버레이)
+    const canvasWrapper = document.createElement("div");
+    canvasWrapper.style.position = "relative";
+    canvasWrapper.style.width = "400px";  // 캔버스 너비와 맞춤
+    canvasWrapper.style.height = "300px"; // 캔버스 높이와 맞춤
+
+    // canvas 스타일 수정 (wrapper 안에서 위치 맞춤)
+    canvas.style.position = "absolute";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+
+    // canvasWrapper에 canvas 추가
+    canvasWrapper.appendChild(canvas);
+
+    // forecasts 데이터
+    const forecastsData = data.data.forecasts;
+    console.log("forecastsData: ", forecastsData);
+
+    // forecasts가 빈 배열일 경우 오버레이 생성
+    if (!forecastsData || forecastsData.length === 0) {
+        const overlay = document.createElement("div");
+        overlay.style.position = "absolute";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
+        overlay.style.backgroundColor = "rgba(255, 255, 255, 0.7)";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.fontSize = "1rem";
+        overlay.style.fontWeight = "bold";
+        overlay.style.color = "#333";
+        overlay.innerText = "예측 인구 데이터를 준비 중이에요!";
+
+        canvasWrapper.appendChild(overlay);
+    }
+
     // 모달 구조 구성
     modalContent.appendChild(modalHeader);
     modalContent.appendChild(populationInfoSection);
     modalContent.appendChild(chartTitle);
-    modalContent.appendChild(canvas);
+    modalContent.appendChild(canvasWrapper); // canvas 대신 canvasWrapper를 append
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
 
@@ -67,8 +107,7 @@ function populationModal(data) {
 
     // Chart.js 데이터 구성
     const ctx = canvas.getContext("2d");
-    const forecastsData = data.data.forecasts;
-    console.log("forecastsData: ", forecastsData);
+    // const forecastsData = data.data.forecasts;
 
     const labels = data.data.forecasts.map(f => f.forecastTime.slice(11, 16));
     const minData = data.data.forecasts.map(f => parseInt(f.forecastPopulationMax));

@@ -405,14 +405,14 @@ function showPolygon(polygonCoords, areaName, areaId) {
     addInfoIcons(areaId);
 }
 
-// 1️⃣ 기존 폴리곤 제거
+// 1) 기존 폴리곤 제거
 function clearPolygons() {
     polygons.forEach(polygon => polygon.setMap(null));
     polygons = [];  // 배열 초기화
 }
 
 
-// 2️⃣ 폴리곤 그리기
+// 2) 폴리곤 그리기
 function drawPolygon(coords, areaName, areaId) {
 
     const polygon = new google.maps.Polygon({
@@ -481,7 +481,7 @@ function drawPolygon(coords, areaName, areaId) {
     return polygon;
 }
 
-// 3️⃣ 지도 경계 조정
+// 3) 지도 경계 조정
 
 function adjustMapBounds(polygon) {
     const bounds = new google.maps.LatLngBounds();
@@ -490,7 +490,7 @@ function adjustMapBounds(polygon) {
     map.setZoom(map.getZoom() - 1);  // 약간 축소
 }
 
-// 5️⃣ 아이콘 추가
+// 4) 아이콘 추가
 function addInfoIcons(areaId) {
     // 이미 존재하는 경우 제거
     const existingIcons = document.querySelector(".info-icons");

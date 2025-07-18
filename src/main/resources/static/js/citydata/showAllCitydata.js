@@ -45,7 +45,6 @@ function getAllAreasWithCongestionLevel() {
 
             clearCustomLabels();
             clearPolygons();
-            // TODO: 전체 장소 폴리곤 또는 마커 표기 + 혼잡도 마커로 표기
             showAllPolygons(areas, { useCongestionLevel: true });
             createLegendOverlay(map); // 지도에 혼잡도 범례 표시
 
@@ -144,7 +143,7 @@ function createLegendOverlay(map) {
         boxShadow: "0px 2px 6px rgba(0,0,0,0.3)",
     });
 
-    // 👉 지도 오른쪽 상단에 추가 (전체 화면 보기 버튼 바로 아래)
+    // 지도 오른쪽 상단에 추가 (전체 화면 보기 버튼 바로 아래)
     map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendDiv);
 }
 
@@ -265,7 +264,7 @@ function drawPolygonWithOptions(
         fillOpacity: 0.6
     };
 
-    // ✅ 스타일 복원을 위한 개별 저장
+    // 스타일 복원을 위한 개별 저장
     polygon.__defaultStyle = { ...defaultStyle };
     polygon.__hoverStyle = { ...hoverStyle };
 
