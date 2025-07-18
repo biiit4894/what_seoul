@@ -82,6 +82,9 @@ if [ "$SUCCESS" = false ]; then
   CHECK_DISK=true
 else
   # 3.Nginx 포트 스위칭
+  echo "## 헬스체크 통과 - 실제 서비스 준비까지 대기" >> "$LOG_FILE"
+  sleep 7
+
   echo "## Nginx 서비스 포트 변경: $IDLE_PORT" >> "$LOG_FILE"
   echo "set \$service_url http://127.0.0.1:$IDLE_PORT;" | sudo tee "$SERVICE_URL_FILE" > /dev/null
   sudo nginx -s reload
