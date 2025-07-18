@@ -161,6 +161,7 @@ function showAllPolygons(areas, options = {}) {
     console.log("useCultureEvent: ", useCultureEvent);
     console.log("---")
 
+    const overallBounds = new google.maps.LatLngBounds();
     areas.forEach((area) => {
         const color = useCongestionLevel
             ? getColorByCongestionLevel(area.congestionLevel)
@@ -177,8 +178,11 @@ function showAllPolygons(areas, options = {}) {
             useTemperature
         );
 
-        // 지도 경계 조정
-        adjustMapBounds(polygon);
+        // // 지도 경계 조정
+        // adjustMapBounds(polygon);
+
+        // 지도 경계 누적
+        polygon.getPath().forEach(coord => overallBounds.extend(coord));
 
         // 문화행사 데이터가 있을 경우 문화행사 정보 표시
         if (useCultureEvent && area.cultureEventList && area.cultureEventList.length > 0) {
@@ -211,6 +215,8 @@ function showAllPolygons(areas, options = {}) {
 
             });
         }
+
+        map.fitBounds(overallBounds);
     })
 }
 
