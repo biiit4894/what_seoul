@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         successMsg.classList.add("d-none");
                         errorMsg.classList.remove("d-none");
                     }
-                    console.log(result.data);
                 })
                 .catch(error => {
                     clearTimeout(loadingTimer);

@@ -19,7 +19,6 @@ function removeInfoIcons() {
 }
 
 function removeCultureEventMarkers() {
-    console.log("removeCultureEventMarkers");
     cultureEventMarkers.forEach(marker => marker.setMap(null));
     cultureEventMarkers = [];
 }
@@ -69,7 +68,6 @@ function getAllAreasWithWeather() {
     }).then(response => response.json())
         .then(data => {
             const areas = data.data;
-            console.log(areas);
             clearCustomLabels();
             clearPolygons();
             showAllPolygons(areas, { useTemperature : true });
@@ -95,7 +93,6 @@ function getAllAreasWithCultureEvent() {
     }).then(response => response.json())
         .then(data => {
             const areas = data.data;
-            console.log(areas);
             clearCustomLabels();
             clearPolygons();
             showAllPolygons(areas, { useCultureEvent : true});
@@ -153,12 +150,6 @@ function showAllPolygons(areas, options = {}) {
         useTemperature = false,
         useCultureEvent = false
     } = options;
-
-    console.log("---")
-    console.log("useCongestionLevel: ", useCongestionLevel);
-    console.log("useTemperature: ", useTemperature);
-    console.log("useCultureEvent: ", useCultureEvent);
-    console.log("---")
 
     const overallBounds = new google.maps.LatLngBounds();
     areas.forEach((area) => {
@@ -319,7 +310,6 @@ function drawPolygonWithOptions(
         }
 
         areaName = areaname;
-        console.log("# areaname from drawPolygonWithOptions : ", areaname);
         createAreaNameControl(map, areaname);
         addInfoIcons(areaId);
 

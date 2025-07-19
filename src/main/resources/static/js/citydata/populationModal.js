@@ -70,7 +70,6 @@ function populationModal(data) {
 
     // forecasts 데이터
     const forecastsData = data.data.forecasts;
-    console.log("forecastsData: ", forecastsData);
 
     // forecasts가 빈 배열일 경우 오버레이 생성
     if (!forecastsData || forecastsData.length === 0) {
