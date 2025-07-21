@@ -3,7 +3,6 @@ package org.example.what_seoul.service.area;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.persistence.EntityNotFoundException;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.area.dto.*;
 import org.example.what_seoul.domain.citydata.Area;
@@ -27,12 +26,12 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -101,7 +100,7 @@ public class AreaServiceTest {
         );
 
         given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString()))
-                .willReturn(Optional.of(areaList));
+                .willReturn(areaList);
 
         // When
         CommonResponse<ResGetAreaListByKeywordDTO> response = areaService.getAreaListByKeyword(query);
@@ -113,6 +112,22 @@ public class AreaServiceTest {
 
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
         System.out.println(json);
+    }
+
+    @Test
+    @DisplayName("[성공] 장소 검색 Service - 데이터 없음")
+    void getAreaListByKeyword_entityNotFound() {
+        // Given
+        String query = "존재하지 않는 장소명";
+
+        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString()))
+                .willReturn(Collections.emptyList());
+
+        CommonResponse<ResGetAreaListByKeywordDTO> response = areaService.getAreaListByKeyword(query);
+
+        assertTrue(response.isSuccess());
+        assertEquals("장소 검색 성공", response.getMessage());
+        assertTrue(response.getData().getAreaList().isEmpty());
     }
 
     @Test
@@ -293,8 +308,8 @@ public class AreaServiceTest {
     }
 
     @Test
-    @DisplayName("[실패] 현위치 기반 장소 리스트 조회 Service")
-    void getAreaListByCurrentLocation_failure() {
+    @DisplayName("[실패] 현위치 기반 장소 리스트 조회 Service - 일반적인 runtime 예외 테스트")
+    void getAreaListByCurrentLocation_runtimeException() {
         // Given
         ReqGetAreaListByCurrentLocationDTO request = new ReqGetAreaListByCurrentLocationDTO(37.0, 127.0);
 
@@ -303,21 +318,41 @@ public class AreaServiceTest {
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAreaListByCurrentLocation(request));
-        assertEquals("현위치 인근 장소 조회에 실패했습니다.", exception.getMessage());
+        assertEquals("Location service failed", exception.getMessage());
     }
 
     @Test
-    @DisplayName("[실패] 장소 검색 Service - 데이터 없음")
-    void getAreaListByKeyword_entityNotFound() {
+    @DisplayName("[실패] 현위치 기반 장소 리스트 조회 Service - 데이터베이스 예외")
+    void getAreaListByCurrentLocation_databaseException() {
         // Given
-        String query = "존재하지 않는 장소명";
+        ReqGetAreaListByCurrentLocationDTO request = new ReqGetAreaListByCurrentLocationDTO(37.0, 127.0);
+        DataAccessException dbException = new DataAccessException("Database connection failed") {};
 
-        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString()))
-                .willReturn(Optional.empty());
+        given(locationChecker.findLocations(anyDouble(), anyDouble()))
+                .willThrow(dbException);
 
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> areaService.getAreaListByKeyword(query));
-        assertEquals("장소 검색에 실패했습니다.", exception.getMessage());
+        DataAccessException thrownException = assertThrows(DataAccessException.class,
+                () -> areaService.getAreaListByCurrentLocation(request));
+
+        assertEquals("Database connection failed", thrownException.getMessage());
+    }
+
+    @Test
+    @DisplayName("[실패] 현위치 기반 장소 리스트 조회 Service - Geometry 처리 예외")
+    void getAreaListByCurrentLocation_geometryException() {
+        // Given
+        ReqGetAreaListByCurrentLocationDTO request = new ReqGetAreaListByCurrentLocationDTO(37.0, 127.0);
+        IllegalArgumentException geometryException = new IllegalArgumentException("Invalid polygon format");
+
+        given(locationChecker.findLocations(anyDouble(), anyDouble()))
+                .willThrow(geometryException);
+
+        // When & Then
+        IllegalArgumentException thrownException = assertThrows(IllegalArgumentException.class,
+                () -> areaService.getAreaListByCurrentLocation(request));
+
+        assertEquals("Invalid polygon format", thrownException.getMessage());
     }
 
     @Test
@@ -329,7 +364,7 @@ public class AreaServiceTest {
                 new Area(null, null, "A", "INVALID_WKT")
         );
 
-        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString())).willReturn(Optional.of(areaList));
+        given(areaRepository.findByAreaNameContainingAndDeletedAtIsNull(anyString())).willReturn(areaList);
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class, () -> areaService.getAreaListByKeyword(query));
