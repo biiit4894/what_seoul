@@ -79,19 +79,19 @@ public class GeoJsonParser {
                 boolean needsUpdate = false;
 
                 if (!area.getAreaName().equals(name)) {
-                    log.warn("[이름 변경] areaName={} areaCode={} | '{}' -> '{}'", name, code, area.getAreaName(), name);
+                    log.warn("[장소 이름 변경] areaName={} areaCode={} | '{}' -> '{}'", name, code, area.getAreaName(), name);
                     area.setAreaName(name);
                     needsUpdate = true;
                 }
 
                 if (!area.getCategory().equals(category)) {
-                    log.warn("[카테고리 변경] areaName={} areaCode={} | '{}' -> '{}'", name, code, area.getCategory(), category);
+                    log.warn("[장소 카테고리 변경] areaName={} areaCode={} | '{}' -> '{}'", name, code, area.getCategory(), category);
                     area.setCategory(category);
                     needsUpdate = true;
                 }
 
                 if (!area.getPolygonWkt().equals(wkt)) {
-                    log.warn("[polygonWkt 변경] areaName={} areaCode={}", name, code);
+                    log.warn("[장소 polygonWkt 변경] areaName={} areaCode={}", name, code);
                     area.setPolygonWkt(wkt);
                     needsUpdate = true;
 
@@ -107,7 +107,7 @@ public class GeoJsonParser {
                 Area newArea = new Area(category, code, name, wkt);
                 areasToSave.add(newArea);
                 inserted++;
-                log.warn("[신규 추가] areaName='{}' areaCode='{}' category='{}'", name, code, category);
+                log.warn("[장소 신규 추가] areaName='{}' areaCode='{}' category='{}'", name, code, category);
 
             }
 

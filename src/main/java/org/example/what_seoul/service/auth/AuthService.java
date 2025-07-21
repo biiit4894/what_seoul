@@ -27,7 +27,6 @@ public class AuthService {
     public CommonResponse<ResReissueAccessTokenDTO> reissueAccessToken(String refreshToken, HttpServletResponse response) {
         // 1. refreshToken 유효성 검증
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            log.info("authService - reissueAccessToken");
             throw new UnauthorizedException("유효하지 않거나 만료된 토큰입니다.");
         }
 
@@ -65,7 +64,6 @@ public class AuthService {
 
         // 1. accessToken 유효성 검증
         if (!jwtTokenProvider.validateToken(accessToken)) {
-            log.info("adminService - logout");
             throw new UnauthorizedException("유효하지 않거나 만료된 토큰입니다.");
         }
 

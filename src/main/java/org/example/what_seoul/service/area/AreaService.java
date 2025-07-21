@@ -40,17 +40,12 @@ public class AreaService {
      */
     @Transactional(readOnly = true)
     public CommonResponse<ResGetAreaListByCurrentLocationDTO> getAreaListByCurrentLocation(ReqGetAreaListByCurrentLocationDTO req) {
-        try {
-            List<AreaDTO> nearestPlaces = locationChecker.findLocations(req.getLatitude(), req.getLongitude());
-            return new CommonResponse<>(
-                    true,
-                    "현위치 기반 장소 리스트 조회 성공",
-                    new ResGetAreaListByCurrentLocationDTO(nearestPlaces)
-            );
-        } catch (Exception e) {
-            log.error("현위치 인근 장소 조회 실패: {}", e.getMessage());
-            throw new RuntimeException("현위치 인근 장소 조회에 실패했습니다.", e);
-        }
+        List<AreaDTO> nearestPlaces = locationChecker.findLocations(req.getLatitude(), req.getLongitude());
+        return new CommonResponse<>(
+                true,
+                "현위치 기반 장소 리스트 조회 성공",
+                new ResGetAreaListByCurrentLocationDTO(nearestPlaces)
+        );
     }
 
     /**
@@ -61,20 +56,15 @@ public class AreaService {
      */
     @Transactional(readOnly = true)
     public CommonResponse<ResGetAreaListByKeywordDTO> getAreaListByKeyword(String query) {
-        try {
-            List<Area> areaList = areaRepository.findByAreaNameContainingAndDeletedAtIsNull(query.trim()).orElseThrow(() -> new EntityNotFoundException("장소 검색에 실패했습니다."));
+        List<Area> areaList = areaRepository.findByAreaNameContainingAndDeletedAtIsNull(query.trim());
 
-            List<AreaDTO> areaDTOList = convertAreaDtoAreaDTOList(areaList);
+        List<AreaDTO> areaDTOList = convertAreaDtoAreaDTOList(areaList);
 
-            return new CommonResponse<>(
-                    true,
-                    "장소 검색 성공",
-                    new ResGetAreaListByKeywordDTO(areaDTOList)
-            );
-        } catch (EntityNotFoundException e) {
-            log.error("장소 검색 실패: {}", e.getMessage());
-            throw new EntityNotFoundException("장소 검색에 실패했습니다.", e);
-        }
+        return new CommonResponse<>(
+                true,
+                "장소 검색 성공",
+                new ResGetAreaListByKeywordDTO(areaDTOList)
+        );
     }
 
     /**

@@ -94,13 +94,10 @@ function getAreaListByKeyword() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log("Search Response:", data);
             const searchResultsElement = document.getElementById('search-results');
             searchResultsElement.innerHTML = '';
             searchResultsElement.style.display = "block";
 
-            console.log(data.data.areaList);
-            console.log(data.data.areaList.length);
             if (!data.data || data.data.areaList.length === 0) {
                 searchResultsElement.innerHTML = "검색 결과가 없습니다.";
             } else {
@@ -253,7 +250,6 @@ function getAreaListByCurrentLocation() {
     })
         .then(response => response.json())
         .then(data => {
-            console.log("Response: ", data);
             const places = data.data.nearestPlaces;
             const cityDataElement = document.getElementById('citydata');
 
@@ -405,14 +401,14 @@ function showPolygon(polygonCoords, areaName, areaId) {
     addInfoIcons(areaId);
 }
 
-// 1️⃣ 기존 폴리곤 제거
+// 1) 기존 폴리곤 제거
 function clearPolygons() {
     polygons.forEach(polygon => polygon.setMap(null));
     polygons = [];  // 배열 초기화
 }
 
 
-// 2️⃣ 폴리곤 그리기
+// 2) 폴리곤 그리기
 function drawPolygon(coords, areaName, areaId) {
 
     const polygon = new google.maps.Polygon({
@@ -448,7 +444,6 @@ function drawPolygon(coords, areaName, areaId) {
 
     // 폴리곤 마우스 오버할 때 더 진하게 표현
     polygon.addListener('mouseover', () => {
-        console.log('mouseover');
         polygon.setOptions(hoverStyle); // 폴리곤 더 진하게
         const labelDiv = document.getElementById(`custom-label-${areaName}`);
         if(labelDiv) {
@@ -459,7 +454,6 @@ function drawPolygon(coords, areaName, areaId) {
 
     // 폴리곤 마우스 아웃할 때 더 연하게 표현
     polygon.addListener('mouseout', () => {
-        console.log('mouseout');
         polygon.setOptions(defaultStyle); // 폴리곤 더 연하게
         const labelDiv = document.getElementById(`custom-label-${areaName}`);
         if(labelDiv) {
@@ -481,7 +475,7 @@ function drawPolygon(coords, areaName, areaId) {
     return polygon;
 }
 
-// 3️⃣ 지도 경계 조정
+// 3) 지도 경계 조정
 
 function adjustMapBounds(polygon) {
     const bounds = new google.maps.LatLngBounds();
@@ -490,7 +484,7 @@ function adjustMapBounds(polygon) {
     map.setZoom(map.getZoom() - 1);  // 약간 축소
 }
 
-// 5️⃣ 아이콘 추가
+// 4) 아이콘 추가
 function addInfoIcons(areaId) {
     // 이미 존재하는 경우 제거
     const existingIcons = document.querySelector(".info-icons");
@@ -545,17 +539,13 @@ function fetchWeatherData(id) {
     })
         .then(response => response.json())
         .then(data => {
-            console.log("Response: ", data);
             weatherModal(data);
         })
         .catch(error => console.error("Error: ", error));
 }
 
 function fetchPopulationData(id) {
-    console.log('click');
     const areaId = Number(id);
-    console.log(areaId);
-    console.log(typeof areaId);
     fetch(`/api/citydata/population/${areaId}`, {
         method: 'GET',
         headers: {
@@ -572,10 +562,7 @@ function fetchPopulationData(id) {
 }
 
 function fetchCultureEventData(id) {
-    console.log('click');
     const areaId = Number(id);
-    console.log(areaId);
-    console.log(typeof areaId);
     fetch(`/api/citydata/event/${areaId}`, {
         method: 'GET',
         headers: {
@@ -584,7 +571,6 @@ function fetchCultureEventData(id) {
     })
         .then(response => response.json())
         .then(data => {
-            console.log("Response: ", data);
             cultureEventModal(data, areaName);
         })
         .catch(error => console.error("Error: ", error));
