@@ -46,7 +46,7 @@ public class CitydataParser {
             if (populationNodeList != null && populationNodeList.getLength() > 0) {
                 Node populationParentNode = populationNodeList.item(1);
                 if (populationParentNode == null) {
-                    log.info("population parent node is null for area: {}", area.getAreaName());
+                    log.warn("population parent node is null for area: {}", area.getAreaName());
                 } else {
                     NodeList childNodes = populationParentNode.getChildNodes();
 
@@ -95,7 +95,7 @@ public class CitydataParser {
             String forecasePplTime = NO_TAG;
 
             if (nodeList == null || nodeList.getLength() == 0) {
-                log.info("No population forecast data found for area: {}", population.getArea().getAreaName());
+                log.warn("No population forecast data found for area: {}", population.getArea().getAreaName());
             }
             for (int i = 1; i < nodeList.getLength(); i++) {
                 Node fcstPpltnNode = nodeList.item(i);
@@ -145,7 +145,7 @@ public class CitydataParser {
             // 인덱스 1의 노드를 가져오기 (최상위 노드의 하위 노드에 필요한 노드들이 위치함)
             Node weatherParentNode = weatherNodeList.item(1);
             if (weatherParentNode == null) {
-                log.info("weather parent node is null for area: {}", area.getAreaName());
+                log.warn("weather parent node is null for area: {}", area.getAreaName());
             } else {
                 // 자식 노드들에 대해 반복하며 날씨 정보를 Map에 저장
                 NodeList childNodeList = weatherParentNode.getChildNodes();

@@ -7,7 +7,7 @@ import lombok.Getter;
  *
  * - 주로 특정 예외로 분류되지 않는 일반적인 DB 오류나,
  * - 하위 DB 예외(SQLIntegrityConstraintViolationException, ConstraintViolationException 등)를
- * - 감싸 사용자에게 친절한 메시지를 전달하고자 할 때 사용한다.
+ * - 감싸 메시지를 전달하고자 할 때 사용한다.
  */
 @Getter
 public class DatabaseException extends RuntimeException{

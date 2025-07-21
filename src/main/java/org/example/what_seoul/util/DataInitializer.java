@@ -180,10 +180,5 @@ public class DataInitializer implements CommandLineRunner {
             }
 
         }
-
-
-//        cityDataScheduler.call();
-
-
     }
 }

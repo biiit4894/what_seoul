@@ -92,8 +92,8 @@ public class CitydataScheduler {
             }
 
             LocalDateTime afterTime = LocalDateTime.now();
-            log.info("호출 시작 시간 = {}", beforeTime);
-            log.info("호출 종료 시간 = {}", afterTime);
+//            log.info("호출 시작 시간 = {}", beforeTime);
+//            log.info("호출 종료 시간 = {}", afterTime);
 
             long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
             log.info("소요 시간 = {}초", totalTime);
@@ -150,11 +150,11 @@ public class CitydataScheduler {
      * @throws IOException 네트워크 I/O 오류 발생 시
      */
     protected Document getDocument(Area area) throws ParserConfigurationException, SAXException, IOException {
-        log.info("getDocument called with area: " + area);
+//        log.info("getDocument called with area: " + area);
         String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
         String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
-        log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
-        log.info("encoded area name: {}", encodedAreaName);
+//        log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
+//        log.info("encoded area name: {}", encodedAreaName);
 
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = documentBuilder.parse(url + encodedAreaName);
