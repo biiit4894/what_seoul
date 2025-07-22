@@ -1,6 +1,8 @@
 package org.example.what_seoul.repository.area;
 
 import org.example.what_seoul.controller.admin.dto.ResGetAreaListDTO;
+import org.example.what_seoul.controller.area.dto.AreaWithCongestionLevelDTO;
+import org.example.what_seoul.controller.area.dto.AreaWithWeatherDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
@@ -10,5 +12,9 @@ public interface AreaQueryRepository {
     List<String> findAreaNamesByUserId(Long userId);
 
     Slice<ResGetAreaListDTO> findAreasSlice(String areaName, Pageable pageable);
+
+    List<AreaWithCongestionLevelDTO> findAllAreasWithCongestionLevel();
+
+    List<AreaWithWeatherDTO> findAllAreasWithWeather();
 
 }

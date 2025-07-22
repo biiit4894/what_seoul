@@ -47,8 +47,6 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
                 "접근 권한이 없습니다."
         );
 
-        log.info("JwtAccessDeniedHandler");
-
         String json = objectMapper.writeValueAsString(error);
         response.getWriter().write(json);
     }

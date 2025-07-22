@@ -29,18 +29,21 @@
     <script th:src="@{/js/citydata/populationModal.js}"></script>
 
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg bg-dark">
-    <a class="navbar-brand font-weight-bold text-white" href="/">What Seoul</a>
+<nav class="navbar navbar-expand-lg custom-navbar sticky-top bg-dark">
+    <a class="navbar-brand font-weight-bold text-light" href="/">What Seoul</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
+        <span class="menu-text">☰</span>
+
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav ml-auto"> <!-- ml-auto 추가로 오른쪽 정렬 -->
+            <!-- 로그인 회원 -->
             <li class="nav-item">
-                <a class="nav-link text-light" href="/citydata">지금 서울은?</a>
+                <a class="nav-link text-light font-weight-light" href="/citydata">지금 서울은?</a>
             </li>
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}">
                 <a class="nav-link text-light font-weight-light" onclick="logout()">로그아웃</a>
@@ -49,12 +52,13 @@
                 <a class="nav-link text-light font-weight-light" href="/mypage">마이페이지</a>
             </li>
             <li class="nav-item" th:if="${authPrincipal != 'anonymousUser' and loginUserInfo.role.toString() == 'ADMIN'}">
-                <a class="nav-link text-secondary font-weight-light" href="/settings">Settings</a>
+                <a class="nav-link text-light font-weight-light" href="/settings">Settings</a>
             </li>
-            <li class="nav-item" th:if="${authPrincipal != 'anonymousUser'}" style="margin-left: 1rem;">
-                <span class="navbar-text text-white font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
+            <li class="nav-item ml-lg-3 ml-0" th:if="${authPrincipal != 'anonymousUser'}">
+                <span class="navbar-text text-light font-weight-light" th:text="${loginUserInfo.nickName} + '님 안녕하세요!'"></span>
             </li>
 
+            <!-- 비로그인 회원 -->
             <li class="nav-item" th:if="${authPrincipal == 'anonymousUser'}">
                 <a class="nav-link text-light font-weight-light" href="/login">로그인</a>
             </li>
@@ -86,7 +90,7 @@
         <div class="d-flex flex-column">
             <button class="btn btn-success mt-3" onclick="getAreaListByCurrentLocation()">현위치 기준 조회</button>
             <button class="btn btn-success mt-2" onclick="getAllAreasWithCongestionLevel()">전체 혼잡도 조회</button>
-            <button class="btn btn-success mt-2" onclick="getAllAreasWithWeather()">전체 날씨 조회</button>
+<!--            <button class="btn btn-success mt-2" onclick="getAllAreasWithWeather()">전체 날씨 조회</button>-->
             <button class="btn btn-success mt-2" onclick="getAllAreasWithCultureEvent()">전체 문화행사 조회</button>
         </div>
 

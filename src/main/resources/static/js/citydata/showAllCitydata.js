@@ -19,7 +19,6 @@ function removeInfoIcons() {
 }
 
 function removeCultureEventMarkers() {
-    console.log("removeCultureEventMarkers");
     cultureEventMarkers.forEach(marker => marker.setMap(null));
     cultureEventMarkers = [];
 }
@@ -71,7 +70,6 @@ function getAllAreasWithWeather() {
     }).then(response => response.json())
         .then(data => {
             const areas = data.data;
-            console.log(areas);
             clearCustomLabels();
             clearPolygons();
             showAllPolygons(areas, { useTemperature : true });
@@ -98,7 +96,6 @@ function getAllAreasWithCultureEvent() {
     }).then(response => response.json())
         .then(data => {
             const areas = data.data;
-            console.log(areas);
             clearCustomLabels();
             clearPolygons();
             showAllPolygons(areas, { useCultureEvent : true});
@@ -146,7 +143,7 @@ function createLegendOverlay(map) {
         boxShadow: "0px 2px 6px rgba(0,0,0,0.3)",
     });
 
-    // 👉 지도 오른쪽 상단에 추가 (전체 화면 보기 버튼 바로 아래)
+    // 지도 오른쪽 상단에 추가 (전체 화면 보기 버튼 바로 아래)
     map.controls[google.maps.ControlPosition.TOP_RIGHT].push(legendDiv);
 }
 
@@ -157,12 +154,7 @@ function showAllPolygons(areas, options = {}) {
         useCultureEvent = false
     } = options;
 
-    console.log("---")
-    console.log("useCongestionLevel: ", useCongestionLevel);
-    console.log("useTemperature: ", useTemperature);
-    console.log("useCultureEvent: ", useCultureEvent);
-    console.log("---")
-
+    const overallBounds = new google.maps.LatLngBounds();
     areas.forEach((area) => {
         const color = useCongestionLevel
             ? getColorByCongestionLevel(area.congestionLevel)
@@ -179,8 +171,11 @@ function showAllPolygons(areas, options = {}) {
             useTemperature
         );
 
-        // 지도 경계 조정
-        adjustMapBounds(polygon);
+        // // 지도 경계 조정
+        // adjustMapBounds(polygon);
+
+        // 지도 경계 누적
+        polygon.getPath().forEach(coord => overallBounds.extend(coord));
 
         // 문화행사 데이터가 있을 경우 문화행사 정보 표시
         if (useCultureEvent && area.cultureEventList && area.cultureEventList.length > 0) {
@@ -213,6 +208,8 @@ function showAllPolygons(areas, options = {}) {
 
             });
         }
+
+        map.fitBounds(overallBounds);
     })
 }
 
@@ -261,7 +258,7 @@ function drawPolygonWithOptions(
         fillOpacity: 0.6
     };
 
-    // ✅ 스타일 복원을 위한 개별 저장
+    // 스타일 복원을 위한 개별 저장
     polygon.__defaultStyle = { ...defaultStyle };
     polygon.__hoverStyle = { ...hoverStyle };
 
@@ -316,7 +313,6 @@ function drawPolygonWithOptions(
         }
 
         areaName = areaname;
-        console.log("# areaname from drawPolygonWithOptions : ", areaname);
         createAreaNameControl(map, areaname);
         addInfoIcons(areaId);
 

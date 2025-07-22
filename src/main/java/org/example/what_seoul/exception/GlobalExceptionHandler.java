@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonErrorResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,7 @@ public class GlobalExceptionHandler {
         if (e.getCause() instanceof JsonMappingException || e.getCause() instanceof JsonParseException) {
             errorMessage = "Malformed JSON request.";
         } else {
-            errorMessage = "Invalid Request Body."; // TODO: 분기처리 상세화?
+            errorMessage = "Invalid Request Body.";
         }
 
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
@@ -90,14 +91,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<CommonErrorResponse<Object>> handleDatabaseException(DatabaseException e) {
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleDatabaseException(DataAccessException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-          "Database Exception",
-                e.getMessage()
+          "Data Access Exception",
+                "데이터 접근 중 오류가 발생했습니다."
         );
-        log.error("Database Exception : {}", e.getMessage(), e);
-
+        log.error("Data Access Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -1,0 +1,15 @@
+.feature-image {
+    max-width: 50%;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* 50% 불투명도 */
+    transition: transform 0.3s ease;
+}
+
+.feature-image:hover {
+    transform: scale(1.03); /* 마우스 호버 시 약간 확대 */
+}
+
+.feature-section {
+    height: 100vh;
+    padding: 40px 20px;
+}

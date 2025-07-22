@@ -45,7 +45,7 @@ public class GeoJsonLoader {
 
             // "features" 배열 얻기
             JSONArray features = (JSONArray) jsonObject.get("features");
-            log.info("features size: {}", features.size());
+//            log.info("features size: {}", features.size());
 
             // "features" 배열 순회하여 장소 이름 접근
             for (int i = 0; i < features.size(); i++) {

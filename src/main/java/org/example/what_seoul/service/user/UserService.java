@@ -91,6 +91,7 @@ public class UserService {
 
         // 3. 1)유효성 검증 및 2)중복 검증에서 발생한 모든 에러를 포함하여 예외를 던진다.
         if (!errors.isEmpty()) {
+            log.error("일반 회원가입 실패 - validation errors: {}", errors);
             throw new CustomValidationException(errors);
         }
 
@@ -301,7 +302,7 @@ public class UserService {
      * - deletedAt 필드에 나타난 DateTime으로부터 30일 이상의 시간이 지났다면 hard delete 처리한다.
      * - 매일 오전 3시 마다 UserCleanupScheduler에서 삭제해야 하는 유저를 확인한 후 처리한다.
      * - 현재 사용자 인증 정보를 제거하고 세션을 무효화한다.
-     * - TODO: 향후 유저가 직접 생성하는 데이터가 추가된다면, soft delete 상태에 있는 유저 데이터는 타 유저가 조회할 수 없도록 세부적인 구현을 추가한다.
+     * - TODO: 향후 유저가 직접 생성하는 데이터가 더 추가된다면, soft delete 상태에 있는 유저 데이터는 타 유저가 조회할 수 없도록 세부적인 구현을 추가한다.
      * @return 회원 탈퇴 성공 시 CommonResponse를, 실패 시 CommonErrorResponse를 반환한다.
      */
     @Transactional
@@ -421,13 +422,13 @@ public class UserService {
 
     public Object getAuthenticationPrincipal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("Authentication 객체: {}", authentication);
+//        log.info("Authentication 객체: {}", authentication);
 
         Object principal = authentication.getPrincipal();
-        log.info("principal : {}", principal);
+//        log.info("principal : {}", principal);
         if (!principal.equals("anonymousUser")) {
             User user = (User) authentication.getPrincipal();
-            log.info("loginUserId: {}", user.getUserId());
+            log.info("anonymousUser loginUserId: {}", user.getUserId());
         }
         return principal;
 

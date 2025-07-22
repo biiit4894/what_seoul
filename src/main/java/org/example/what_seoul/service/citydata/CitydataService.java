@@ -1,6 +1,9 @@
 package org.example.what_seoul.service.citydata;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonResponse;
@@ -9,13 +12,11 @@ import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 import org.example.what_seoul.domain.citydata.weather.Weather;
-import org.example.what_seoul.exception.DatabaseException;
 import org.example.what_seoul.repository.board.BoardRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,51 +37,40 @@ public class CitydataService {
     private final CultureEventRepository cultureEventRepository;
     private final BoardRepository boardRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Transactional(readOnly = true)
     public CommonResponse<ResGetPopulationDataDTO> findPopulationDataByAreaId(Long areaId) {
-        try {
-            Population population = populationRepository.findByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("인구 현황 데이터를 찾지 못했습니다."));
+        Population population = populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("인구 현황 데이터를 찾지 못했습니다."));
 
-            return new CommonResponse<>(
-                    true,
-                    "장소별 인구 현황 데이터 조회 성공",
-                    ResGetPopulationDataDTO.from(population)
-            );
-        } catch (DataAccessException e) {
-            log.error("DB 접근 에러", e);
-            throw new DatabaseException("장소별 인구 현황 데이터 조회 실패");
-        }
+        return new CommonResponse<>(
+                true,
+                "장소별 인구 현황 데이터 조회 성공",
+                ResGetPopulationDataDTO.from(population)
+        );
 
     }
 
     @Transactional(readOnly = true)
     public CommonResponse<ResGetWeatherDataDTO> findWeatherDataByAreaId(Long areaId) {
-        try {
-            Weather weather = weatherRepository.findByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("날씨 현황 데이터를 찾지 못했습니다."));
-            return new CommonResponse<>(
-                    true,
-                    "장소별 날씨 현황 데이터 조회 성공",
-                    ResGetWeatherDataDTO.from(weather)
-            );
-        } catch (DataAccessException e) {
-            log.error("DB 접근 에러", e);
-            throw new DatabaseException("장소별 날씨 현황 데이터 조회 실패");
-        }
+        Weather weather = weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("날씨 현황 데이터를 찾지 못했습니다."));
+        return new CommonResponse<>(
+                true,
+                "장소별 날씨 현황 데이터 조회 성공",
+                ResGetWeatherDataDTO.from(weather)
+        );
+
     }
 
     @Transactional(readOnly = true)
     public CommonResponse<List<ResGetCultureEventDataDTO>> findCultureEventDataByAreaId(Long areaId) {
-        try {
-            List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaId(areaId).orElseThrow(() -> new EntityNotFoundException("문화 행사 데이터를 찾지 못했습니다."));
-            return new CommonResponse<>(
-                    true,
-                    "장소별 문화행사 데이터 조회 성공",
-                    ResGetCultureEventDataDTO.from(cultureEventList)
-            );
-        } catch (DataAccessException e) {
-            log.error("DB 접근 에러", e);
-            throw new DatabaseException("장소별 문화행사 데이터 조회 실패");
-        }
+        List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId).orElseThrow(() -> new EntityNotFoundException("문화 행사 데이터를 찾지 못했습니다."));
+        return new CommonResponse<>(
+                true,
+                "장소별 문화행사 데이터 조회 성공",
+                ResGetCultureEventDataDTO.from(cultureEventList)
+        );
     }
 
     /**
@@ -93,9 +83,9 @@ public class CitydataService {
      */
     @Transactional
     public void updatePopulationAndWeatherData(List<Population> populationList, List<PopulationForecast> populationForecastList, List<Weather> weatherList) {
-        populationForecastRepository.deleteAllInBatch();
-        populationRepository.deleteAllInBatch();
-        weatherRepository.deleteAllInBatch();
+//        populationForecastRepository.deleteAllInBatch();
+//        populationRepository.deleteAllInBatch();
+//        weatherRepository.deleteAllInBatch();
 
         populationRepository.saveAll(populationList);
         populationForecastRepository.saveAll(populationForecastList);
@@ -148,6 +138,86 @@ public class CitydataService {
     }
 
     /**
+     * 각 area별 population 데이터 중에서
+     * 최신 5개의 population만 유지하는 상황에서 그 외 population과 연결된 forecast 데이터를 삭제한다.
+     *
+     * population 삭제 전에 forecast 데이터를 먼저 삭제한다.
+     */
+    @Transactional
+    public void deleteOldPopulationForecastData() {
+        String sql = """
+                       DELETE pf
+                         FROM population_forecast pf
+                         LEFT JOIN (
+                             SELECT id
+                             FROM (
+                                 SELECT id,
+                                        ROW_NUMBER() OVER (PARTITION BY area_id ORDER BY created_at DESC) AS rn
+                                 FROM population
+                             ) ranked
+                             WHERE rn <= 5
+                         ) keep ON pf.population_id = keep.id
+                         WHERE keep.id IS NULL;
+                         
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+    }
+
+    /**
+     * 각 area별 population 데이터 중에서
+     * forecast와 연결되지 않고, 최신 5개에도 포함되지 않은 population만 삭제한다.
+     *
+     * (외래 키 제약 조건으로 인해 forecast가 남아 있는 population은 삭제할 수 없음)
+     */
+    @Transactional
+    public void deleteOldPopulationData() {
+        String sql = """
+                DELETE p
+                 FROM population p
+                 LEFT JOIN population_forecast pf ON pf.population_id = p.id
+                 LEFT JOIN (
+                     SELECT id
+                     FROM (
+                         SELECT id,
+                                ROW_NUMBER() OVER (PARTITION BY area_id ORDER BY created_at DESC) AS rn
+                         FROM population
+                     ) ranked
+                     WHERE rn <= 5
+                 ) keep ON p.id = keep.id
+                 WHERE pf.id IS NULL AND keep.id IS NULL;
+                          
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+    }
+
+    /**
+     * 각 area별 weather 데이터 중에서
+     * 최신 5개의 데이터를 제외한 나머지를 모두 삭제한다.
+     */
+    @Transactional
+    public void deleteOldWeatherData() {
+        String sql = """
+                        DELETE FROM weather
+                        WHERE id IN (
+                            SELECT id FROM (
+                                SELECT id,
+                                    ROW_NUMBER() OVER (PARTITION BY area_id ORDER BY created_at DESC) AS rn
+                                FROM weather
+                            ) AS sub
+                            WHERE rn > 5
+                        )
+                """;
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.executeUpdate();
+    }
+
+
+    /**
      * 리뷰가 없는 만료된 문화행사를 삭제하는 메소드.
      * 이 메소드는 다음 조건에 맞는 문화행사를 식별한다.
      * 1. `isEnded` 필드가 true인 행사.
@@ -171,8 +241,7 @@ public class CitydataService {
                             LocalDate endDate = LocalDate.parse(endDateStr); // "YYYY-MM-DD" 형태로 파싱
                             return endDate.atStartOfDay().isBefore(cutoff);
                         } catch (Exception e) {
-                            // 파싱 실패한 경우는 삭제 대상에서 제외
-                            log.warn("Failed to parse eventPeriod: {}", period);
+                            log.warn("Failed to parse eventPeriod: {}", period); // 파싱 실패한 경우는 삭제 대상에서 제외
                             return false;
                         }
                     }

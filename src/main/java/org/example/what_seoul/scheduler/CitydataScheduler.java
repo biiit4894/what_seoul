@@ -46,10 +46,10 @@ public class CitydataScheduler {
 
     /**
      * 인구 현황(+인구 예측값) 데이터, 날씨 현황 데이터, 문화행사 데이터 를 갱신한다.
-     * - 5분 간격으로 배치 작업 수행
+     * - 매 5분마다 배치 작업 수행 (ex. 12:00. 12:05, 12:10 .. 에 수행)
      * - 단, 문화 행사 데이터는 매일 00시, 06시, 12시, 18시에 갱신하도록 한다.
      */
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(cron = "0 */5 * * * *")
     public void call() {
         if (schedulerEnabled) {
             LocalDateTime beforeTime = LocalDateTime.now(); // 작업 수행 시작 시간
@@ -57,8 +57,8 @@ public class CitydataScheduler {
 
             boolean isUpdateCultureEventHour = (hour % 6) == 0; // 문화행사 데이터를 저장하는 시간인지 여부
 
-            // 서울시내 핫스팟 장소 116곳 조회
-            List<Area> areas = areaRepository.findAll();
+            // 서울시내 핫스팟 장소 전체 조회 (삭제 처리되지 않은 장소 전체)
+            List<Area> areas = areaRepository.findByDeletedAtIsNull();
 
             List<CompletableFuture<CityData>> allFutures = areas.stream()
                     .map(area -> fetchCityData(area, isUpdateCultureEventHour))
@@ -92,8 +92,8 @@ public class CitydataScheduler {
             }
 
             LocalDateTime afterTime = LocalDateTime.now();
-            log.info("호출 시작 시간 = {}", beforeTime);
-            log.info("호출 종료 시간 = {}", afterTime);
+//            log.info("호출 시작 시간 = {}", beforeTime);
+//            log.info("호출 종료 시간 = {}", afterTime);
 
             long totalTime = java.time.Duration.between(beforeTime, afterTime).getSeconds();
             log.info("소요 시간 = {}초", totalTime);
@@ -150,11 +150,11 @@ public class CitydataScheduler {
      * @throws IOException 네트워크 I/O 오류 발생 시
      */
     protected Document getDocument(Area area) throws ParserConfigurationException, SAXException, IOException {
-        log.info("getDocument called with area: " + area);
+//        log.info("getDocument called with area: " + area);
         String sanitizedAreaName = area.getAreaName().replace("&", "&amp;");
         String encodedAreaName = URLEncoder.encode(sanitizedAreaName, StandardCharsets.UTF_8);
-        log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
-        log.info("encoded area name: {}", encodedAreaName);
+//        log.info("sanitized area name: {}, id: {}", sanitizedAreaName, area.getId());
+//        log.info("encoded area name: {}", encodedAreaName);
 
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document document = documentBuilder.parse(url + encodedAreaName);

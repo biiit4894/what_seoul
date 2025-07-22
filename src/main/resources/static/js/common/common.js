@@ -40,12 +40,13 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
     }
 
     const timeUntilExpiry = expirationTime - now;
+    // const refreshTime = timeUntilExpiry - 30000; // 테스트용(30초 전)
     // const refreshTime = timeUntilExpiry - 60000; // 테스트용(1분 전)
     const refreshTime = timeUntilExpiry - 300000; // 실서비스용(5분 전)
 
     if (refreshTime > 0) {
         // 여유가 있는 경우: 만료 1분 전에 재발급 예약
-        console.log(`재발급 예약됨: ${Math.floor(refreshTime / 1000)}초 후`);
+        // console.log(`재발급 예약됨: ${Math.floor(refreshTime / 1000)}초 후`);
         setTimeout(() => {
             tryReissueToken();
         }, refreshTime);
@@ -53,13 +54,13 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
         // 이미 만료까지 1분 미만이지만 아직 만료되지 않음
         // 바로 재발급은 하지 않지만, 즉시 재발급 타이머를 걸어줌
         if (isInitialLoad) {
-            console.log("accessToken 만료 1분 이내: 곧바로 재발급 예약");
+            // console.log("accessToken 만료 1분 이내: 곧바로 재발급 예약");
             setTimeout(() => {
                 tryReissueToken();
             }, 1000); // 1초 뒤에 재발급 시도
         } else {
             // 일반 실행 상황에서는 즉시 재발급 예약
-            console.log("accessToken 만료 1분 이내: 재발급 예약");
+            // console.log("accessToken 만료 1분 이내: 재발급 예약");
             setTimeout(() => {
                 tryReissueToken();
             }, 1000);
@@ -67,7 +68,7 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
 
     } else {
         // 이미 만료된 상태
-        console.log("accessToken이 이미 만료됨");
+        // console.log("accessToken이 이미 만료됨");
         tryReissueToken(); // 즉시 재발급 시도
     }
 
@@ -101,7 +102,7 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
             credentials: "include"
         }).then(res => res.json()
             .then(data => {
-                console.log("재발급 응답 성공 여부:", data.success);
+                // console.log("재발급 응답 성공 여부:", data.success);
 
                 if (!res.ok || !data.success) {
                     alert("세션이 만료되었습니다. 다시 로그인해주세요.");
@@ -111,10 +112,10 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
 
                 // accessToken 재발급 성공 시, 새 만료 시간 저장
                 const newExpiration = data.data.accessTokenExpiration;
-                console.log("새 accessTokenExpiration:", newExpiration);
+                // console.log("새 accessTokenExpiration:", newExpiration);
 
                 if (!newExpiration || isNaN(newExpiration)) {
-                    console.log("!! 유효하지 않은 만료시간, 자동 재발급 중단됨");
+                    // console.log("!! 유효하지 않은 만료시간, 자동 재발급 중단됨");
                     return;
                 }
 
@@ -124,7 +125,7 @@ function setupAutoRefresh(expirationTime, isInitialLoad = false) {
                 setupAutoRefresh(parseInt(newExpiration));
             }))
             .catch(err => {
-                console.log("재발급 요청 실패:", err);
+                console.error("재발급 요청 실패:", err);
                 alert("세션이 만료되었습니다. 다시 로그인해주세요.");
                 window.location.href = "/login";
             });
@@ -140,6 +141,38 @@ function isAutoRefreshExpired() {
 }
 
 
+// 인증이 필요한 모든 API 요청에 사용할 수 있는 공통 함수 (미완)
+async function fetchWithAuth(url, options = {}) {
+    // 항상 credentials 포함
+    const opts = {
+        ...options,
+        credentials: "include"
+    };
+
+    let response = await fetch(url, opts);
+
+    if (response.status === 401) {
+        // 액세스토큰 만료 -> 리프레시 토큰으로 갱신 시도
+        const reissueRes = await fetch("/api/auth/access/reissue", {
+            method: "POST",
+            credentials: "include"
+        });
+
+        // console.log(reissueRes);
+        if (reissueRes.ok) {
+            // 재발급 성공 -> 원래 요청 다시 시도
+            return fetch(url, opts);
+        } else {
+            // 재발급 실패 -> 로그인 페이지로 이동
+            alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+            window.location.href = "/login";
+            return Promise.reject("세션 만료");
+        }
+    }
+
+    return response;
+}
+
 function logout() {
     if (confirm("로그아웃 하시겠습니까?")) {
 
@@ -147,7 +180,6 @@ function logout() {
             method: 'POST',
             credentials: "include"
         }).then(response => {
-            console.log(response);
             if (response.ok) {
                 // 세션스토리지 비우기
                 sessionStorage.removeItem("accessTokenExpiration");

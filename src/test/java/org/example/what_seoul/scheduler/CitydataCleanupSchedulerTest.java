@@ -18,18 +18,18 @@ import static org.mockito.Mockito.verify;
 @ActiveProfiles("test-h2")
 @Import(WebSecurityTestWithH2Config.class)
 @Transactional
-public class CultureEventCleanupSchedulerTest {
+public class CitydataCleanupSchedulerTest {
     @Mock
     private CitydataService citydataService;
 
     @InjectMocks
-    private CultureEventCleanupScheduler cultureEventCleanupScheduler;
+    private CitydataCleanupScheduler citydataCleanupScheduler;
 
     @Test
     @DisplayName("[성공] 문화행사 삭제 스케줄러 - deleteExpiredCultureEvents")
     void deleteExpiredCultureEvents() {
         // when
-        cultureEventCleanupScheduler.deleteExpiredCultureEvents();
+        citydataCleanupScheduler.deleteExpiredCultureEvents();
 
         // then
         verify(citydataService, times(1)).deleteExpiredCultureEventsWithoutReviews();

@@ -13,7 +13,6 @@ import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 import org.example.what_seoul.domain.citydata.weather.Weather;
-import org.example.what_seoul.exception.DatabaseException;
 import org.example.what_seoul.repository.board.BoardRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
@@ -26,6 +25,7 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -81,7 +81,7 @@ public class CitydataServiceTest {
         );
 
         // When
-        when(populationRepository.findByAreaId(areaId)).thenReturn(Optional.of(population));
+        when(populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.of(population));
         CommonResponse<ResGetPopulationDataDTO> response = citydataService.findPopulationDataByAreaId(areaId);
 
         // Then
@@ -115,7 +115,7 @@ public class CitydataServiceTest {
         );
 
         // When
-        when(weatherRepository.findByAreaId(areaId)).thenReturn(Optional.of(weather));
+        when(weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.of(weather));
         CommonResponse<ResGetWeatherDataDTO> response = citydataService.findWeatherDataByAreaId(areaId);
 
         // Then
@@ -160,7 +160,7 @@ public class CitydataServiceTest {
         );
 
         // When
-        when(cultureEventRepository.findAllByAreaId(areaId)).thenReturn(Optional.of(cultureEventList));
+        when(cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId)).thenReturn(Optional.of(cultureEventList));
         CommonResponse<List<ResGetCultureEventDataDTO>> response = citydataService.findCultureEventDataByAreaId(areaId);
 
         // Then
@@ -193,9 +193,9 @@ public class CitydataServiceTest {
         citydataService.updatePopulationAndWeatherData(populationList, forecastList, weatherList);
 
         // then
-        verify(populationForecastRepository, times(1)).deleteAllInBatch();
-        verify(populationRepository, times(1)).deleteAllInBatch();
-        verify(weatherRepository, times(1)).deleteAllInBatch();
+//        verify(populationForecastRepository, times(1)).deleteAllInBatch();
+//        verify(populationRepository, times(1)).deleteAllInBatch();
+//        verify(weatherRepository, times(1)).deleteAllInBatch();
 
         verify(populationRepository, times(1)).saveAll(populationList);
         verify(populationForecastRepository, times(1)).saveAll(forecastList);
@@ -365,7 +365,7 @@ public class CitydataServiceTest {
         Long areaId = 99L;
 
         // When
-        when(populationRepository.findByAreaId(areaId)).thenReturn(Optional.empty());
+        when(populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.empty());
 
         // Then
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
@@ -381,13 +381,15 @@ public class CitydataServiceTest {
         Long areaId = 1L;
 
         // When
-        when(populationRepository.findByAreaId(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
+        when(populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
 
         // Then
-        DatabaseException ex = assertThrows(DatabaseException.class,
+        DataAccessException ex = assertThrows(DataAccessException.class,
                 () -> citydataService.findPopulationDataByAreaId(areaId));
 
-        assertEquals("장소별 인구 현황 데이터 조회 실패", ex.getMessage());
+        assertEquals("DB Error", ex.getMessage());
+
+        verify(populationRepository).findTopByAreaIdOrderByCreatedAtDesc(areaId);
     }
 
     @Test
@@ -395,7 +397,7 @@ public class CitydataServiceTest {
     void findWeatherDataByAreaId_NotFound() {
         Long areaId = 99L;
 
-        when(weatherRepository.findByAreaId(areaId)).thenReturn(Optional.empty());
+        when(weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> citydataService.findWeatherDataByAreaId(areaId));
@@ -408,12 +410,14 @@ public class CitydataServiceTest {
     void findWeatherDataByAreaId_DatabaseException() {
         Long areaId = 1L;
 
-        when(weatherRepository.findByAreaId(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
+        when(weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
 
-        DatabaseException ex = assertThrows(DatabaseException.class,
+        DataAccessException ex = assertThrows(DataAccessException.class,
                 () -> citydataService.findWeatherDataByAreaId(areaId));
 
-        assertEquals("장소별 날씨 현황 데이터 조회 실패", ex.getMessage());
+        assertEquals("DB Error", ex.getMessage());
+
+        verify(weatherRepository).findTopByAreaIdOrderByCreatedAtDesc(areaId);
     }
 
     @Test
@@ -421,7 +425,7 @@ public class CitydataServiceTest {
     void findCultureEventDataByAreaId_NotFound() {
         Long areaId = 99L;
 
-        when(cultureEventRepository.findAllByAreaId(areaId)).thenReturn(Optional.empty());
+        when(cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> citydataService.findCultureEventDataByAreaId(areaId));
@@ -434,12 +438,14 @@ public class CitydataServiceTest {
     void findCultureEventDataByAreaId_DatabaseException() {
         Long areaId = 1L;
 
-        when(cultureEventRepository.findAllByAreaId(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
+        when(cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId)).thenThrow(new DataAccessResourceFailureException("DB Error"));
 
-        DatabaseException ex = assertThrows(DatabaseException.class,
+        DataAccessException ex = assertThrows(DataAccessException.class,
                 () -> citydataService.findCultureEventDataByAreaId(areaId));
 
-        assertEquals("장소별 문화행사 데이터 조회 실패", ex.getMessage());
+        assertEquals("DB Error", ex.getMessage());
+
+        verify(cultureEventRepository).findAllByAreaIdIsOrderByIsEndedAsc(areaId);
     }
 
 }
