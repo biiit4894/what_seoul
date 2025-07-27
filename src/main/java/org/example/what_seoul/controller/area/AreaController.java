@@ -27,7 +27,7 @@ public class AreaController {
     @Operation(summary = "현위치 기반 장소 리스트 조회", description = AreaDescription.GET_AREA_BY_LOCATION)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공")
+            @ApiResponse(responseCode = "200", description = "현위치 인근 장소 리스트 조회 성공")
     })
     @PostMapping("/location")
     public ResponseEntity<CommonResponse<ResGetAreaListByCurrentLocationDTO>> getAreaListByCurrentLocation(@RequestBody ReqGetAreaListByCurrentLocationDTO req) {
@@ -36,9 +36,12 @@ public class AreaController {
 
     @Operation(summary = "장소 키워드 검색", description = AreaDescription.GET_AREA_LIST_BY_KEYWORD)
     @CommonErrorResponses
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "장소 검색 성공")
+    })
     @GetMapping("")
     public ResponseEntity<CommonResponse<ResGetAreaListByKeywordDTO>> getAreaListByKeyword(
-            @Parameter(description = "검색 키워드", example = "강남")
+            @Parameter(description = "검색 키워드", example = "회기")
             @RequestParam String query
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(areaService.getAreaListByKeyword(query));
@@ -47,7 +50,7 @@ public class AreaController {
     @Operation(summary = "전체 장소 리스트 조회", description = AreaDescription.GET_ALL_AREA_LIST)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "검색 성공")
+            @ApiResponse(responseCode = "200", description = "전체 장소 리스트 조회 성공")
     })
     @GetMapping("/all")
     public ResponseEntity<CommonResponse<List<AreaDTO>>> getAllAreaList() {
@@ -57,7 +60,13 @@ public class AreaController {
     @Operation(summary = "전체 장소 혼잡도 조회", description = AreaDescription.GET_ALL_AREA_LIST_WITH_CONGESTION_LEVEL)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "전체 장소 혼잡도 조회 성공")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = """
+                            전체 장소 혼잡도 조회 성공\s
+                            - 전체 장소 리스트가 길어 간략한 데이터 예시로 대체합니다.
+                            """
+            )
     })
     @GetMapping("/all/ppltn")
     public ResponseEntity<CommonResponse<List<ResGetAreaWithCongestionLevelDTO>>> getAllAreaListWithCongestionLevel() {
@@ -67,7 +76,13 @@ public class AreaController {
     @Operation(summary = "전체 장소 날씨 조회", description = AreaDescription.GET_ALL_AREA_LIST_WITH_WEATHER)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "전체 장소 날씨 조회 성공")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = """
+                            전체 장소 날씨 조회 성공\s
+                            - 전체 장소 리스트가 길어 간략한 데이터 예시로 대체합니다.
+                            """
+            )
     })
     @GetMapping("/all/weather")
     public ResponseEntity<CommonResponse<List<ResGetAreaWithWeatherDTO>>> getAllAreaListWithWeather() {
@@ -77,8 +92,13 @@ public class AreaController {
     @Operation(summary = "전체 장소 문화행사 조회", description = AreaDescription.GET_ALL_AREAS_WITH_CULTURE_EVENT)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "전체 장소 문화행사 조회 성공")
-    })
+            @ApiResponse(
+                    responseCode = "200",
+                    description = """
+                            전체 장소 문화행사 조회 성공\s
+                            - 전체 장소 리스트가 길어 간략한 데이터 예시로 대체합니다.
+                            """
+            )    })
     @GetMapping("/all/event")
     public ResponseEntity<CommonResponse<List<ResGetAreaWithCultureEventDTO>>> getAllAreasWithCultureEvent() {
         return ResponseEntity.status(HttpStatus.OK).body(areaService.getAllAreasWithCultureEvent());
@@ -87,7 +107,7 @@ public class AreaController {
     @Operation(summary = "후기를 작성한 장소 이름 목록 조회", description = AreaDescription.GET_AREA_NAMES_WITH_MY_BOARDS)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "후기 작성 장소 이름 목록 조회 성공")
+            @ApiResponse(responseCode = "200", description = "후기 작성 장소 이름 목록 조회 성공") // TODO
     })
     @GetMapping("/reviewed")
     public ResponseEntity<CommonResponse<List<String>>> getAreaNamesWithMyBoards() {

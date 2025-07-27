@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResGetAreaListByCurrentLocationDTO {
-    @Schema(description = "나의 현위치 인근 서울시 주요 장소 목록")
+    @Schema(description = "서울시 주요 장소 목록")
     private List<AreaDTO> nearestPlaces;
 }

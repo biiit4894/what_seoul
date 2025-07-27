@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReqGetAreaListDTO {
-    @Schema(description = "서울시 주요 장소 검색어", example = "강남")
+    @Schema(description = "서울시 주요 장소 검색어", example = "서울역")
     String areaName;
 }

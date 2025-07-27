@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReqGetMyBoardDTO {
-    @Schema(description = "조회하고자 하는 장소 이름 목록", example = "성수동, 홍대입구")
+    @Schema(description = "조회하고자 하는 장소 이름 목록", example = "인사동")
     List<String> selectedAreaNames;
 }
