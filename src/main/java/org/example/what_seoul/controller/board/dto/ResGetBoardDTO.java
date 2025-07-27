@@ -36,9 +36,9 @@ public class ResGetBoardDTO {
     private String eventName;
 
     @Schema(description = """
-            행사 후기 수정 가능 여부(true/false)
-            - 일반 유저 : 본인이 작성한 글만 수정 가능합니다.
-            - 관리자 : 모든 글을 수정 가능합니다.
+            행사 후기 수정 가능 여부(true/false)\s
+            - 일반 유저 : 본인이 작성한 글만 수정 가능합니다.\s
+            - 관리자 : 모든 글을 수정 가능합니다.\s
             """
             , example = "true"
     )

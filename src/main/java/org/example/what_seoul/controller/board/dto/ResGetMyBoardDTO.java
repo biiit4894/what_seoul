@@ -32,7 +32,7 @@ public class ResGetMyBoardDTO {
     @Schema(description = "행사 장소", example = "서울생활문화센터 낙원 안내실(5번)")
     private String eventPlace;
 
-    @Schema(description = "", example = "https://culture.seoul.go.kr/culture/culture/cultureEvent/view.do?cultcode=152540&menuNo=200011")
+    @Schema(description = "행사 상세 정보 url", example = "https://culture.seoul.go.kr/culture/culture/cultureEvent/view.do?cultcode=152540&menuNo=200011")
     private String url;
 
     @Schema(description = "행사가 진행된 서울시 주요 장소의 이름", example = "인사동")
