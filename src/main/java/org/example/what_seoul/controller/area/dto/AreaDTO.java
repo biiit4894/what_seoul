@@ -23,18 +23,6 @@ public class AreaDTO {
     @Schema(description = "조회한 서울시 주요 장소의 장소명", example = "회기역")
     private String areaName;
 
-//    @Schema(
-//            description = """
-//            조회한 서울시 주요 장소의 좌표 목록\s
-//            - 다각형을 이루는 좌표들의 목록으로 이루어져 있습니다.
-//            - WKT 형식의 Polygon 데이터를 Coordinate 좌표 형태로 변환한 목록입니다.
-//            """,
-//            example = """
-//            { "lat": 37.590266, "lon": 127.054142 },\s
-//            ... \s
-//            { "lat": 37.5903, "lon": 127.0542 }
-//            """
-//    )
     @Schema(
             description = """
             조회한 서울시 주요 장소의 좌표 목록
