@@ -164,12 +164,12 @@ class CitydataIntegrationTest {
     }
 
     @Test
-    @DisplayName("[실패] 인증되지 않은 사용자 접근 시 403 응답")
+    @DisplayName("[실패] 인증되지 않은 사용자 접근 시 401 응답")
     void getPopulationData_unauthenticated() throws Exception {
         Long areaId = areaRepository.findAll().get(0).getId();
 
         mockMvc.perform(get("/api/citydata/population/{areaId}", areaId))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
 

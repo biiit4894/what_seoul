@@ -34,6 +34,7 @@ function getAllAreasWithCongestionLevel() {
 
     fetch('/api/area/all/ppltn', {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -62,6 +63,7 @@ function getAllAreasWithWeather() {
 
     fetch(`/api/area/all/weather`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -87,6 +89,7 @@ function getAllAreasWithCultureEvent() {
 
     fetch(`/api/area/all/event`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }

@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         fetch('/api/user/update', {
             method: 'PUT',
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -107,7 +108,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function loadAreaNamesReviewed() {
         // 유저가 후기를 작성한 장소명 리스트 조회 (작성한 후기 조회 모달이 열린 후 한 번)
-        fetch('/api/area/reviewed')
+        fetch('/api/area/reviewed', {
+                credentials: "include",
+            })
             .then(res => {
                 if(!res.ok) {
                     throw new Error("후기를 작성한 장소명 리스트 조회 실패");
@@ -192,6 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify(requestBody)
         })
             .then(async response => {
@@ -289,6 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         fetch(`/api/board/${item.id}`, {
                             method: "PUT",
+                            credentials: "include",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ content: newContent })
                         })
@@ -314,6 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     deleteBtn.onclick = () => {
                         if (confirm("정말 삭제하시겠습니까?")) {
                             fetch(`/api/board/${item.id}`, {
+                                credentials: "include",
                                 method: "DELETE"
                             })
                                 .then(res => {
@@ -366,6 +372,7 @@ function withdrawUser() {
     if (confirm("정말 탈퇴하시겠습니까?") === true) {
         fetch('/api/user/withdraw', {
             method: 'PUT',
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },

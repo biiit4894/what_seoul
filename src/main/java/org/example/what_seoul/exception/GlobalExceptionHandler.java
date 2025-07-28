@@ -2,6 +2,7 @@ package org.example.what_seoul.exception;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonErrorResponse;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.List;
 import java.util.Map;
 
+@Hidden
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -113,7 +115,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonErrorResponse<Map<String, List<String>>>> handleCustomValidationException(CustomValidationException e) {
         CommonErrorResponse<Map<String, List<String>>> errorResponse = new CommonErrorResponse<>(
                 "Validation Failed",
-                e.getErrors()  // 유효성 검증 및 중복 오류 메시지 반환
+                e.getErrors()
         );
 
         log.error("Validation error: {}", e.getErrors());
@@ -124,7 +126,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonErrorResponse<Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
           "Data Integrity Violation",
-          e.getMessage() // TODO: context 반환 방식 수정
+          e.getMessage()
         );
         log.error("Data Integrity Violation Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);

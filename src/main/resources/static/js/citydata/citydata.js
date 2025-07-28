@@ -53,6 +53,7 @@ function adjustLayout() {
 window.onload = () => {
     fetch('/api/area/all',{
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -88,6 +89,7 @@ function getAreaListByKeyword() {
 
     fetch(`/api/area?query=${encodeURIComponent(keyword)}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         }
@@ -243,6 +245,7 @@ function getAreaListByCurrentLocation() {
 
     fetch('/api/area/location', {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -533,6 +536,7 @@ function fetchWeatherData(id) {
     console.log(typeof areaId);
     fetch(`/api/citydata/weather/${areaId}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -548,6 +552,7 @@ function fetchPopulationData(id) {
     const areaId = Number(id);
     fetch(`/api/citydata/population/${areaId}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -565,6 +570,7 @@ function fetchCultureEventData(id) {
     const areaId = Number(id);
     fetch(`/api/citydata/event/${areaId}`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json'
         },

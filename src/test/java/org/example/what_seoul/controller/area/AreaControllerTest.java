@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AreaController.class)
 @ActiveProfiles("test")
-@Import(WebSecurityTestConfig.class)  // 테스트를 위한 custom security configuration
+@Import(WebSecurityTestConfig.class)
 public class AreaControllerTest {
 
     @Autowired

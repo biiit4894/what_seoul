@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.common.validation.CustomValidator;
+import org.example.what_seoul.config.JwtTokenProvider;
 import org.example.what_seoul.controller.user.dto.*;
 import org.example.what_seoul.domain.user.RoleType;
 import org.example.what_seoul.domain.user.User;
@@ -24,6 +25,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -36,10 +39,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +54,9 @@ import static org.mockito.Mockito.*;
 public class UserServiceTest {
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
 
     @Mock
     private UserRepository userRepository;
@@ -68,6 +78,12 @@ public class UserServiceTest {
 
     @Mock
     private JavaMailSender javaMailSender;
+
+    @Mock
+    private RedisTemplate<String, String> redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -118,6 +134,50 @@ public class UserServiceTest {
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
         System.out.println(json);
 
+    }
+
+    @Test
+    @DisplayName("[성공] 일반 유저 로그인 Service")
+    void login() throws JsonProcessingException {
+        // Given
+        String userId = "testUser";
+        String rawPassword = "testPassword";
+        String encodedPassword = "encodedPassword";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+        long accessTokenExpirationMs = 600000L;
+        long refreshTokenExpirationMs = 1200000L;
+
+        ReqUserLoginDTO req = new ReqUserLoginDTO(userId, rawPassword);
+        User user = new User(userId, encodedPassword, "test", "test", RoleType.USER);
+
+        given(userRepository.findByUserId(userId)).willReturn(Optional.of(user));
+        given(encoder.matches(rawPassword, encodedPassword)).willReturn(true);
+        given(jwtTokenProvider.generateAccessToken(userId, RoleType.USER.name())).willReturn(accessToken);
+        given(jwtTokenProvider.generateRefreshToken(userId, RoleType.USER.name())).willReturn(refreshToken);
+        given(jwtTokenProvider.getAccessTokenExpirationMs()).willReturn(accessTokenExpirationMs);
+        given(jwtTokenProvider.getRefreshTokenExpirationMs()).willReturn(refreshTokenExpirationMs);
+        given(jwtTokenProvider.getAccessTokenExpirationTime(accessToken)).willReturn(System.currentTimeMillis() + accessTokenExpirationMs);
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+
+        // When
+        CommonResponse<ResUserLoginDTO> response = userService.login(req, httpServletResponse);
+
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.isSuccess()).isTrue();
+        assertThat(response.getMessage()).isEqualTo("회원 로그인 성공");
+        assertThat(response.getData().getUserId()).isEqualTo(userId);
+        assertThat(response.getData().getAccessTokenExpiration()).isGreaterThan(System.currentTimeMillis());
+
+        then(userRepository).should().findByUserId(userId);
+        then(encoder).should().matches(rawPassword, encodedPassword);
+        then(jwtTokenProvider).should().generateAccessToken(userId, RoleType.USER.name());
+        then(redisTemplate).should().opsForValue();
+        then(valueOperations).should().set(anyString(), eq(refreshToken), eq(refreshTokenExpirationMs), eq(TimeUnit.MILLISECONDS));
+
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+        System.out.println(json);
     }
 
     @Test
@@ -323,6 +383,50 @@ public class UserServiceTest {
         assertEquals(2, errors.size());
         assertTrue(errors.get("password").contains("비밀번호는 최소 8자 이상이어야 합니다."));
         assertTrue(errors.get("email").contains("이메일 형식이 올바르지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("[실패] 일반 유저 로그인 Service - 존재하지 않는 회원 로그인")
+    void login_UserNotFound() {
+        // Given
+        ReqUserLoginDTO req = new ReqUserLoginDTO("unknownUser", "anyPassword");
+        given(userRepository.findByUserId("unknownUser")).willReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> userService.login(req, httpServletResponse))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 회원입니다.");
+    }
+
+    @Test
+    @DisplayName("[실패] 일반 유저 로그인 Service - 일반 회원 계정이 아님")
+    void login_NotRoleTypeUser() {
+        // Given
+        User admin = new User("adminUser", "encodedPw", "nickName", "email", RoleType.ADMIN);
+        ReqUserLoginDTO req = new ReqUserLoginDTO("adminUser", "anyPassword");
+
+        given(userRepository.findByUserId("adminUser")).willReturn(Optional.of(admin));
+
+        // When & Then
+        assertThatThrownBy(() -> userService.login(req, httpServletResponse))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("일반 회원 계정이 아닙니다.");
+    }
+
+    @Test
+    @DisplayName("[실패] 일반 유저 로그인 Service - 잘못된 비밀번호")
+    void login_InvalidPassword() {
+        // Given
+        User user = new User("test", "encodedPw", "test", "test", RoleType.USER);
+        ReqUserLoginDTO req = new ReqUserLoginDTO("testUser", "wrongPassword");
+
+        given(userRepository.findByUserId("testUser")).willReturn(Optional.of(user));
+        given(encoder.matches("wrongPassword", "encodedPw")).willReturn(false);
+
+        // When & Then
+        assertThatThrownBy(() -> userService.login(req, httpServletResponse))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("잘못된 비밀번호입니다.");
     }
 
     @DisplayName("[실패] 회원 리스트 조회 Service - 잘못된 페이지 번호")

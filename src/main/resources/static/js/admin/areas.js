@@ -50,6 +50,7 @@ window.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(`/api/admin/area/list?page=${currentPage}&size=${pageSize}`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -149,6 +150,7 @@ window.addEventListener("DOMContentLoaded", () => {
             try {
                 const response = await fetch("/api/admin/area", {
                     method: "POST",
+                    credentials: 'include',
                     body: formData,
                 });
 
@@ -196,6 +198,7 @@ window.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch("/api/admin/area", {
                 method: "DELETE",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json"
                 },
