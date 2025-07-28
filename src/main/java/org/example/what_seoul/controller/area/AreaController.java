@@ -2,6 +2,8 @@ package org.example.what_seoul.controller.area;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -90,9 +92,29 @@ public class AreaController {
     @Operation(summary = "후기를 작성한 장소 이름 목록 조회", description = AreaDescription.GET_AREA_NAMES_WITH_MY_BOARDS)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = AreaDescription.GET_AREA_NAMES_WITH_MY_BOARDS_SUCCESS) // TODO
+            @ApiResponse(
+                    responseCode = "200",
+                    description = AreaDescription.GET_AREA_NAMES_WITH_MY_BOARDS_SUCCESS,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "SuccessExample",
+                                    summary = "후기를 작성한 장소 이름 조회 성공 예시",
+                                    value = """
+                                    {
+                                      "success": true,
+                                      "message": "후기를 작성한 장소 이름 목록 조회 성공",
+                                      "data": [
+                                        "강남역", "회기역", "보신각"
+                                      ],
+                                      "responseTime": "2025-07-28T18:27:29.399Z"
+                                    }
+                                    """
+                            )
+                    )
+            )
     })
-    @GetMapping("/reviewed")
+    @GetMapping(value = "/reviewed", produces = "application/json")
     public ResponseEntity<CommonResponse<List<String>>> getAreaNamesWithMyBoards() {
         return ResponseEntity.status(HttpStatus.OK).body(areaService.getAreaNamesWithMyBoards());
     }
