@@ -14,7 +14,7 @@ public class SwaggerConfig {
                 .title("WhatSeoul API Document")
                 .version("1.0");
         return new OpenAPI()
-                .addServersItem(new Server().url("http://localhost:8089"))
+                .addServersItem(new Server().url("http://localhost:8089/"))
                 .info(info);
     }
 }

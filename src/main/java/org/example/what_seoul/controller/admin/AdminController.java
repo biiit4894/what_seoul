@@ -40,7 +40,7 @@ public class AdminController {
     @ValidationErrorResponses
     @AdminAccessDeniedResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "관리자 계정 생성 성공")
+            @ApiResponse(responseCode = "201", description = AdminDescription.SIGNUP_SUCCESS)
     })
     public ResponseEntity<CommonResponse<ResCreateAdminDTO>> signup(
             @Parameter(description = "Access Token (쿠키)", required = true)
@@ -56,7 +56,7 @@ public class AdminController {
     @Operation(summary = "관리자 로그인", description = AdminDescription.LOGIN)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "관리자 로그인 성공")
+            @ApiResponse(responseCode = "200", description = AdminDescription.LOGIN_SUCCESS)
     })
     public ResponseEntity<CommonResponse<ResAdminLoginDTO>> login(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "로그인 요청 DTO (userId, password)", required = true)
@@ -70,7 +70,7 @@ public class AdminController {
     @Operation(summary = "서울시 주요 장소 목록 조회", description = AdminDescription.GET_AREA_LIST)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "장소 목록 조회 성공")
+            @ApiResponse(responseCode = "200", description = AdminDescription.GET_AREA_LIST_SUCCESS)
     })
     public ResponseEntity<CommonResponse<Slice<ResGetAreaListDTO>>> getAreaList(
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
@@ -89,7 +89,7 @@ public class AdminController {
     @Operation(summary = "서울시 주요 장소 정보 업로드", description = AdminDescription.UPLOAD_AREA)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "업로드 및 저장 성공")
+            @ApiResponse(responseCode = "201", description = AdminDescription.UPLOAD_AREA_SUCCESS)
     })
     public ResponseEntity<CommonResponse<ResUploadAreaDTO>> uploadArea(
             @Parameter(
@@ -107,7 +107,7 @@ public class AdminController {
     @Operation(summary = "서울시 주요 장소 삭제", description = AdminDescription.DELETE_AREAS)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "삭제 처리 성공")
+            @ApiResponse(responseCode = "200", description = AdminDescription.DELETE_AREAS_SUCCESS)
     })
     public ResponseEntity<CommonResponse<List<ResDeleteAreaDTO>>> deleteAreas(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(

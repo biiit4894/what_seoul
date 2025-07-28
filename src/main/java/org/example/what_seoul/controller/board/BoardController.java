@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.what_seoul.common.dto.CommonResponse;
 import org.example.what_seoul.controller.board.dto.*;
+import org.example.what_seoul.domain.board.Board;
 import org.example.what_seoul.service.board.BoardService;
 import org.example.what_seoul.swagger.operation.description.board.BoardDescription;
 import org.example.what_seoul.swagger.responses.error.AccessDeniedResponses;
@@ -30,7 +31,7 @@ public class BoardController {
     @Operation(summary = "문화행사 후기 작성", description = "특정 문화행사에 대한 후기를 작성합니다. 후기는 1자 이상 300자 이하로 작성할 수 있습니다.")
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "후기 작성 성공")
+            @ApiResponse(responseCode = "201", description = BoardDescription.CREATE_BOARD_SUCCESS)
     })
     @PostMapping("")
     public ResponseEntity<CommonResponse<ResCreateBoardDTO>> createBoard(@Valid @RequestBody ReqCreateBoardDTO req) {
@@ -40,7 +41,7 @@ public class BoardController {
     @Operation(summary = "문화행사별 후기 목록 조회", description = "문화행사 ID로 후기를 페이지 단위로 조회합니다. 최신순으로 정렬됩니다.")
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "문화행사별 후기 목록 조회 성공")
+            @ApiResponse(responseCode = "200", description = BoardDescription.GET_BOARDS_BY_CULTURE_EVENT_ID_SUCCESS)
     })
     @GetMapping("")
     public ResponseEntity<CommonResponse<Slice<ResGetBoardDTO>>> getBoardsByCultureEventId(
@@ -54,7 +55,7 @@ public class BoardController {
     @Operation(summary = "후기 상세 조회", description = "후기 ID를 통해 후기 상세 정보를 조회합니다.")
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "후기 상세 조회 성공")
+            @ApiResponse(responseCode = "200", description = BoardDescription.GET_BOARD_BY_ID)
     })
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<ResGetBoardDTO>> getBoardById(@PathVariable Long id) {
@@ -65,7 +66,7 @@ public class BoardController {
     @Operation(summary = "내가 작성한 후기 목록 조회", description = BoardDescription.GET_MY_BOARDS)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "작성한 후기 목록 조회 성공")
+            @ApiResponse(responseCode = "200", description = BoardDescription.GET_MY_BOARDS_SUCCESS)
     })
     @PostMapping("/my")
     public ResponseEntity<CommonResponse<Slice<ResGetMyBoardDTO>>> getMyBoards(
@@ -84,7 +85,7 @@ public class BoardController {
     @CommonErrorResponses
     @AccessDeniedResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "후기 수정 성공")
+            @ApiResponse(responseCode = "200", description = BoardDescription.UPDATE_BOARD_SUCCESS)
     })
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<ResUpdateBoardDTO>> updateBoard(@PathVariable Long id, @RequestBody ReqUpdateBoardDTO req) {
@@ -96,7 +97,7 @@ public class BoardController {
     @CommonErrorResponses
     @AccessDeniedResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "후기 삭제 성공")
+            @ApiResponse(responseCode = "200", description = BoardDescription.DELETE_BOARD_SUCCESS)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<CommonResponse<ResDeleteBoardDTO>> deleteBoard(@PathVariable Long id) {

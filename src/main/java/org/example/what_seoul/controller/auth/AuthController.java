@@ -25,7 +25,7 @@ public class AuthController {
     @Operation(summary = "액세스 토큰 재발급", description = AuthDescription.REISSUE_ACCESS_TOKEN)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "재발급 성공")
+            @ApiResponse(responseCode = "200", description = AuthDescription.REISSUE_ACCESS_TOKEN_SUCCESS)
     })
     @PostMapping("/access/reissue")
     public ResponseEntity<CommonResponse<ResReissueAccessTokenDTO>> reissueAccessToken(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
@@ -35,7 +35,7 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = AuthDescription.LOGOUT)
     @CommonErrorResponses
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그아웃 성공")
+            @ApiResponse(responseCode = "200", description = AuthDescription.LOGOUT_SUCCESS)
     })
     @PostMapping("/logout")
     public ResponseEntity<CommonResponse<Void>> logout(@CookieValue("accessToken") String accessToken, HttpServletResponse response) {

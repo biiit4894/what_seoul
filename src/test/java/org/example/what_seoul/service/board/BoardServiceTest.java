@@ -155,7 +155,7 @@ public class BoardServiceTest {
 
         // then
         assertTrue(response.isSuccess());
-        assertEquals("장소별 문화행사 후기 목록 조회 성공", response.getMessage());
+        assertEquals("문화행사별 후기 목록 조회 성공", response.getMessage());
         assertEquals(2, response.getData().getContent().size());
 
         ResGetBoardDTO dto = response.getData().getContent().get(0);
@@ -187,7 +187,7 @@ public class BoardServiceTest {
 
         // then
         assertTrue(response.isSuccess());
-        assertEquals("장소별 문화행사 후기 목록 조회 성공", response.getMessage());
+        assertEquals("문화행사별 후기 목록 조회 성공", response.getMessage());
         assertTrue(response.getData().isEmpty());
 
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);

@@ -55,6 +55,7 @@ public class CitydataService {
     @Transactional(readOnly = true)
     public CommonResponse<ResGetWeatherDataDTO> findWeatherDataByAreaId(Long areaId) {
         Weather weather = weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("날씨 현황 데이터를 찾지 못했습니다."));
+
         return new CommonResponse<>(
                 true,
                 "장소별 날씨 현황 데이터 조회 성공",
@@ -66,6 +67,7 @@ public class CitydataService {
     @Transactional(readOnly = true)
     public CommonResponse<List<ResGetCultureEventDataDTO>> findCultureEventDataByAreaId(Long areaId) {
         List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId).orElseThrow(() -> new EntityNotFoundException("문화 행사 데이터를 찾지 못했습니다."));
+
         return new CommonResponse<>(
                 true,
                 "장소별 문화행사 데이터 조회 성공",
