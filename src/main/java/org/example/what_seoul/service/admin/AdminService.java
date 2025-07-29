@@ -55,6 +55,12 @@ public class AdminService {
     @Value("${cloud.aws.s3.bucket}")
     private String s3BucketName;
 
+    @Value("${cloud.aws.s3.shapefile-key-prefix")
+    private String s3ShapefileKeyPrefix;
+
+    @Value("${cloud.aws.ec2.shapefile-path-prefix}")
+    private String ec2ShapefilePathPrefix;
+
     @Value("${file.storage.shp-temp-path}")
     private String shpTempPath;
 
@@ -250,7 +256,7 @@ public class AdminService {
     @Transactional
     public CommonResponse<ResUploadAreaDTO> processAreaFile(MultipartFile multipartFile) {
         String uuid = UUID.randomUUID().toString();
-        String s3Key = "admin/shapefiles/" + uuid + ".zip";
+        String s3Key = s3ShapefileKeyPrefix + uuid + ".zip";
 
         File tempZip = null;
         File downloadDir = null;
@@ -264,7 +270,7 @@ public class AdminService {
             log.info("파일이 S3에 업로드되었습니다: s3://{}/{}", s3BucketName, s3Key);
 
             // 2. S3에서 EC2로 다운로드
-            downloadDir = new File("/tmp/admin/shapefiles/" + uuid);
+            downloadDir = new File(ec2ShapefilePathPrefix + uuid);
             downloadDir.mkdirs();
             File localZip = new File(downloadDir, "uploaded.zip");
             amazonS3Client.getObject(new GetObjectRequest(s3BucketName, s3Key), localZip);
