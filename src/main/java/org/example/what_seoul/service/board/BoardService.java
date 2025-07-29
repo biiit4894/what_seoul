@@ -61,7 +61,7 @@ public class BoardService {
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
         Slice<ResGetBoardDTO> result = boardSlice.map(board -> ResGetBoardDTO.from(board, loginUserInfo));
 
-        return new CommonResponse<>(true, "문화행사별 문화행사 후기 목록 조회 성공", result);
+        return new CommonResponse<>(true, "문화행사별 후기 목록 조회 성공", result);
     }
 
     @Transactional(readOnly = true)
