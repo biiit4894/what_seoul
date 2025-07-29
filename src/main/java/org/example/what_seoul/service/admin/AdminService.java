@@ -55,7 +55,7 @@ public class AdminService {
     @Value("${cloud.aws.s3.bucket}")
     private String s3BucketName;
 
-    @Value("${cloud.aws.s3.shapefile-key-prefix")
+    @Value("${cloud.aws.s3.shapefile-key-prefix}")
     private String s3ShapefileKeyPrefix;
 
     @Value("${cloud.aws.ec2.shapefile-path-prefix}")
