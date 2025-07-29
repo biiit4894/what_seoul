@@ -55,6 +55,12 @@ public class AdminService {
     @Value("${cloud.aws.s3.bucket}")
     private String s3BucketName;
 
+    @Value("${cloud.aws.s3.shapefile-key-prefix")
+    private String s3ShapefileKeyPrefix;
+
+    @Value("${cloud.aws.ec2.shapefile-path-prefix}")
+    private String ec2ShapefilePathPrefix;
+
     @Value("${file.storage.shp-temp-path}")
     private String shpTempPath;
 
@@ -79,7 +85,6 @@ public class AdminService {
     public CommonResponse<ResCreateAdminDTO> createAdminUser(String accessToken, ReqCreateAdminDTO req) {
         // 1. 토큰 유효성 검사
         if (!jwtTokenProvider.validateToken(accessToken)) {
-            log.info("adminService - createAdminUser");
             throw new UnauthorizedException("유효하지 않거나 만료된 관리자 토큰입니다.");
         }
 
@@ -127,6 +132,7 @@ public class AdminService {
 
         // 5. 3)유효성 검증 및 4)중복 검증에서 발생한 모든 에러를 포함하여 예외를 던진다.
         if (!errors.isEmpty()) {
+            log.error("관리자 계정 생성 실패 - validation errors: {}", errors);
             throw new CustomValidationException(errors);
         }
 
@@ -235,7 +241,7 @@ public class AdminService {
 
         for (Area area : areas) {
             area.setDeletedAt();
-            log.warn("[삭제 처리] areaName='{}' areaCode='{}'", area.getAreaName(), area.getAreaCode());
+            log.info("[삭제 처리] areaName='{}' areaCode='{}'", area.getAreaName(), area.getAreaCode());
             deletedAreas.add(ResDeleteAreaDTO.from(area));
         }
 
@@ -250,7 +256,7 @@ public class AdminService {
     @Transactional
     public CommonResponse<ResUploadAreaDTO> processAreaFile(MultipartFile multipartFile) {
         String uuid = UUID.randomUUID().toString();
-        String s3Key = "admin/shapefiles/" + uuid + ".zip";
+        String s3Key = s3ShapefileKeyPrefix + uuid + ".zip";
 
         File tempZip = null;
         File downloadDir = null;
@@ -261,18 +267,18 @@ public class AdminService {
             tempZip = File.createTempFile("shapefile-", ".zip");
             multipartFile.transferTo(tempZip);
             amazonS3Client.putObject(new PutObjectRequest(s3BucketName, s3Key, tempZip));
-            log.warn("파일이 S3에 업로드되었습니다: s3://{}/{}", s3BucketName, s3Key);
+            log.info("파일이 S3에 업로드되었습니다: s3://{}/{}", s3BucketName, s3Key);
 
             // 2. S3에서 EC2로 다운로드
-            downloadDir = new File("/tmp/admin/shapefiles/" + uuid);
+            downloadDir = new File(ec2ShapefilePathPrefix + uuid);
             downloadDir.mkdirs();
             File localZip = new File(downloadDir, "uploaded.zip");
             amazonS3Client.getObject(new GetObjectRequest(s3BucketName, s3Key), localZip);
-            log.warn("S3에서 파일 다운로드 완료: {}", localZip.getAbsolutePath());
+            log.info("S3에서 파일 다운로드 완료: {}", localZip.getAbsolutePath());
 
             // 3. 압축 해제
             unzipFile(localZip, downloadDir);
-            log.warn("압축 해제 완료: {}", downloadDir.getAbsolutePath());
+            log.info("압축 해제 완료: {}", downloadDir.getAbsolutePath());
 
             // 4. Python 스크립트 실행
             geojsonOutputDir = new File("/tmp/admin/geojson/" + uuid);
@@ -301,7 +307,7 @@ public class AdminService {
 
             return new CommonResponse<>(true, "서울시 주요 장소 정보 업로드 성공", res);
         } catch (IOException | InterruptedException | ParseException e) {
-            log.warn("서울시 주요 장소 정보 업로드 중 예외 발생: {}", e.getMessage(), e);
+            log.error("서울시 주요 장소 정보 업로드 중 예외 발생: {}", e.getMessage(), e);
             throw new RuntimeException("서울시 주요 장소 정보 업로드 중 오류가 발생했습니다.", e);
         } finally {
             if (downloadDir != null) {
@@ -312,7 +318,7 @@ public class AdminService {
             }
             if (tempZip != null && tempZip.exists()) {
                 boolean deleted = tempZip.delete();
-                log.warn("임시 zip 파일 삭제 - 경로: {}, 성공여부: {}", tempZip.getAbsolutePath(), deleted ? "성공" : "실패");
+                log.info("임시 zip 파일 삭제 - 경로: {}, 성공여부: {}", tempZip.getAbsolutePath(), deleted ? "성공" : "실패");
             }
         }
     }
@@ -342,7 +348,7 @@ public class AdminService {
             }
         }
         boolean deleted = file.delete();
-        log.warn("임시 파일/디렉토리 삭제 - 경로: {}, 성공여부: {}", file.getAbsolutePath(), deleted ? "성공" : "실패");
+        log.info("임시 파일/디렉토리 삭제 - 경로: {}, 성공여부: {}", file.getAbsolutePath(), deleted ? "성공" : "실패");
     }
 
 

@@ -2,9 +2,11 @@ package org.example.what_seoul.exception;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.what_seoul.common.dto.CommonErrorResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.List;
 import java.util.Map;
 
+@Hidden
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -49,7 +52,7 @@ public class GlobalExceptionHandler {
         if (e.getCause() instanceof JsonMappingException || e.getCause() instanceof JsonParseException) {
             errorMessage = "Malformed JSON request.";
         } else {
-            errorMessage = "Invalid Request Body."; // TODO: 분기처리 상세화?
+            errorMessage = "Invalid Request Body.";
         }
 
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
@@ -88,14 +91,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<CommonErrorResponse<Object>> handleDatabaseException(DatabaseException e) {
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<CommonErrorResponse<Object>> handleDatabaseException(DataAccessException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
-          "Database Exception",
-                e.getMessage()
+          "Data Access Exception",
+                "데이터 접근 중 오류가 발생했습니다."
         );
-        log.error("Database Exception : {}", e.getMessage(), e);
-
+        log.error("Data Access Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -113,7 +115,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonErrorResponse<Map<String, List<String>>>> handleCustomValidationException(CustomValidationException e) {
         CommonErrorResponse<Map<String, List<String>>> errorResponse = new CommonErrorResponse<>(
                 "Validation Failed",
-                e.getErrors()  // 유효성 검증 및 중복 오류 메시지 반환
+                e.getErrors()
         );
 
         log.error("Validation error: {}", e.getErrors());
@@ -124,7 +126,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonErrorResponse<Object>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         CommonErrorResponse<Object> errorResponse = new CommonErrorResponse<>(
           "Data Integrity Violation",
-          e.getMessage() // TODO: context 반환 방식 수정
+          e.getMessage()
         );
         log.error("Data Integrity Violation Exception : {}", e.getMessage(), e);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);

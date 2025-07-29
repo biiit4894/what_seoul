@@ -15,8 +15,7 @@ public interface AreaRepository extends JpaRepository<Area, Long>, AreaQueryRepo
 
     Optional<Area> findByAreaNameAndDeletedAtIsNull(String areaName);
 
-
-    Optional<List<Area>> findByAreaNameContainingAndDeletedAtIsNull(String keyword);
+    List<Area> findByAreaNameContainingAndDeletedAtIsNull(String keyword);
 
     List<Area> findByDeletedAtIsNull();
 }

@@ -96,11 +96,8 @@ function cultureEventSingleModal(areaName, events) {
         eventCard.appendChild(eventImg);
         eventCard.appendChild(eventInfo);
 
-        console.log(event.eventName, "isEnded =", event.isEnded, "type:", typeof event.isEnded);
         // 종료된 행사는 overlay 추가 및 종료된 행사 문구 표기
         if (event.isEnded === true) {
-            console.log(event.eventName, "isEnded =", event.isEnded, "type:", typeof event.isEnded);
-
             const overlay = document.createElement("div");
             overlay.className = "event-overlay";
             overlay.innerText = "종료된 행사";
@@ -123,8 +120,6 @@ function cultureEventSingleModal(areaName, events) {
 }
 
 function showReviewModal(cultureEventId, eventName) {
-    console.log("cultureEventId: ", cultureEventId);
-    console.log("typeof cultureEventId: ", typeof cultureEventId);
     const modal = document.getElementById("culture-event-modal");
     modal.innerHTML = ""; // 기존 내용 제거
 
@@ -172,7 +167,9 @@ function showReviewModal(cultureEventId, eventName) {
     const loadReviews = () => {
         if (isLast) return;
 
-        fetch(`/api/board?cultureEventId=${cultureEventId}&page=${page}`)
+        fetch(`/api/board?cultureEventId=${cultureEventId}&page=${page}`, {
+            credentials: 'include',
+        })
             .then(res => res.json())
             .then(data => {
                 const reviews = data.data.content;
@@ -226,7 +223,8 @@ function showReviewModal(cultureEventId, eventName) {
                         deleteBtn.onclick = () => {
                             if (confirm("정말 삭제하시겠습니까?")) {
                                 fetch(`/api/board/${review.id}`, {
-                                    method: "DELETE"
+                                    method: "DELETE",
+                                    credentials: 'include',
                                 })
                                     .then(res => {
                                         if (!res.ok) throw new Error("삭제 실패");
@@ -332,6 +330,7 @@ function showCreateReviewForm(cultureEventId, eventName) {
 
         fetch("/api/board", {
             method: "POST",
+            credentials: 'include',
             headers: {
                 "Content-Type": "application/json"
             },
@@ -405,6 +404,7 @@ function showEditReviewForm(cultureEventId, review, eventName) {
 
         fetch(`/api/board/${review.id}`, {
             method: "PUT",
+            credentials: 'include',
             headers: {
                 "Content-Type": "application/json"
             },

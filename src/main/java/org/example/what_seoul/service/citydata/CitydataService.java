@@ -12,13 +12,11 @@ import org.example.what_seoul.domain.citydata.event.CultureEvent;
 import org.example.what_seoul.domain.citydata.population.Population;
 import org.example.what_seoul.domain.citydata.population.PopulationForecast;
 import org.example.what_seoul.domain.citydata.weather.Weather;
-import org.example.what_seoul.exception.DatabaseException;
 import org.example.what_seoul.repository.board.BoardRepository;
 import org.example.what_seoul.repository.citydata.event.CultureEventRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationForecastRepository;
 import org.example.what_seoul.repository.citydata.population.PopulationRepository;
 import org.example.what_seoul.repository.citydata.weather.WeatherRepository;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,49 +42,37 @@ public class CitydataService {
 
     @Transactional(readOnly = true)
     public CommonResponse<ResGetPopulationDataDTO> findPopulationDataByAreaId(Long areaId) {
-        try {
-            Population population = populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("인구 현황 데이터를 찾지 못했습니다."));
+        Population population = populationRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("인구 현황 데이터를 찾지 못했습니다."));
 
-            return new CommonResponse<>(
-                    true,
-                    "장소별 인구 현황 데이터 조회 성공",
-                    ResGetPopulationDataDTO.from(population)
-            );
-        } catch (DataAccessException e) {
-            log.error("DB 접근 에러", e);
-            throw new DatabaseException("장소별 인구 현황 데이터 조회 실패");
-        }
+        return new CommonResponse<>(
+                true,
+                "장소별 인구 현황 데이터 조회 성공",
+                ResGetPopulationDataDTO.from(population)
+        );
 
     }
 
     @Transactional(readOnly = true)
     public CommonResponse<ResGetWeatherDataDTO> findWeatherDataByAreaId(Long areaId) {
-        try {
-            Weather weather = weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("날씨 현황 데이터를 찾지 못했습니다."));
-            return new CommonResponse<>(
-                    true,
-                    "장소별 날씨 현황 데이터 조회 성공",
-                    ResGetWeatherDataDTO.from(weather)
-            );
-        } catch (DataAccessException e) {
-            log.error("DB 접근 에러", e);
-            throw new DatabaseException("장소별 날씨 현황 데이터 조회 실패");
-        }
+        Weather weather = weatherRepository.findTopByAreaIdOrderByCreatedAtDesc(areaId).orElseThrow(() -> new EntityNotFoundException("날씨 현황 데이터를 찾지 못했습니다."));
+
+        return new CommonResponse<>(
+                true,
+                "장소별 날씨 현황 데이터 조회 성공",
+                ResGetWeatherDataDTO.from(weather)
+        );
+
     }
 
     @Transactional(readOnly = true)
     public CommonResponse<List<ResGetCultureEventDataDTO>> findCultureEventDataByAreaId(Long areaId) {
-        try {
-            List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId).orElseThrow(() -> new EntityNotFoundException("문화 행사 데이터를 찾지 못했습니다."));
-            return new CommonResponse<>(
-                    true,
-                    "장소별 문화행사 데이터 조회 성공",
-                    ResGetCultureEventDataDTO.from(cultureEventList)
-            );
-        } catch (DataAccessException e) {
-            log.error("DB 접근 에러", e);
-            throw new DatabaseException("장소별 문화행사 데이터 조회 실패");
-        }
+        List<CultureEvent> cultureEventList = cultureEventRepository.findAllByAreaIdIsOrderByIsEndedAsc(areaId).orElseThrow(() -> new EntityNotFoundException("문화 행사 데이터를 찾지 못했습니다."));
+
+        return new CommonResponse<>(
+                true,
+                "장소별 문화행사 데이터 조회 성공",
+                ResGetCultureEventDataDTO.from(cultureEventList)
+        );
     }
 
     /**
@@ -257,8 +243,7 @@ public class CitydataService {
                             LocalDate endDate = LocalDate.parse(endDateStr); // "YYYY-MM-DD" 형태로 파싱
                             return endDate.atStartOfDay().isBefore(cutoff);
                         } catch (Exception e) {
-                            // 파싱 실패한 경우는 삭제 대상에서 제외
-                            log.warn("Failed to parse eventPeriod: {}", period);
+                            log.warn("Failed to parse eventPeriod: {}", period); // 파싱 실패한 경우는 삭제 대상에서 제외
                             return false;
                         }
                     }

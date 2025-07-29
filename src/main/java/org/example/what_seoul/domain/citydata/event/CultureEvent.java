@@ -115,33 +115,33 @@ public class CultureEvent {
     public boolean updateFrom(CultureEvent cultureEvent) {
         boolean isUpdated = false;
         if(!Objects.equals(this.eventPeriod, cultureEvent.getEventPeriod())) {
-            log.info("[변경] {}의 eventPeriod: '{}' → '{}'", this.eventName, this.eventPeriod, cultureEvent.getEventPeriod());
+            log.info("[문화행사 변경] {}의 eventPeriod: '{}' -> '{}'", this.eventName, this.eventPeriod, cultureEvent.getEventPeriod());
             this.eventPeriod = cultureEvent.getEventPeriod();
             isUpdated = true;
         }
         if (!Objects.equals(this.eventPlace, cultureEvent.getEventPlace())) {
-            log.info("[변경] {}의 eventPlace: '{}' → '{}'", this.eventName, this.eventPlace, cultureEvent.getEventPlace());
+            log.info("[문화행사 변경] {}의 eventPlace: '{}' -> '{}'", this.eventName, this.eventPlace, cultureEvent.getEventPlace());
             this.eventPlace = cultureEvent.getEventPlace();
             isUpdated = true;
         }
         if (!Objects.equals(this.eventX, cultureEvent.getEventX())) {
             this.eventX = cultureEvent.getEventX();
-            log.info("[변경] {}의 eventX: '{}' → '{}'", this.eventName, this.eventX, cultureEvent.getEventX());
+            log.info("[문화행사 변경] {}의 eventX: '{}' -> '{}'", this.eventName, this.eventX, cultureEvent.getEventX());
             isUpdated = true;
         }
         if (!Objects.equals(this.eventY, cultureEvent.getEventY())) {
             this.eventY = cultureEvent.getEventY();
-            log.info("[변경] {}의 eventY: '{}' → '{}'", this.eventName, this.eventY, cultureEvent.getEventY());
+            log.info("[문화행사 변경] {}의 eventY: '{}' -> '{}'", this.eventName, this.eventY, cultureEvent.getEventY());
             isUpdated = true;
         }
         if (!Objects.equals(this.thumbnail, cultureEvent.getThumbnail())) {
             this.thumbnail = cultureEvent.getThumbnail();
-            log.info("[변경] {}의 thumbnail: '{}' → '{}'", this.eventName, this.thumbnail, cultureEvent.getThumbnail());
+            log.info("[문화행사 변경] {}의 thumbnail: '{}' -> '{}'", this.eventName, this.thumbnail, cultureEvent.getThumbnail());
             isUpdated = true;
         }
         if (!Objects.equals(this.url, cultureEvent.getUrl())) {
             this.url = cultureEvent.getUrl();
-            log.info("[변경] {}의 url: '{}' → '{}'", this.eventName, this.url, cultureEvent.getUrl());
+            log.info("[문화행사 변경] {}의 url: '{}' → '{}'", this.eventName, this.url, cultureEvent.getUrl());
             isUpdated = true;
         }
         if (isUpdated) {

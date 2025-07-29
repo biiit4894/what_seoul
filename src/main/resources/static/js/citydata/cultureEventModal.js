@@ -147,7 +147,9 @@ function showReviewModalForArea(cultureEventId, eventName, allEventData, areaNam
     const loadReviews = () => {
         if (isLast) return;
 
-        fetch(`/api/board?cultureEventId=${cultureEventId}&page=${page}`)
+        fetch(`/api/board?cultureEventId=${cultureEventId}&page=${page}`, {
+            credentials: 'include',
+        })
             .then(res => res.json())
             .then(data => {
                 const reviews = data.data.content;
@@ -192,7 +194,10 @@ function showReviewModalForArea(cultureEventId, eventName, allEventData, areaNam
                         deleteBtn.innerText = "삭제";
                         deleteBtn.onclick = () => {
                             if (confirm("정말 삭제하시겠습니까?")) {
-                                fetch(`/api/board/${review.id}`, { method: "DELETE" })
+                                fetch(`/api/board/${review.id}`, {
+                                    method: "DELETE",
+                                    credentials: 'include',
+                                })
                                     .then(res => {
                                         if (!res.ok) throw new Error("삭제 실패");
                                         return res.json();
@@ -281,6 +286,7 @@ function showCreateReviewFormForArea(cultureEventId, eventName, allEventData, ar
 
         fetch("/api/board", {
             method: "POST",
+            credentials: 'include',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ content, cultureEventId })
         })
@@ -342,6 +348,7 @@ function showEditReviewFormForArea(cultureEventId, review, eventName, allEventDa
 
         fetch(`/api/board/${review.id}`, {
             method: "PUT",
+            credentials: 'include',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ content: newContent })
         })

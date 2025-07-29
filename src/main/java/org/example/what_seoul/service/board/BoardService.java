@@ -61,7 +61,7 @@ public class BoardService {
         LoginUserInfoDTO loginUserInfo = userService.getLoginUserInfo();
         Slice<ResGetBoardDTO> result = boardSlice.map(board -> ResGetBoardDTO.from(board, loginUserInfo));
 
-        return new CommonResponse<>(true, "장소별 문화행사 후기 목록 조회 성공", result);
+        return new CommonResponse<>(true, "문화행사별 후기 목록 조회 성공", result);
     }
 
     @Transactional(readOnly = true)
@@ -142,7 +142,7 @@ public class BoardService {
 
         // 3. 1) Request DTO 유효성 검증 및 2) 비즈니스 검증에서 발생한 모든 에러를 포함하여 예외를 던진다.
         if (!errors.isEmpty()) {
-            log.warn("문화행사 후기 수정 실패 - validation errors: {}", errors);
+            log.error("문화행사 후기 수정 실패 - validation errors: {}", errors);
             throw new CustomValidationException(errors);
         }
 
