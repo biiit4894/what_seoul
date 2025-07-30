@@ -31,9 +31,8 @@
 <br><br>
 
 ## 💾 ERD
-<img width="2302" height="2052" alt="what_seoul_database" src="https://github.com/user-attachments/assets/80f2e8cc-c720-4372-bced-045e33cb2fbb" />
+<img width="2454" height="1740" alt="what_seoul_database_deploy" src="https://github.com/user-attachments/assets/7909ece6-aec4-46f7-980a-64c96a2f0120" />
 <br><br>
-
 
 ## 📃 API 명세서
 [명세서 링크](https://biiit4894.github.io/whatseoul-swagger/)
