@@ -1,23 +1,45 @@
 # what_seoul
 서울 실시간 도시데이터 조회 서비스 [왓서울(WhatSeoul)](https://github.com/WhatSEOUL/WhatSeoul)을 리팩토링합니다.
-<br>
+<br><br>
 
-## 개요
+## 🔆 개요
 - 개발 기간: 2025.03.03~ (진행중)
 - 개발 인원: 1인
+<br><br>
 
-## 기술 Stack
+## ☕ 기술 Stack
 - 주 언어 : Java 17
 - 프레임워크 : Spring Boot 3.4.3
 - DB : MySQL, Spring Data JPA
 - 빌드 및 테스트 : Gradle, JUnit
 - 템플릿 엔진 : Thymeleaf (+ HTML/CSS, Javascript)
 - Cloud & CI/CD: AWS RDS/EC2/CodeDeploy, Github Actions, Nginx
+<br><br>
 
-## 브랜치 전략
+## 🫚 브랜치 전략
 - main : 실제 서비스 운영 환경에 사용하기 위한 브랜치
 - dev : 로컬 개발 환경에서 사용하기 위한 브랜치
   - 하위에 feat/#N과 같이 이슈 번호를 바탕으로 하위 브랜치를 생성하여 작업합니다.
+<br><br>
+
+## ⚙️ 시스템 설계도
+<img width="3638" height="929" alt="시스템 설계도" src="https://github.com/user-attachments/assets/43880698-77bb-426d-968b-5c975198bbc4" />
+<br><br>
+
+## 🚀 CI/CD 모식도
+<img width="3089" height="929" alt="CICD 모식도" src="https://github.com/user-attachments/assets/264cf12a-4053-461b-b7d8-c46e2b24cb50" />
+<br><br>
+
+## 💾 ERD
+<img width="2302" height="2052" alt="what_seoul_database" src="https://github.com/user-attachments/assets/80f2e8cc-c720-4372-bced-045e33cb2fbb" />
+<br><br>
+
+
+## 📃 API 명세서
+[명세서 링크](https://biiit4894.github.io/whatseoul-swagger/)
+(링크 마우스 우클릭 후 '새 탭에서 링크 열기'를 추천합니다.)
+
+<br><br>
 
 ## 주요 개선점
 1. 장소별 도시데이터 조회 UI 가시성 개선
@@ -35,9 +57,7 @@
     2. 전체 장소에 대한 인구 혼잡도를 지도상에서 조회 (장소별 폴리곤의 색상을 통해 혼잡도 표현)
     3. 전체 장소에 대한 날씨 현황을 지도상에서 조회 (장소별 폴리곤에 기온 표기)
     4. 전체 장소에 대한 도로명주소별 문화행사 정보를 지도상에서 조회 (장소별 폴리곤에 문화행사 주소마다의 마커 표기)
-   
-
-
+<br><br>
 
 ## 주요 기능
 
