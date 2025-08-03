@@ -109,8 +109,8 @@ function populationModal(data) {
     // const forecastsData = data.data.forecasts;
 
     const labels = data.data.forecasts.map(f => f.forecastTime.slice(11, 16));
-    const minData = data.data.forecasts.map(f => parseInt(f.forecastPopulationMax));
-    const maxData = data.data.forecasts.map(f => parseInt(f.forecastPopulationMin));
+    const minData = data.data.forecasts.map(f => parseInt(f.forecastPopulationMin));
+    const maxData = data.data.forecasts.map(f => parseInt(f.forecastPopulationMax));
     const congestion = data.data.forecasts.map(f => f.forecastCongestionLevel);
 
     // 기존 차트 제거
