@@ -124,6 +124,10 @@ public class UserService {
             throw new IllegalArgumentException("일반 회원 계정이 아닙니다.");
         }
 
+        if (user.getDeletedAt() != null) {
+            throw new IllegalArgumentException("탈퇴한 계정입니다.");
+        }
+
         if (!encoder.matches(req.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("잘못된 비밀번호입니다.");
         }
