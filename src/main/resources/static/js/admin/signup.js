@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(({ status, body }) => {
                 if (status === 201) {
                     alert('신규 관리자 계정 생성이 완료되었습니다.');
-                    // window.location.href = "/login"; // 로그인 페이지 이동
+                    window.location.href = "/mypage"; // 마이페이지 이동
                 } else if (status === 400) {
                     displayErrors(body.context); // 서버에서 받은 에러 메시지 표시
                 } else {
