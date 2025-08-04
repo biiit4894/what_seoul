@@ -277,8 +277,11 @@ public class UserServiceTest {
     void withdrawUser() throws JsonProcessingException {
         // Given
         Long id = 1L;
-        User user = new User("testUser", encoder.encode("password"), "user@example.com", "nickname", RoleType.USER);
-        ReflectionTestUtils.setField(user, "id", id); // 테스트 환경에서 id 값 설정하기
+        String rawPassword = "password";
+        String encodedPassword = encoder.encode(rawPassword);
+
+        User user = new User("testUser", encodedPassword, "user@example.com", "nickname", RoleType.USER);
+        ReflectionTestUtils.setField(user, "id", id);
 
         // SecurityContextHolder에 인증 정보 세팅
         Authentication auth = new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
@@ -286,10 +289,13 @@ public class UserServiceTest {
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
+        ReqWithdrawUserDTO req = new ReqWithdrawUserDTO(rawPassword);
+
         when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        when(encoder.matches(rawPassword, encodedPassword)).thenReturn(true);
 
         // When
-        CommonResponse<ResWithdrawUserDTO> response = userService.withdrawUser(httpServletRequest, httpServletResponse);
+        CommonResponse<ResWithdrawUserDTO> response = userService.withdrawUser(req, httpServletRequest, httpServletResponse);
 
         // Then
         assertTrue(response.isSuccess());
@@ -507,11 +513,12 @@ public class UserServiceTest {
     void withdrawUser_AlreadyWithdrawn() {
         // Given
         Long userId = 1L;
-        User user = new User("testUser", encoder.encode("currPassword"), "user@example.com", "nick", RoleType.USER);
+        String rawPassword = "password";
+        String encodedPassword = encoder.encode(rawPassword);
+
+        User user = new User("testUser", encodedPassword, "user@example.com", "nick", RoleType.USER);
         ReflectionTestUtils.setField(user, "id", userId);
         user.deactivate();  // 이미 탈퇴 처리된 상태
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // SecurityContext에 인증 정보 세팅
         Authentication auth = new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
@@ -519,9 +526,14 @@ public class UserServiceTest {
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
+        ReqWithdrawUserDTO req = new ReqWithdrawUserDTO(rawPassword);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(encoder.matches(rawPassword, encodedPassword)).thenReturn(true);
+
         // Expect
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            userService.withdrawUser(httpServletRequest, httpServletResponse);
+            userService.withdrawUser(req, httpServletRequest, httpServletResponse);
         });
 
         assertEquals("이미 탈퇴한 사용자입니다.", exception.getMessage());
@@ -536,9 +548,11 @@ public class UserServiceTest {
         context.setAuthentication(auth);
         SecurityContextHolder.setContext(context);
 
+        ReqWithdrawUserDTO req = new ReqWithdrawUserDTO("password");
+
         // Expect
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.withdrawUser(httpServletRequest, httpServletResponse);
+            userService.withdrawUser(req, httpServletRequest, httpServletResponse);
         });
 
         assertEquals("로그인한 사용자 정보가 없습니다.", exception.getMessage());

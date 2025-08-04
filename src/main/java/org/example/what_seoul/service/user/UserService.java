@@ -310,9 +310,14 @@ public class UserService {
      * @return 회원 탈퇴 성공 시 CommonResponse를, 실패 시 CommonErrorResponse를 반환한다.
      */
     @Transactional
-    public CommonResponse<ResWithdrawUserDTO> withdrawUser(HttpServletRequest request, HttpServletResponse response) {
+    public CommonResponse<ResWithdrawUserDTO> withdrawUser(ReqWithdrawUserDTO req, HttpServletRequest request, HttpServletResponse response) {
         Long id = getLoginUserInfo().getId();
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        if (!encoder.matches(req.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
         if (user.getDeletedAt() != null) {
             throw new IllegalStateException("이미 탈퇴한 사용자입니다.");
         }
