@@ -25,17 +25,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     ))
             .then(({ status, body }) => {
                 if (status === 201) {
-                    alert('회원가입이 완료되었습니다.');
-                    window.location.href = "/login"; // 로그인 페이지 이동
+                    alert('신규 관리자 계정 생성이 완료되었습니다.');
+                    window.location.href = "/mypage"; // 마이페이지 이동
                 } else if (status === 400) {
                     displayErrors(body.context); // 서버에서 받은 에러 메시지 표시
                 } else {
-                    alert("회원가입 실패: " + (body.message || "알 수 없는 오류"));
+                    alert("신규 관리자 계정 생성 실패: " + (body.message || "알 수 없는 오류"));
                 }
             })
             .catch(error => {
-                console.error("회원가입 요청 중 오류 발생:", error);
-                alert("회원가입 요청에 실패했습니다.");
+                console.error("신규 관리자 계정 생성 요청 중 오류 발생:", error);
+                alert("신규 관리자 계정 생성 요청에 실패했습니다.");
 
             });
     });

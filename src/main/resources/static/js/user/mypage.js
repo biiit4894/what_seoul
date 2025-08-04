@@ -32,7 +32,21 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(({status, body}) => {
                 if (status === 200) {
                     alert("회원정보가 수정되어 로그아웃합니다.");
-                    window.location.href = "/logout";
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: "include"
+                    }).then(response => {
+                        if (response.ok) {
+                            // 세션스토리지 비우기
+                            sessionStorage.removeItem("accessTokenExpiration");
+                            sessionStorage.removeItem("loginStartTime");
+
+                            alert("로그아웃이 완료되었습니다.")
+                            window.location.href = '/';
+                        }
+                    }).catch(error => {
+                        console.log("Error: ", error);
+                    });
                 } else if (status === 400) {
                     displayErrors(body.context);
                 }
@@ -308,7 +322,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 }
 
                                 alert("후기가 수정되었습니다.");
-                                reviewContent.innerText = newContent;
+                                reviewContent.innerText = newContent; // 후기 내용 갱신해서 화면에 보여주기
+
+                                const updatedAt = new Date(response.data.updatedAt).toLocaleString(); // 작성일자 갱신해서 화면에 보여주기
+                                const dateDisplay = reviewItem.querySelector("small.text-muted");
+                                dateDisplay.innerHTML = `
+                                    작성일자: ${new Date(item.createdAt).toLocaleString()}<br/>
+                                    수정일자: ${updatedAt}
+                                `;
+
                                 editForm.classList.add("d-none");
                                 reviewContent.classList.remove("d-none");
                                 buttonGroup.classList.remove("d-none");
@@ -369,6 +391,17 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function withdrawUser() {
+    $('#withdrawModal').modal('show');
+}
+
+function submitWithdrawUser() {
+    const password = document.getElementById("withdrawPassword").value;
+
+    if (!password) {
+        alert("비밀번호를 입력해주세요.");
+        return;
+    }
+
     if (confirm("정말 탈퇴하시겠습니까?") === true) {
         fetch('/api/user/withdraw', {
             method: 'PUT',
@@ -376,20 +409,39 @@ function withdrawUser() {
             headers: {
                 "Content-Type": "application/json"
             },
+            body: JSON.stringify({password: password})
         }).then(response => response.json()
             .then(data => ({status: response.status, body: data}))
             .then(({status, body}) => {
                 if (status === 200) {
-                    alert("회원 탈퇴가 완료되었습니다.");
-                    window.location.href = "/";
+                    alert("회원 탈퇴가 완료되어 홈으로 이동합니다.");
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: "include"
+                    }).then(response => {
+                        if (response.ok) {
+                            // 세션스토리지 비우기
+                            sessionStorage.removeItem("accessTokenExpiration");
+                            sessionStorage.removeItem("loginStartTime");
+
+                            window.location.href = '/';
+                        }
+                    }).catch(error => {
+                        console.log("Error: ", error);
+                    });
                 } else {
-                    alert(body.message || "회원탈퇴에 실패했습니다.");
+                    alert(body.context || "회원탈퇴에 실패했습니다.");
                 }
             })
             .catch(error => {
                 console.log("Error: ", error);
                 alert("회원탈퇴에 실패했습니다.");
-            }));
+            })
+            .finally(() => {
+                document.getElementById("withdrawPassword").value = "";
+                $('#withdrawModal').modal('hide');
+            }))
+        ;
     }
 
 }
