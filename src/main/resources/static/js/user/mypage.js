@@ -32,7 +32,21 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(({status, body}) => {
                 if (status === 200) {
                     alert("회원정보가 수정되어 로그아웃합니다.");
-                    window.location.href = "/logout";
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: "include"
+                    }).then(response => {
+                        if (response.ok) {
+                            // 세션스토리지 비우기
+                            sessionStorage.removeItem("accessTokenExpiration");
+                            sessionStorage.removeItem("loginStartTime");
+
+                            alert("로그아웃이 완료되었습니다.")
+                            window.location.href = '/';
+                        }
+                    }).catch(error => {
+                        console.log("Error: ", error);
+                    });
                 } else if (status === 400) {
                     displayErrors(body.context);
                 }
@@ -380,8 +394,22 @@ function withdrawUser() {
             .then(data => ({status: response.status, body: data}))
             .then(({status, body}) => {
                 if (status === 200) {
-                    alert("회원 탈퇴가 완료되었습니다.");
-                    window.location.href = "/";
+                    alert("회원 탈퇴가 완료되어 홈으로 이동합니다.");
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: "include"
+                    }).then(response => {
+                        if (response.ok) {
+                            // 세션스토리지 비우기
+                            sessionStorage.removeItem("accessTokenExpiration");
+                            sessionStorage.removeItem("loginStartTime");
+
+                            // alert("로그아웃이 완료되었습니다.")
+                            window.location.href = '/';
+                        }
+                    }).catch(error => {
+                        console.log("Error: ", error);
+                    });
                 } else {
                     alert(body.message || "회원탈퇴에 실패했습니다.");
                 }
