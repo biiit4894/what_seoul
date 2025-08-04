@@ -182,6 +182,31 @@
     </div>
 </div>
 
+<!-- 회원 탈퇴 모달 -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" role="dialog" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">회원 탈퇴 확인</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">회원 탈퇴 시 계정 정보는 복구되지 않습니다.<br>계속하려면 비밀번호를 입력하세요.</p>
+                <div class="form-group">
+                    <label for="withdrawPassword">비밀번호</label>
+                    <input type="password" class="form-control" id="withdrawPassword" placeholder="비밀번호">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="submitWithdrawUser()">탈퇴</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <footer class="bg-light text-center text-muted py-3 mt-5">
     <div class="container">
