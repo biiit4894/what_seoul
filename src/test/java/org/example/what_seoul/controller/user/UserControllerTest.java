@@ -195,15 +195,17 @@ class UserControllerTest {
         // Given - 탈퇴한 유저 Mock 데이터 생성
         User withdrawnUser = new User("test", "newPassword123!", "newemail@test.com", "newNickname", RoleType.USER);
         withdrawnUser.deactivate(); // 탈퇴 처리
+        ReqWithdrawUserDTO req = new ReqWithdrawUserDTO("newPassword123!");
         ResWithdrawUserDTO res = ResWithdrawUserDTO.from(withdrawnUser);
         CommonResponse<ResWithdrawUserDTO> commonResponse = new CommonResponse<>(true, "회원 탈퇴 성공", res);
 
         // When & Then
-        when(userService.withdrawUser(any(HttpServletRequest.class), any(HttpServletResponse.class)))
+        when(userService.withdrawUser(any(ReqWithdrawUserDTO.class), any(HttpServletRequest.class), any(HttpServletResponse.class)))
                 .thenReturn(commonResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/user/withdraw")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))

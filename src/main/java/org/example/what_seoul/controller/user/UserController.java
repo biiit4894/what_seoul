@@ -84,8 +84,8 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = UserDescription.WITHDRAW_USER_SUCCESS),
     })
     @PutMapping("/withdraw")
-    public ResponseEntity<CommonResponse<ResWithdrawUserDTO>> withdrawUser(HttpServletRequest request, HttpServletResponse response) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.withdrawUser(request, response));
+    public ResponseEntity<CommonResponse<ResWithdrawUserDTO>> withdrawUser(@RequestBody ReqWithdrawUserDTO req,  HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.withdrawUser(req, request, response));
     }
 
     @Operation(summary = "아이디 찾기", description = "이메일로 사용자 아이디를 조회하고 메일로 전송합니다.")
