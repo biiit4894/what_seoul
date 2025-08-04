@@ -322,7 +322,15 @@ document.addEventListener("DOMContentLoaded", function () {
                                 }
 
                                 alert("후기가 수정되었습니다.");
-                                reviewContent.innerText = newContent;
+                                reviewContent.innerText = newContent; // 후기 내용 갱신해서 화면에 보여주기
+
+                                const updatedAt = new Date(response.data.updatedAt).toLocaleString(); // 작성일자 갱신해서 화면에 보여주기
+                                const dateDisplay = reviewItem.querySelector("small.text-muted");
+                                dateDisplay.innerHTML = `
+                                    작성일자: ${new Date(item.createdAt).toLocaleString()}<br/>
+                                    수정일자: ${updatedAt}
+                                `;
+
                                 editForm.classList.add("d-none");
                                 reviewContent.classList.remove("d-none");
                                 buttonGroup.classList.remove("d-none");
