@@ -1,5 +1,10 @@
 # what_seoul
-서울 실시간 도시데이터 조회 서비스 [왓서울(WhatSeoul)](https://github.com/WhatSEOUL/WhatSeoul)을 리팩토링합니다.
+
+
+><center style="font-style: italic">서울 어딘가로 떠나고 싶은 오늘,<br>서울시 실시간 <strong style="font-style: normal">날씨</strong>, <strong style="font-style: normal">혼잡도</strong>와 <strong style="font-style: normal">문화행사</strong>를 장소별로 확인하세요!</center> 
+
+[서울시 공공데이터](https://data.seoul.go.kr/dataList/OA-21285/F/1/datasetView.do)를 활용하여, 서울시 주요 120개 장소의 날씨, 인구, 문화행사 정보를 제공합니다. <br>
+서울 실시간 도시데이터 조회 서비스 [왓서울(WhatSeoul)](https://github.com/WhatSEOUL/WhatSeoul) 를 일부 개선하여 새롭게 개발된 웹 서비스입니다.
 <br><br>
 
 ## 🔆 개요
