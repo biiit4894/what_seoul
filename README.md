@@ -10,37 +10,46 @@
 ## 🔆 개요
 - 개발 기간: 2025.03.03~ (진행중)
 - 개발 인원: 1인
-<br><br>
+  <br><br>
 
 ## ☕ 기술 Stack
 - 주 언어 : Java 17
 - 프레임워크 : Spring Boot 3.4.3
-- DB : MySQL, Spring Data JPA
+- DB : MySQL, Spring Data JPA, Querydsl
 - 빌드 및 테스트 : Gradle, JUnit
 - 템플릿 엔진 : Thymeleaf (+ HTML/CSS, Javascript)
 - Cloud & CI/CD: AWS RDS/EC2/CodeDeploy, Github Actions, Nginx
 <br><br>
+- 인증·인가: Spring Security, JWT, Redis
+  <br><br>
 
 ## 🫚 브랜치 전략
 - main : 실제 서비스 운영 환경에 사용하기 위한 브랜치
 - dev : 로컬 개발 환경에서 사용하기 위한 브랜치
   - 하위에 feat/#N과 같이 이슈 번호를 바탕으로 하위 브랜치를 생성하여 작업합니다.
 <br><br>
+    - 하위에 feat/#N과 같이 이슈 번호를 바탕으로 하위 브랜치를 생성하여 작업합니다.
+- 하위 브랜치 종류
+    - feat : 신규 피쳐 도입
+    - fix : 오류 수정 및 개선
+    - docs : 문서화 반영
+    - test : 테스트 작성
+      <br><br>
 
 ## ⚙️ 시스템 설계도
-<img width="3638" height="929" alt="시스템 설계도" src="https://github.com/user-attachments/assets/43880698-77bb-426d-968b-5c975198bbc4" />
+<img alt="시스템 설계도" src="https://github.com/user-attachments/assets/43880698-77bb-426d-968b-5c975198bbc4" />
 <br><br>
 
 ## 🚀 CI/CD 모식도
-<img width="3089" height="929" alt="CICD 모식도" src="https://github.com/user-attachments/assets/264cf12a-4053-461b-b7d8-c46e2b24cb50" />
+<img alt="CICD 모식도" src="https://github.com/user-attachments/assets/264cf12a-4053-461b-b7d8-c46e2b24cb50" />
 <br><br>
 
 ## 💾 ERD
-<img width="2454" height="1740" alt="what_seoul_database_deploy" src="https://github.com/user-attachments/assets/7909ece6-aec4-46f7-980a-64c96a2f0120" />
+<img alt="what_seoul_database_deploy" src="https://github.com/user-attachments/assets/7909ece6-aec4-46f7-980a-64c96a2f0120" />
 <br><br>
 
 ## 📃 API 명세서
-[명세서 링크](https://biiit4894.github.io/whatseoul-swagger/)
+[명세서 링크](https://biiit4894.github.io/whatseoul-swagger/)<br>
 (링크 마우스 우클릭 후 '새 탭에서 링크 열기'를 추천합니다.)
 
 <br><br>
