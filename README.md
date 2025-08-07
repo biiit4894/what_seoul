@@ -7,6 +7,8 @@
 서울 실시간 도시데이터 조회 서비스 [왓서울(WhatSeoul)](https://github.com/WhatSEOUL/WhatSeoul) 를 일부 개선하여 새롭게 개발된 웹 서비스입니다.
 <br><br>
 
+[https://whatseoul.site/](https://whatseoul.site/)
+
 ## 🔆 개요
 - 개발 기간: 2025.03.03~ (진행중)
 - 개발 인원: 1인
